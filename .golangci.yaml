@@ -1,0 +1,28 @@
+run:
+  go: "1.18"
+
+linters:
+  disable-all: true
+  enable:
+    # default linters
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - varcheck
+
+    # extra linters
+    - gofumpt
+    - goimports
+
+linters-settings:
+  gofumpt:
+    module-path: github.com/marcelocantos/linq
+    extra-rules: true
+
+  goimports:
+    local-prefixes: github.com/marcelocantos/linq
