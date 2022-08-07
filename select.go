@@ -13,7 +13,8 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 	})
 }
 
-// Select returns a query with the elements of q transformed by sel.
+// SelectMany projects each element of q to a subquery and flattens the
+// subqueries into a single query.
 func SelectMany[T, U any](q Query[T], sel func(t T) Query[U]) Query[U] {
 	return NewQuery(func() Enumerator[U] {
 		next := q.Enumerator()
