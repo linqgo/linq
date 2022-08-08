@@ -22,12 +22,12 @@ func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
 	next := noneEnumerator[T]
 	return func() (t T, ok bool) {
 		if t, ok = next(); ok {
-			return
+			return t, ok
 		}
 		if len(nexts) > 0 {
 			next, nexts = nexts[0], nexts[1:]
 			return next()
 		}
-		return
+		return t, ok
 	}
 }

@@ -39,6 +39,16 @@ func TestGroupBySelect(t *testing.T) {
 
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
+		linq.MustToMapKV(
+			linq.GroupBySelectSlices(
+				linq.From(1, 2, 3, 4, 5),
+				func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
+			),
+		),
+	)
+
+	assert.Equal(t,
+		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
 		linq.MustToMap(
 			linq.GroupBySelect(
 				linq.From(1, 2, 3, 4, 5),

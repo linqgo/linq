@@ -21,6 +21,16 @@ func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
 	return AggregateSeed(q, seed, agg)
 }
 
+// AggregateSeedI applies an aggregator function to the elements of q, using
+// seed as the initial value, and returns the aggregated result. The agg
+// function takes the index and value of each element.
+//
+// Use the global AggregateSeed function if the seed and result are not of type
+// T (e.g., concatenate a Query[int] into a string).
+func (q Query[T]) AggregateSeedI(seed T, agg func(a T, i int, b T) T) T {
+	return AggregateSeedI(q, seed, agg)
+}
+
 // MustAggregate applies an aggregator function to the elements of q and returns
 // the aggregated result or panics if q is empty.
 func (q Query[T]) MustAggregate(agg func(a, b T) T) T {
@@ -52,22 +62,45 @@ func AggregateElse[T any](q Query[T], agg func(a, b T) T, alt T) T {
 // AggregateSeed applies an aggregator function to the elements of q, using
 // seed as the initial value, and returns the aggregated result.
 func AggregateSeed[T, A any](q Query[T], seed A, agg func(a A, t T) A) A {
-	a, _ := aggregate(q.Enumerator(), seed, agg)
+	return AggregateSeedI(q, seed, indexifyAgg(agg))
+}
+
+// AggregateSeedI applies an aggregator function to the elements of q, using
+// seed as the initial value, and returns the aggregated result. The agg
+// function takes the index and value of each element.
+func AggregateSeedI[T, A any](q Query[T], seed A, agg func(a A, i int, t T) A) A {
+	a, _ := aggregateI(q.Enumerator(), seed, 0, agg)
 	return a
 }
 
 // MustAggregate applies an aggregator function to the elements of q and returns
 // the aggregated result or panics if q is empty.
 func MustAggregate[T any](q Query[T], agg func(a, b T) T) T {
-	e, ok := q.Aggregate(agg)
+	e, ok := Aggregate(q, agg)
 	return valueOrPanic(e, ok, emptySourceError)
 }
 
 func aggregate[T, A any](next Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
+	return aggregateI(next, acc, 0, indexifyAgg(agg))
+}
+
+func aggregateI[T, A any](
+	next Enumerator[T],
+	acc A,
+	init int,
+	agg func(a A, i int, t T) A,
+) (A, int) {
 	n := 0
+	i := counter(init)
 	for e, ok := next(); ok; e, ok = next() {
-		acc = agg(acc, e)
-		n += 1
+		acc = agg(acc, i(), e)
+		n++
 	}
 	return acc, n
+}
+
+func indexifyAgg[A, T any](agg func(a A, b T) A) func(a A, i int, b T) A {
+	return func(a A, i int, t T) A {
+		return agg(a, t)
+	}
 }

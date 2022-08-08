@@ -26,11 +26,27 @@ func Iota2[I constraints.Integer](start, stop I) Query[I] {
 
 // Iota3 returns a query with every step-th integer in the range [start, stop).
 func Iota3[I constraints.Integer](start, stop, step I) Query[I] {
-	return NewQuery(func() Enumerator[I] {
-		i := start - step
-		return func() (I, bool) {
-			i += step
-			return i, i < stop
+	switch {
+	case step > 0:
+		return NewQuery(func() Enumerator[I] {
+			i := start - step
+			return func() (I, bool) {
+				i += step
+				return i, i < stop
+			}
+		})
+	case step < 0:
+		return NewQuery(func() Enumerator[I] {
+			i := start - step
+			return func() (I, bool) {
+				i += step
+				return i, i > stop
+			}
+		})
+	default:
+		if start == stop {
+			return None[I]()
 		}
-	})
+		panic(zeroIotaStepError)
+	}
 }

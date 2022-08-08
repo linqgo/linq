@@ -9,6 +9,7 @@ func noneEnumeratorer[T any]() Enumerator[T] {
 	return noneEnumerator[T]
 }
 
-func noneEnumerator[T any]() (_ T, _ bool) {
-	return
+func noneEnumerator[T any]() (T, bool) {
+	var t T
+	return t, false
 }

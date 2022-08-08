@@ -44,7 +44,7 @@ func (r *ring[T]) Push(t T) {
 		panic("buffer full")
 	}
 	r.buffer[r.tail()] = t
-	r.size += 1
+	r.size++
 }
 
 func (r *ring[T]) Pop() T {
@@ -53,7 +53,7 @@ func (r *ring[T]) Pop() T {
 	}
 	t := r.buffer[r.head]
 	r.head = (r.head + 1) % r.Cap()
-	r.size -= 1
+	r.size--
 	return t
 }
 

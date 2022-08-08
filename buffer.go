@@ -30,13 +30,13 @@ func newBuffer[T any](next Enumerator[T], bufsize int) *buffer[T] {
 // Next enumerates the buffer. It runs out when the source enumerator can't keep
 // the buffer full. The residual elements remaining in the buffer may be
 // accessed via Enumerator().
-func (b *buffer[T]) Next() (_ T, _ bool) {
-	new, ok := b.next()
+func (b *buffer[T]) Next() (t T, ok bool) {
+	t2, ok := b.next()
 	if !ok {
-		return
+		return t, ok
 	}
-	t := b.buf.Pop()
-	b.buf.Push(new)
+	t = b.buf.Pop()
+	b.buf.Push(t2)
 	return t, true
 }
 

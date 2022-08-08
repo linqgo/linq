@@ -12,7 +12,7 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 			if count == 0 {
 				return value, false
 			}
-			count -= 1
+			count--
 			return value, true
 		}
 	})

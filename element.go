@@ -52,7 +52,7 @@ func ElementAt[T any](q Query[T], i int) (t T, ok bool) {
 	next := q.Enumerator()
 	for ; i > 0; i-- {
 		if _, ok = next(); !ok {
-			return
+			return t, ok
 		}
 	}
 	return next()
@@ -77,11 +77,11 @@ func FirstElse[T any](q Query[T], alt T) T {
 }
 
 // Last returns the last element or !ok if q is empty.
-func Last[T any](q Query[T]) (_ T, _ bool) {
+func Last[T any](q Query[T]) (t T, ok bool) {
 	next := q.Enumerator()
 	e, ok := next()
 	if !ok {
-		return
+		return t, ok
 	}
 	for {
 		if e2, ok := next(); ok {

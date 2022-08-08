@@ -13,17 +13,18 @@ func (e linqError) Error() string {
 }
 
 const (
-	emptySourceError linqError = "empty source"
+	emptySourceError  linqError = "empty source"
+	zeroIotaStepError linqError = "iota step is zero"
 )
 
-func valueOrPanic[T any](t T, ok bool, err error) T {
+func valueOrPanic[T any](t T, ok bool, err error) T { //nolint:revive
 	if ok {
 		return t
 	}
 	panic(err)
 }
 
-func valueOrPanicf[T any](t T, ok bool, format string, args ...any) T {
+func valueOrPanicf[T any](t T, ok bool, format string, args ...any) T { //nolint:revive
 	if ok {
 		return t
 	}
