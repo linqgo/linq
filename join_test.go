@@ -3,6 +3,8 @@ package linq_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/marcelocantos/linq"
 )
 
@@ -16,7 +18,7 @@ func TestJoin(t *testing.T) {
 	a := []XY{{1, 20}, {1, 30}, {2, 30}, {2, 40}}
 	b := []YZ{{30, 200}, {30, 250}, {20, 100}}
 
-	assertQueryEqual(t,
+	assert.ElementsMatch(t,
 		[]XYZ{{1, 20, 100}, {1, 30, 200}, {1, 30, 250}, {2, 30, 200}, {2, 30, 250}},
 		linq.Join(
 			linq.From(a...),
@@ -24,10 +26,10 @@ func TestJoin(t *testing.T) {
 			func(e XY) int { return e.y },
 			func(e YZ) int { return e.y },
 			func(a XY, b YZ) XYZ { return XYZ{a.x, a.y, b.z} },
-		),
+		).ToSlice(),
 	)
 
-	assertQueryEqual(t,
+	assert.ElementsMatch(t,
 		[]XYZ{{1, 20, 100}, {1, 30, 200}, {1, 30, 250}, {2, 30, 200}, {2, 30, 250}},
 		linq.Join(
 			linq.From(b...),
@@ -35,6 +37,6 @@ func TestJoin(t *testing.T) {
 			func(e YZ) int { return e.y },
 			func(e XY) int { return e.y },
 			func(b YZ, a XY) XYZ { return XYZ{a.x, a.y, b.z} },
-		),
+		).ToSlice(),
 	)
 }
