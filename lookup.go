@@ -16,7 +16,7 @@ func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBui
 
 func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
 	b := newLookupBuilder(q, key)
-	for b.Next() {
+	for b.Next() { //nolint:revive
 	}
 	return b.Lookup()
 }
