@@ -5,7 +5,7 @@ func Intersect[T comparable](a, b Query[T]) Query[T] {
 	return IntersectBy(a, b, Identity[T])
 }
 
-// Intersect returns the set intersection of a and b.
+// IntersectBy returns the set intersection of a and b.
 func IntersectBy[T, K comparable](
 	a Query[T],
 	b Query[K],
@@ -14,7 +14,7 @@ func IntersectBy[T, K comparable](
 	return IntersectByI(a, b, indexify(key))
 }
 
-// Intersect returns the set intersection of a and b. Values from a are
+// IntersectByI returns the set intersection of a and b. Values from a are
 // transformed through key to produce comparison values. The key function takes
 // the index and value of each element.
 func IntersectByI[T, K comparable](
