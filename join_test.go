@@ -26,4 +26,15 @@ func TestJoin(t *testing.T) {
 			func(a XY, b YZ) XYZ { return XYZ{a.x, a.y, b.z} },
 		),
 	)
+
+	assertQueryEqual(t,
+		[]XYZ{{1, 20, 100}, {1, 30, 200}, {1, 30, 250}, {2, 30, 200}, {2, 30, 250}},
+		linq.Join(
+			linq.From(b...),
+			linq.From(a...),
+			func(e YZ) int { return e.y },
+			func(e XY) int { return e.y },
+			func(b YZ, a XY) XYZ { return XYZ{a.x, a.y, b.z} },
+		),
+	)
 }

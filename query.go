@@ -16,3 +16,7 @@ func NewQuery[T any](i func() Enumerator[T]) Query[T] {
 func (q Query[T]) Enumerator() Enumerator[T] {
 	return q.enumerator()
 }
+
+func newQueryFromEnumerator[T any](e Enumerator[T]) Query[T] {
+	return Query[T]{enumerator: func() Enumerator[T] { return e }}
+}
