@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/marcelocantos/linq"
 )
 
@@ -31,4 +33,31 @@ func TestZip(t *testing.T) {
 			},
 		),
 	)
+}
+
+func TestZipKV(t *testing.T) {
+	t.Parallel()
+
+	assertQueryEqual(t,
+		[]linq.KV[string, int]{{"A", 1}, {"B", 2}, {"C", 3}},
+		linq.ZipKV(linq.From("A", "B", "C"), linq.From(1, 2, 3, 4)),
+	)
+}
+
+func TestUnzip(t *testing.T) {
+	t.Parallel()
+
+	a, b := linq.Unzip(linq.Iota1(10), func(i int) (int, int) { return i / 3, i % 3 })
+
+	assertQueryEqual(t, []int{0, 0, 0, 1, 1, 1, 2, 2, 2, 3}, a)
+	assertQueryEqual(t, []int{0, 1, 2, 0, 1, 2, 0, 1, 2, 0}, b)
+}
+
+func TestUnzipKV(t *testing.T) {
+	t.Parallel()
+
+	k, v := linq.UnzipKV(linq.FromMap(map[string]int{"A": 1, "B": 2, "C": 3}))
+
+	assert.ElementsMatch(t, []string{"A", "B", "C"}, k.ToSlice())
+	assert.ElementsMatch(t, []int{1, 2, 3}, v.ToSlice())
 }
