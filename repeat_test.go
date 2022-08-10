@@ -15,3 +15,9 @@ func TestRepeat(t *testing.T) {
 	assert.Equal(t, 10, linq.Repeat(0, 10).Count())
 	assert.Equal(t, []int{1, 1, 1, 1, 1}, linq.Repeat(1, 5).ToSlice())
 }
+
+func TestRepeatForever(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 1000, linq.RepeatForever(42).Take(1000).Count())
+}
