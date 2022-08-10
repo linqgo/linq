@@ -20,7 +20,7 @@ func AverageOrNaN[R realNumber](q Query[R]) R {
 	return valueOrNaN(Average(q))
 }
 
-// MustAverage returns the arithmetic mean of the numbers in q or panic if q is
+// MustAverage returns the arithmetic mean of the numbers in q or panics if q is
 // empty.
 func MustAverage[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(Average(q))
@@ -40,7 +40,7 @@ func GeometricMeanOrNaN[R realNumber](q Query[R]) R {
 	return valueOrNaN(GeometricMean(q))
 }
 
-// MustGeometricMean returns the geometric mean of the numbers in q or panic if
+// MustGeometricMean returns the geometric mean of the numbers in q or panics if
 // q is empty.
 func MustGeometricMean[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(GeometricMean(q))
@@ -60,7 +60,7 @@ func HarmonicMeanOrNaN[F constraints.Float](q Query[F]) F {
 	return valueOrNaN(HarmonicMean(q))
 }
 
-// MustHarmonicMean returns the harmonic mean of the numbers in q or panic if q
+// MustHarmonicMean returns the harmonic mean of the numbers in q or panics if q
 // is empty.
 func MustHarmonicMean[F constraints.Float](q Query[F]) F {
 	return valueOrPanicEmpty(HarmonicMean(q))
@@ -86,22 +86,22 @@ func Min[R realNumber](q Query[R]) (_ R, ok bool) {
 	return Aggregate(q, min[R])
 }
 
-// MinOrNaN returns the highest number in q or NaN if .
+// MinOrNaN returns the highest number in q or NaN if q is empty.
 func MinOrNaN[R realNumber](q Query[R]) R {
 	return valueOrNaN(Min(q))
 }
 
-// MustMin returns the lowest number in q.
+// MustMin returns the lowest number in q or panics of q is empty.
 func MustMin[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(Min(q))
 }
 
-// Product returns the product of the numbers in q.
+// Product returns the product of the numbers in q or 1 if q is empty.
 func Product[R number](q Query[R]) R {
 	return aggregate(q.Enumerator(), 1, mul[R])
 }
 
-// Sum returns the sum of the numbers in q.
+// Sum returns the sum of the numbers in q or 0 if q is empty.
 func Sum[R number](q Query[R]) R {
 	return aggregate(q.Enumerator(), 0, add[R])
 }
