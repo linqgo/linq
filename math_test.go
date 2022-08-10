@@ -9,40 +9,78 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMath(t *testing.T) {
+var (
+	testNums  = linq.Select(linq.Iota2(1, 11), func(i int) float64 { return float64(i) })
+	emptyNums = linq.None[float64]()
+)
+
+func TestAverage(t *testing.T) {
 	t.Parallel()
 
-	data := linq.Select(linq.Iota2(1, 11), func(i int) float64 { return float64(i) })
-	empty := linq.None[float64]()
-
-	for _, data := range []linq.Query[float64]{data, linq.Reverse(data)} {
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.EqualValues(t, 5.5, linq.MustAverage(data))
-		assert.PanicsWithError(t, "empty source", func() { linq.MustAverage(empty) })
+		assert.PanicsWithError(t, "empty source", func() { linq.MustAverage(emptyNums) })
 		assert.EqualValues(t, 5.5, linq.AverageOrNaN(data))
-		assert.True(t, math.IsNaN(linq.AverageOrNaN(empty)))
+		assert.True(t, math.IsNaN(linq.AverageOrNaN(emptyNums)))
+	}
+}
 
+func TestGeometricMean(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.InEpsilon(t, 4.529, linq.MustGeometricMean(data), 1.001)
-		assert.PanicsWithError(t, "empty source", func() { linq.MustGeometricMean(empty) })
+		assert.PanicsWithError(t, "empty source", func() { linq.MustGeometricMean(emptyNums) })
 		assert.InEpsilon(t, 4.529, linq.GeometricMeanOrNaN(data), 1.001)
-		assert.True(t, math.IsNaN(linq.GeometricMeanOrNaN(empty)))
+		assert.True(t, math.IsNaN(linq.GeometricMeanOrNaN(emptyNums)))
+	}
+}
 
+func TestHarmonicMean(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.InEpsilon(t, 3.414, linq.MustHarmonicMean(data), 1.001)
-		assert.PanicsWithError(t, "empty source", func() { linq.MustHarmonicMean(empty) })
+		assert.PanicsWithError(t, "empty source", func() { linq.MustHarmonicMean(emptyNums) })
 		assert.InEpsilon(t, 3.414, linq.HarmonicMeanOrNaN(data), 1.001)
-		assert.True(t, math.IsNaN(linq.HarmonicMeanOrNaN(empty)))
+		assert.True(t, math.IsNaN(linq.HarmonicMeanOrNaN(emptyNums)))
+	}
+}
 
+func TestMax(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.EqualValues(t, 10, linq.MustMax(data))
-		assert.Panics(t, func() { linq.MustMax(empty) })
+		assert.Panics(t, func() { linq.MustMax(emptyNums) })
 		assert.EqualValues(t, 10, linq.MaxOrNaN(data))
-		assert.True(t, math.IsNaN(linq.MaxOrNaN(empty)))
+		assert.True(t, math.IsNaN(linq.MaxOrNaN(emptyNums)))
+	}
+}
 
+func TestMin(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.EqualValues(t, 1, linq.MustMin(data))
-		assert.Panics(t, func() { linq.MustMin(empty) })
+		assert.Panics(t, func() { linq.MustMin(emptyNums) })
 		assert.EqualValues(t, 1, linq.MinOrNaN(data))
-		assert.True(t, math.IsNaN(linq.MinOrNaN(empty)))
+		assert.True(t, math.IsNaN(linq.MinOrNaN(emptyNums)))
+	}
+}
 
+func TestProduct(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.EqualValues(t, 3628800, linq.Product(data))
+	}
+}
 
+func TestSum(t *testing.T) {
+	t.Parallel()
+
+	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
 		assert.EqualValues(t, 55, linq.Sum(data))
 	}
 }
