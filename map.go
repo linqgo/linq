@@ -23,14 +23,7 @@ func FromMap[K comparable, V any](m map[K]V) Query[KV[K, V]] {
 // MustToMap converts a query to a map, with sel providing key/value pairs. If
 // any keys are duplicated, MustToMap will panic.
 func MustToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) map[K]U {
-	return MustToMapI(q, indexify(sel))
-}
-
-// MustToMapI converts a query to a map, with sel providing key/value pairs. If
-// any keys are duplicated, MustToMap will panic. The sel function takes the
-// index and value of each element.
-func MustToMapI[T, U any, K comparable](q Query[T], sel func(i int, t T) KV[K, U]) map[K]U {
-	m, err := ToMapI(q, sel)
+	m, err := ToMap(q, sel)
 	if err != nil {
 		panic(err)
 	}
@@ -60,18 +53,10 @@ func SelectValues[K, V any](q Query[KV[K, V]]) Query[V] {
 // ToMap converts a query to a map, with sel providing key/value pairs. If any
 // keys are duplicated, ToMap will return an error.
 func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U, error) {
-	return ToMapI(q, indexify(sel))
-}
-
-// ToMapI converts a query to a map, with sel providing key/value pairs. If any
-// keys are duplicated, ToMapI will return an error. The sel function takes the
-// index and value of each element.
-func ToMapI[T, U any, K comparable](q Query[T], sel func(i int, t T) KV[K, U]) (map[K]U, error) {
 	next := q.Enumerator()
 	ret := map[K]U{}
-	i := counter(0)
 	for t, ok := next(); ok; t, ok = next() {
-		kv := sel(i(), t)
+		kv := sel(t)
 		if _, ok := ret[kv.Key]; ok {
 			return nil, errorf("duplicate key %v", kv.Key)
 		}

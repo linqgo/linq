@@ -25,9 +25,3 @@ func counter(i int) func() int {
 		return i
 	}
 }
-
-func indexify[T, U any](f func(t T) U) func(i int, t T) U {
-	return func(i int, t T) U {
-		return f(t)
-	}
-}

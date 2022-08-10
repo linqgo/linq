@@ -15,15 +15,6 @@ func TestSelect(t *testing.T) {
 	)
 }
 
-func TestSelectI(t *testing.T) {
-	t.Parallel()
-
-	assertQueryEqual(t,
-		[]int{0, 4, 6, 6, 4},
-		linq.SelectI(linq.Iota3(5, 0, -1), func(i, x int) int { return i * x }),
-	)
-}
-
 func primeFactors(n int) linq.Query[int] {
 	return linq.NewQuery(func() linq.Enumerator[int] {
 		i, s := 2, 1
@@ -46,17 +37,6 @@ func TestSelectMany(t *testing.T) {
 		[]int{2, 3, 7, 2, 2, 2, 7},
 		linq.SelectMany(linq.From(42, 56), func(e int) linq.Query[int] {
 			return primeFactors(e)
-		}),
-	)
-}
-
-func TestSelectManyI(t *testing.T) {
-	t.Parallel()
-
-	assertQueryEqual(t,
-		[]int{4, 3, 3, 2, 2, 2, 1, 1, 1, 1},
-		linq.SelectManyI(linq.Iota3(5, 0, -1), func(i, x int) linq.Query[int] {
-			return linq.Repeat(x, i)
 		}),
 	)
 }

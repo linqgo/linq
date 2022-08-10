@@ -15,12 +15,6 @@ func (q Query[T]) TakeWhile(pred func(t T) bool) Query[T] {
 	return TakeWhile(q, pred)
 }
 
-// TakeWhileI returns a query that takes elements of q while pred returns true.
-// The pred function takes the index and value of each element.
-func (q Query[T]) TakeWhileI(pred func(i int, t T) bool) Query[T] {
-	return TakeWhileI(q, pred)
-}
-
 // Take returns a query with the first n elements of q.
 func Take[T any](q Query[T], count int) Query[T] {
 	if count == 0 {
@@ -52,17 +46,10 @@ func TakeLast[T any](q Query[T], count int) Query[T] {
 
 // TakeWhile returns a query that takes elements of q while pred returns true.
 func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return TakeWhileI(q, indexify(pred))
-}
-
-// TakeWhileI returns a query that takes elements of q while pred returns true.
-// The pred function takes the index and value of each element.
-func TakeWhileI[T any](q Query[T], pred func(i int, t T) bool) Query[T] {
 	return NewQuery(func() Enumerator[T] {
 		next := q.Enumerator()
-		i := counter(0)
 		return func() (t T, ok bool) {
-			if t, ok := next(); ok && pred(i(), t) {
+			if t, ok := next(); ok && pred(t) {
 				return t, ok
 			}
 			return t, ok

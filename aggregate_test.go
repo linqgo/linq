@@ -11,10 +11,6 @@ import (
 
 func add(a, b int) int { return a + b }
 
-func weight(a float64, i int, b float64) float64 {
-	return a + float64(i)*b
-}
-
 func TestAggregate(t *testing.T) {
 	t.Parallel()
 
@@ -48,12 +44,6 @@ func TestAggregateSeed(t *testing.T) {
 			func(a string, b int) string { return fmt.Sprintf("%s.%d", a, b) },
 		),
 	)
-}
-
-func TestAggregateI(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, 1.25, linq.From(0.25, 0.25, 0.5).AggregateSeedI(0, weight))
 }
 
 func TestMustAggregate(t *testing.T) {
