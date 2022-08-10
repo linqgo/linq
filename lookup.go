@@ -14,6 +14,13 @@ func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBui
 	}
 }
 
+func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
+	b := newLookupBuilder(q, key)
+	for b.Next() {
+	}
+	return b.Lookup()
+}
+
 func (b *lookupBuilder[T, K]) Next() bool {
 	if t, ok := b.next(); ok {
 		k := b.key(t)
