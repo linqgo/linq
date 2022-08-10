@@ -49,3 +49,12 @@ func TestMustToMap(t *testing.T) {
 		)
 	})
 }
+
+func TestSelectKeys(t *testing.T) {
+	t.Parallel()
+
+	data := linq.FromMap(map[int]string{2: "二", 4: "四", 6: "六"})
+
+	assert.ElementsMatch(t, []int{2, 4, 6}, linq.SelectKeys(data).ToSlice())
+	assert.ElementsMatch(t, []string{"二", "四", "六"}, linq.SelectValues(data).ToSlice())
+}

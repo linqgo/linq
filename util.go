@@ -17,11 +17,3 @@ func valueElse[T any](t T, ok bool, alt T) T { //nolint:revive
 	}
 	return alt
 }
-
-func counter(i int) func() int {
-	i--
-	return func() int {
-		i++
-		return i
-	}
-}
