@@ -71,6 +71,12 @@ func Max[R realNumber](q Query[R]) (_ R, ok bool) {
 	return Aggregate(q, max[R])
 }
 
+// MaxBy returns the element in q with the highest key or ok=false if q is
+// empty.
+func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) (_ T, ok bool) {
+	return bestBy(q, key, greater[R])
+}
+
 // MaxOrNaN returns the highest number in q or NaN if .
 func MaxOrNaN[R realNumber](q Query[R]) R {
 	return valueOrNaN(Max(q))
@@ -81,9 +87,20 @@ func MustMax[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(Max(q))
 }
 
+// MustMaxBy returns the highest number in q or panics if q is empty.
+func MustMaxBy[T any, K constraints.Ordered](q Query[T], key func(T) K) T {
+	return valueOrPanicEmpty(MaxBy(q, key))
+}
+
 // Min returns the highest number in q or ok=false if q is empty.
 func Min[R realNumber](q Query[R]) (_ R, ok bool) {
 	return Aggregate(q, min[R])
+}
+
+// MinBy returns the element in q with the highest key or ok=false if q is
+// empty.
+func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) (_ T, ok bool) {
+	return bestBy(q, key, less[K])
 }
 
 // MinOrNaN returns the highest number in q or NaN if q is empty.
@@ -94,6 +111,11 @@ func MinOrNaN[R realNumber](q Query[R]) R {
 // MustMin returns the lowest number in q or panics of q is empty.
 func MustMin[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(Min(q))
+}
+
+// MustMinBy returns the highest number in q or panics if q is empty.
+func MustMinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) T {
+	return valueOrPanicEmpty(MinBy(q, key))
 }
 
 // Product returns the product of the numbers in q or 1 if q is empty.
@@ -116,14 +138,38 @@ type realNumber interface {
 
 var nan = math.NaN()
 
-func max[R realNumber](a, b R) R {
+func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) (r T, ok bool) {
+	next := q.Enumerator()
+	bestValue, ok := next()
+	if !ok {
+		return r, ok
+	}
+	bestKey := key(bestValue)
+	for u, ok := next(); ok; u, ok = next() {
+		k := key(u)
+		if better(k, bestKey) {
+			bestValue, bestKey = u, k
+		}
+	}
+	return bestValue, true
+}
+
+func less[O constraints.Ordered](a, b O) bool {
+	return a < b
+}
+
+func max[O constraints.Ordered](a, b O) O {
 	if a >= b {
 		return a
 	}
 	return b
 }
 
-func min[R realNumber](a, b R) R {
+func greater[O constraints.Ordered](a, b O) bool {
+	return a > b
+}
+
+func min[O constraints.Ordered](a, b O) O {
 	if a <= b {
 		return a
 	}
@@ -146,6 +192,6 @@ func valueOrNaN[R realNumber](r R, ok bool) R {
 	return valueElse(r, ok, R(nan))
 }
 
-func valueOrPanicEmpty[R realNumber](r R, ok bool) R {
-	return valueOrPanic(r, ok, emptySourceError)
+func valueOrPanicEmpty[T any](t T, ok bool) T {
+	return valueOrPanic(t, ok, emptySourceError)
 }

@@ -53,8 +53,21 @@ func TestMustToMap(t *testing.T) {
 func TestSelectKeys(t *testing.T) {
 	t.Parallel()
 
-	data := linq.FromMap(map[int]string{2: "二", 4: "四", 6: "六"})
+	peeps := linq.FromMap(map[string]int{"John": 42, "Sanjiv": 22, "Andrea": 35})
 
-	assert.ElementsMatch(t, []int{2, 4, 6}, linq.SelectKeys(data).ToSlice())
-	assert.ElementsMatch(t, []string{"二", "四", "六"}, linq.SelectValues(data).ToSlice())
+	assert.ElementsMatch(t,
+		[]string{"John", "Sanjiv", "Andrea"},
+		linq.SelectKeys(peeps).ToSlice(),
+	)
+}
+
+func TestSelectValues(t *testing.T) {
+	t.Parallel()
+
+	peeps := linq.FromMap(map[string]int{"John": 42, "Sanjiv": 22, "Andrea": 35})
+
+	assert.ElementsMatch(t,
+		[]int{42, 22, 35},
+		linq.SelectValues(peeps).ToSlice(),
+	)
 }

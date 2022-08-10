@@ -9,13 +9,13 @@ import (
 func TestIndex(t *testing.T) {
 	t.Parallel()
 
+	data := linq.From("foo", "bar", "baz")
 	assertQueryEqual(t,
-		[]linq.KV[int, int]{{0, 1}, {1, 4}, {2, 9}},
-		linq.Index(linq.From(1, 4, 9)),
+		[]linq.KV[int, string]{{0, "foo"}, {1, "bar"}, {2, "baz"}},
+		linq.Index(data),
 	)
-
 	assertQueryEqual(t,
-		[]linq.KV[int, int]{{10, 1}, {11, 4}, {12, 9}},
-		linq.IndexFrom(linq.From(1, 4, 9), 10),
+		[]linq.KV[int, string]{{10, "foo"}, {11, "bar"}, {12, "baz"}},
+		linq.IndexFrom(data, 10),
 	)
 }
