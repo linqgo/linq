@@ -42,7 +42,7 @@ func (q Query[T]) MustAggregate(agg func(a, b T) T) T {
 func Aggregate[T any](q Query[T], agg func(a, b T) T) (ret T, ok bool) {
 	next := q.Enumerator()
 	if seed, ok := next(); ok {
-		ret, _ = aggregate(next, seed, agg)
+		ret, _ = aggregateN(next, seed, agg)
 		return ret, true
 	}
 	return ret, false
@@ -53,7 +53,7 @@ func Aggregate[T any](q Query[T], agg func(a, b T) T) (ret T, ok bool) {
 func AggregateElse[T any](q Query[T], agg func(a, b T) T, alt T) T {
 	next := q.Enumerator()
 	if seed, ok := next(); ok {
-		t, _ := aggregate(next, seed, agg)
+		t, _ := aggregateN(next, seed, agg)
 		return t
 	}
 	return alt
@@ -69,7 +69,7 @@ func AggregateSeed[T, A any](q Query[T], seed A, agg func(a A, t T) A) A {
 // seed as the initial value, and returns the aggregated result. The agg
 // function takes the index and value of each element.
 func AggregateSeedI[T, A any](q Query[T], seed A, agg func(a A, i int, t T) A) A {
-	a, _ := aggregateI(q.Enumerator(), seed, 0, agg)
+	a, _ := aggregateNI(q.Enumerator(), seed, 0, agg)
 	return a
 }
 
@@ -80,11 +80,16 @@ func MustAggregate[T any](q Query[T], agg func(a, b T) T) T {
 	return valueOrPanic(e, ok, emptySourceError)
 }
 
-func aggregate[T, A any](next Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
-	return aggregateI(next, acc, 0, indexifyAgg(agg))
+func aggregate[T, A any](next Enumerator[T], acc A, agg func(a A, t T) A) A {
+	t, _ := aggregateN(next, acc, agg)
+	return t
 }
 
-func aggregateI[T, A any](
+func aggregateN[T, A any](next Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
+	return aggregateNI(next, acc, 0, indexifyAgg(agg))
+}
+
+func aggregateNI[T, A any](
 	next Enumerator[T],
 	acc A,
 	init int,
@@ -97,6 +102,19 @@ func aggregateI[T, A any](
 		n++
 	}
 	return acc, n
+}
+
+func aggregateThen[T, A any](
+	next Enumerator[T],
+	acc A,
+	agg func(a A, t T) A,
+	then func(a A, i int) A,
+) (A, bool) {
+	if a, n := aggregateN(next, acc, agg); n != 0 {
+		return then(a, n), true
+	}
+	var a A
+	return a, false
 }
 
 func indexifyAgg[A, T any](agg func(a A, b T) A) func(a A, i int, b T) A {
