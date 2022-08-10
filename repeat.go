@@ -17,3 +17,12 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 		}
 	})
 }
+
+// RepeatForever returns a query with value repeated forever.
+func RepeatForever[T any](value T) Query[T] {
+	return NewQuery(func() Enumerator[T] {
+		return func() (T, bool) {
+			return value, true
+		}
+	})
+}
