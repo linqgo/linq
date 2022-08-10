@@ -24,5 +24,6 @@
 //	Select(From(1, 2, 3, 4, 5)(func(i int) int { return i * i })
 //
 // In case your preferred style is to always use global functions, all Query
-// methods are also available as global functions.
+// methods are also available as global functions. An added benefit is that free
+// functions can often be used as callbacks to other algorithms.
 package linq
