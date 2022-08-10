@@ -58,6 +58,23 @@ func TestMax(t *testing.T) {
 	}
 }
 
+func TestMaxBy(t *testing.T) {
+	t.Parallel()
+
+	type Person = linq.KV[string, int]
+
+	peeps := linq.FromMap(map[string]int{"John": 42, "Sanjiv": 22, "Andrea": 35})
+	noone := linq.FromMap(map[string]int{})
+
+	name := func(kv Person) string { return kv.Key }
+	age := func(kv Person) int { return kv.Value }
+
+	assert.EqualValues(t, linq.NewKV("Sanjiv", 22), linq.MustMaxBy(peeps, name))
+	assert.Panics(t, func() { linq.MustMaxBy(noone, name) })
+	assert.EqualValues(t, linq.NewKV("John", 42), linq.MustMaxBy(peeps, age))
+	assert.Panics(t, func() { linq.MustMaxBy(noone, age) })
+}
+
 func TestMin(t *testing.T) {
 	t.Parallel()
 
@@ -67,6 +84,23 @@ func TestMin(t *testing.T) {
 		assert.EqualValues(t, 1, linq.MinOrNaN(data))
 		assert.True(t, math.IsNaN(linq.MinOrNaN(emptyNums)))
 	}
+}
+
+func TestMinBy(t *testing.T) {
+	t.Parallel()
+
+	type Person = linq.KV[string, int]
+
+	peeps := linq.FromMap(map[string]int{"John": 42, "Andrea": 35, "Sanjiv": 22})
+	noone := linq.FromMap(map[string]int{})
+
+	name := func(kv Person) string { return kv.Key }
+	age := func(kv Person) int { return kv.Value }
+
+	assert.EqualValues(t, linq.NewKV("Andrea", 35), linq.MustMinBy(peeps, name))
+	assert.Panics(t, func() { linq.MustMinBy(noone, name) })
+	assert.EqualValues(t, linq.NewKV("Sanjiv", 22), linq.MustMinBy(peeps, age))
+	assert.Panics(t, func() { linq.MustMinBy(noone, age) })
 }
 
 func TestProduct(t *testing.T) {
