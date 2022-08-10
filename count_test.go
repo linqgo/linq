@@ -24,3 +24,11 @@ func TestCount(t *testing.T) {
 		).Count(),
 	)
 }
+
+func TestCountLimit(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 0, linq.From[int]().CountLimit(10))
+	assert.Equal(t, 3, linq.From(1, 2, 3, 4, 5).CountLimit(3))
+	assert.Equal(t, 5, linq.From(1, 2, 3, 4, 5).CountLimit(10))
+}
