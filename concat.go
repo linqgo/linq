@@ -20,13 +20,16 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
 	next := noneEnumerator[T]
-	return func() (t T, ok bool) {
-		if t, ok = next(); !ok {
-			if len(nexts) > 0 {
-				next, nexts = nexts[0], nexts[1:]
-				return next()
+	return func() (T, bool) {
+		for {
+			if t, ok := next(); ok {
+				return t, ok
 			}
+			if len(nexts) == 0 {
+				var t T
+				return t, false
+			}
+			next, nexts = nexts[0], nexts[1:]
 		}
-		return t, ok
 	}
 }
