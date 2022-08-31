@@ -2,7 +2,7 @@ package linq
 
 import "sync"
 
-func (q Query[T]) Memoize() Query[T] {
+func (q Query[T]) Memoize() Query[T] { //nolint:revive
 	var cache []T
 	var mux sync.Mutex
 	var next Enumerator[T]
@@ -30,13 +30,13 @@ func (q Query[T]) Memoize() Query[T] {
 				mux.Lock()
 				defer mux.Unlock()
 				if i == len(cache) {
-					if t, ok := next(); ok {
-						cache = append(cache, t)
-						c = cache
-					} else {
+					t, ok := next()
+					if !ok {
 						done = true
 						return t, false
 					}
+					cache = append(cache, t)
+					c = cache
 				}
 			}
 			return c[i], true
