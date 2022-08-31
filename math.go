@@ -14,6 +14,13 @@ func Average[R realNumber](q Query[R]) (mean R, ok bool) {
 	})
 }
 
+// AverageElse returns the arithmetic mean of the numbers in q or alt if q is
+// empty.
+func AverageElse[R realNumber](q Query[R], alt R) R {
+	average, ok := Average(q)
+	return valueElse(average, ok, alt)
+}
+
 // AverageOrNan returns the arithmetic mean of the numbers in q or NaN if q is
 // empty.
 func AverageOrNaN[R realNumber](q Query[R]) R {
@@ -34,6 +41,13 @@ func GeometricMean[R realNumber](q Query[R]) (mean R, ok bool) {
 	})
 }
 
+// GeometricMeanElse returns the geometric mean of the numbers in q or NaN if q
+// is empty.
+func GeometricMeanElse[R realNumber](q Query[R], alt R) R {
+	r, ok := GeometricMean(q)
+	return valueElse(r, ok, alt)
+}
+
 // GeometricMeanOrNan returns the geometric mean of the numbers in q or NaN if q
 // is empty.
 func GeometricMeanOrNaN[R realNumber](q Query[R]) R {
@@ -52,6 +66,13 @@ func HarmonicMean[F constraints.Float](q Query[F]) (mean F, ok bool) {
 	return aggregateThen(q.Enumerator(), 0, recipAdd[F], func(recipSum F, n int) F {
 		return F(n) / F(recipSum)
 	})
+}
+
+// HarmonicMeanElse returns the harmonic mean of the numbers in q or NaN if q is
+// empty.
+func HarmonicMeanElse[R constraints.Float](q Query[R], alt R) R {
+	r, ok := HarmonicMean(q)
+	return valueElse(r, ok, alt)
 }
 
 // HarmonicMeanOrNan returns the harmonic mean of the numbers in q or NaN if q
@@ -77,7 +98,13 @@ func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) (_ T, ok boo
 	return bestBy(q, key, greater[R])
 }
 
-// MaxOrNaN returns the highest number in q or NaN if .
+// MaxElse returns the highest number in q or alt if q is empty.
+func MaxElse[R realNumber](q Query[R], alt R) R {
+	r, ok := Max(q)
+	return valueElse(r, ok, alt)
+}
+
+// MaxOrNaN returns the highest number in q or NaN if q is empty.
 func MaxOrNaN[R realNumber](q Query[R]) R {
 	return valueOrNaN(Max(q))
 }
@@ -101,6 +128,12 @@ func Min[R realNumber](q Query[R]) (_ R, ok bool) {
 // empty.
 func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) (_ T, ok bool) {
 	return bestBy(q, key, less[K])
+}
+
+// MinElse returns the lowest number in q or alt if q is empty.
+func MinElse[R realNumber](q Query[R], alt R) R {
+	r, ok := Min(q)
+	return valueElse(r, ok, alt)
 }
 
 // MinOrNaN returns the highest number in q or NaN if q is empty.
@@ -138,6 +171,10 @@ type realNumber interface {
 
 var nan = math.NaN()
 
+func add[N number](a, b N) N {
+	return a + b
+}
+
 func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) (r T, ok bool) {
 	next := q.Enumerator()
 	bestValue, ok := next()
@@ -154,6 +191,10 @@ func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func
 	return bestValue, true
 }
 
+func greater[O constraints.Ordered](a, b O) bool {
+	return a > b
+}
+
 func less[O constraints.Ordered](a, b O) bool {
 	return a < b
 }
@@ -165,19 +206,11 @@ func max[O constraints.Ordered](a, b O) O {
 	return b
 }
 
-func greater[O constraints.Ordered](a, b O) bool {
-	return a > b
-}
-
 func min[O constraints.Ordered](a, b O) O {
 	if a <= b {
 		return a
 	}
 	return b
-}
-
-func add[N number](a, b N) N {
-	return a + b
 }
 
 func mul[N number](a, b N) N {

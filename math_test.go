@@ -22,6 +22,8 @@ func TestAverage(t *testing.T) {
 		assert.PanicsWithError(t, "empty source", func() { linq.MustAverage(emptyNums) })
 		assert.EqualValues(t, 5.5, linq.AverageOrNaN(data))
 		assert.True(t, math.IsNaN(linq.AverageOrNaN(emptyNums)))
+		assert.EqualValues(t, 5.5, linq.AverageElse(data, 42.0))
+		assert.EqualValues(t, 42.0, linq.AverageElse(emptyNums, 42.0))
 	}
 }
 
@@ -33,6 +35,8 @@ func TestGeometricMean(t *testing.T) {
 		assert.PanicsWithError(t, "empty source", func() { linq.MustGeometricMean(emptyNums) })
 		assert.InEpsilon(t, 4.529, linq.GeometricMeanOrNaN(data), 1.001)
 		assert.True(t, math.IsNaN(linq.GeometricMeanOrNaN(emptyNums)))
+		assert.InEpsilon(t, 4.529, linq.GeometricMeanElse(data, 42.0), 1.001)
+		assert.EqualValues(t, 42.0, linq.GeometricMeanElse(emptyNums, 42.0))
 	}
 }
 
@@ -44,6 +48,8 @@ func TestHarmonicMean(t *testing.T) {
 		assert.PanicsWithError(t, "empty source", func() { linq.MustHarmonicMean(emptyNums) })
 		assert.InEpsilon(t, 3.414, linq.HarmonicMeanOrNaN(data), 1.001)
 		assert.True(t, math.IsNaN(linq.HarmonicMeanOrNaN(emptyNums)))
+		assert.InEpsilon(t, 3.414, linq.HarmonicMeanElse(data, 42.0), 1.001)
+		assert.EqualValues(t, 42.0, linq.HarmonicMeanElse(emptyNums, 42.0))
 	}
 }
 
@@ -55,6 +61,8 @@ func TestMax(t *testing.T) {
 		assert.Panics(t, func() { linq.MustMax(emptyNums) })
 		assert.EqualValues(t, 10, linq.MaxOrNaN(data))
 		assert.True(t, math.IsNaN(linq.MaxOrNaN(emptyNums)))
+		assert.EqualValues(t, 10, linq.MaxElse(data, 42.0))
+		assert.EqualValues(t, 42.0, linq.MaxElse(emptyNums, 42.0))
 	}
 }
 
@@ -83,6 +91,8 @@ func TestMin(t *testing.T) {
 		assert.Panics(t, func() { linq.MustMin(emptyNums) })
 		assert.EqualValues(t, 1, linq.MinOrNaN(data))
 		assert.True(t, math.IsNaN(linq.MinOrNaN(emptyNums)))
+		assert.EqualValues(t, 1, linq.MinElse(data, 42.0))
+		assert.EqualValues(t, 42.0, linq.MinElse(emptyNums, 42.0))
 	}
 }
 
