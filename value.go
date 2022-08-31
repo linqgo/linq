@@ -13,6 +13,7 @@ func sliceEnumerator[T any](s []T) Enumerator[T] {
 	i := -1
 	return func() (T, bool) {
 		if i++; i == len(s) {
+			i--
 			var t T
 			return t, false
 		}

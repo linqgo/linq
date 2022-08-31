@@ -9,24 +9,10 @@ import (
 func TestIntersect(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t,
-		[]int{2, 4},
-		linq.Intersect(linq.From(1, 2, 3, 4, 5), linq.From(2, 4)),
-	)
-	assertQueryEqual(t,
-		[]int{1, 2, 3},
-		linq.Intersect(linq.From(1, 2, 3), linq.From(1, 2, 3)),
-	)
-	assertQueryEqual(t,
-		[]int{1, 2, 3},
-		linq.Intersect(linq.From(1, 2, 3), linq.From(1, 2, 3, 4, 5)),
-	)
-	assertQueryEqual(t,
-		[]int{},
-		linq.Intersect(linq.From(1, 2, 3), linq.From(4, 5)),
-	)
-	assertQueryEqual(t,
-		[]int{3},
-		linq.Intersect(linq.From(1, 2, 3), linq.From(3, 4, 5)),
-	)
+	f := linq.From[int]
+	assertQueryEqual(t, []int{2, 4}, linq.Intersect(f(1, 2, 3, 4, 5), f(2, 4)))
+	assertQueryEqual(t, []int{1, 2, 3}, linq.Intersect(f(1, 2, 3), f(1, 2, 3)))
+	assertQueryEqual(t, []int{1, 2, 3}, linq.Intersect(f(1, 2, 3), f(1, 2, 3, 4, 5)))
+	assertQueryEqual(t, []int{}, linq.Intersect(f(1, 2, 3), f(4, 5)))
+	assertQueryEqual(t, []int{3}, linq.Intersect(f(1, 2, 3), f(3, 4, 5)))
 }

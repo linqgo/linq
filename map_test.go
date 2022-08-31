@@ -12,9 +12,9 @@ func TestFromMap(t *testing.T) {
 	t.Parallel()
 
 	assertQueryEqual(t, []linq.KV[int, int]{}, linq.FromMap(map[int]int{}))
-	assert.ElementsMatch(t,
+	assertQueryElementsMatch(t,
 		[]linq.KV[int, int]{{1, 1}, {2, 3}},
-		linq.FromMap(map[int]int{1: 1, 2: 3}).ToSlice(),
+		linq.FromMap(map[int]int{1: 1, 2: 3}),
 	)
 }
 
@@ -55,9 +55,9 @@ func TestSelectKeys(t *testing.T) {
 
 	peeps := linq.FromMap(map[string]int{"John": 42, "Sanjiv": 22, "Andrea": 35})
 
-	assert.ElementsMatch(t,
+	assertQueryElementsMatch(t,
 		[]string{"John", "Sanjiv", "Andrea"},
-		linq.SelectKeys(peeps).ToSlice(),
+		linq.SelectKeys(peeps),
 	)
 }
 
@@ -66,8 +66,5 @@ func TestSelectValues(t *testing.T) {
 
 	peeps := linq.FromMap(map[string]int{"John": 42, "Sanjiv": 22, "Andrea": 35})
 
-	assert.ElementsMatch(t,
-		[]int{42, 22, 35},
-		linq.SelectValues(peeps).ToSlice(),
-	)
+	assertQueryElementsMatch(t, []int{42, 22, 35}, linq.SelectValues(peeps))
 }

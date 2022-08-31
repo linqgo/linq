@@ -13,7 +13,7 @@ func TestRepeat(t *testing.T) {
 
 	assert.True(t, linq.Repeat(0, 0).Empty())
 	assert.Equal(t, 10, linq.Repeat(0, 10).Count())
-	assert.Equal(t, []int{1, 1, 1, 1, 1}, linq.Repeat(1, 5).ToSlice())
+	assertQueryEqual(t, []int{1, 1, 1, 1, 1}, linq.Repeat(1, 5))
 }
 
 func TestRepeatForever(t *testing.T) {

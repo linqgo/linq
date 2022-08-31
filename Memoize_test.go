@@ -1,6 +1,7 @@
 package linq_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/marcelocantos/linq"
@@ -19,25 +20,25 @@ func TestMemoize(t *testing.T) {
 	t.Parallel()
 
 	q := linq.FromChannel(fiveInts())
-
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, q)
 	assertQueryEqual(t, []int{}, q)
 
 	m := linq.FromChannel(fiveInts()).Memoize()
-
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 }
 
-func TestMemoizeParalle(t *testing.T) {
+func TestMemoizeParallel(t *testing.T) {
 	t.Parallel()
 
 	m := linq.FromChannel(fiveInts()).Memoize()
 	for i := 0; i < 10; i++ {
-		go func() {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			for j := 0; j < 1000; j++ {
-				assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
+				if !assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m) {
+					break
+				}
 			}
-		}()
+		})
 	}
 }

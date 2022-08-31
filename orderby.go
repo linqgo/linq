@@ -47,10 +47,11 @@ func ThenDesc[T constraints.Ordered](q Query[T]) Query[T] {
 }
 
 func ThenBy[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] {
-	if q.lesser == nil {
+	lesser := q.lesser()
+	if lesser == nil {
 		panic(thenByNoOrderBy)
 	}
-	return orderByLesser(q, chainLessers(q.lesser, func(data []T) func(i, j int) bool {
+	return orderByLesser(q, chainLessers(lesser, func(data []T) func(i, j int) bool {
 		return func(i, j int) bool {
 			return key(data[i]) < key(data[j])
 		}
@@ -58,24 +59,27 @@ func ThenBy[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] 
 }
 
 func ThenByComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
-	if q.lesser == nil {
+	lesser := q.lesser()
+	if lesser == nil {
 		panic(thenByNoOrderBy)
 	}
-	return orderByLesser(q, chainLessers(q.lesser, lessesToLesser(lesses...)))
+	return orderByLesser(q, chainLessers(lesser, lessesToLesser(lesses...)))
 }
 
 func ThenByCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
-	if q.lesser == nil {
+	lesser := q.lesser()
+	if lesser == nil {
 		panic(thenByNoOrderBy)
 	}
-	return orderByLesser(q, chainLessers(q.lesser, lessesToLesserDesc(lesses...)))
+	return orderByLesser(q, chainLessers(lesser, lessesToLesserDesc(lesses...)))
 }
 
 func ThenByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] {
-	if q.lesser == nil {
+	lesser := q.lesser()
+	if lesser == nil {
 		panic(thenByNoOrderBy)
 	}
-	return orderByLesser(q, chainLessers(q.lesser, func(data []T) func(i, j int) bool {
+	return orderByLesser(q, chainLessers(lesser, func(data []T) func(i, j int) bool {
 		return func(i, j int) bool {
 			return key(data[i]) > key(data[j])
 		}
@@ -132,6 +136,6 @@ func orderByLesser[T any](q Query[T], lesser lesserFunc[T]) Query[T] {
 			sort.Slice(data, lesser(data))
 			return From(data...).Enumerator()
 		},
-		lesser: lesser,
+		extra: &queryExtra[T]{lesser: lesser},
 	}
 }

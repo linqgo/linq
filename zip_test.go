@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/marcelocantos/linq"
 )
 
@@ -58,6 +56,6 @@ func TestUnzipKV(t *testing.T) {
 
 	k, v := linq.UnzipKV(linq.FromMap(map[string]int{"A": 1, "B": 2, "C": 3}))
 
-	assert.ElementsMatch(t, []string{"A", "B", "C"}, k.ToSlice())
-	assert.ElementsMatch(t, []int{1, 2, 3}, v.ToSlice())
+	assertQueryElementsMatch(t, []string{"A", "B", "C"}, k)
+	assertQueryElementsMatch(t, []int{1, 2, 3}, v)
 }

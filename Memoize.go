@@ -24,6 +24,7 @@ func (q Query[T]) Memoize() Query[T] { //nolint:revive
 			}
 			if i++; i == len(c) {
 				if done {
+					i--
 					var t T
 					return t, false
 				}
@@ -32,6 +33,7 @@ func (q Query[T]) Memoize() Query[T] { //nolint:revive
 				if i == len(cache) {
 					t, ok := next()
 					if !ok {
+						i--
 						done = true
 						return t, false
 					}

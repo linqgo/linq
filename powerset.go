@@ -16,6 +16,7 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 				// New bit
 				t, ok := next()
 				if !ok {
+					mask--
 					return q, false
 				}
 				cache = append(cache, t)

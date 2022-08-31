@@ -11,22 +11,24 @@ import (
 func TestGroupBy(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t,
-		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMapKV(
-			linq.GroupBySlices(
-				linq.From(1, 2, 3, 4, 5),
-				func(t int) int { return t % 2 },
-			),
-		),
+	q := linq.GroupBySlices(
+		linq.From(1, 2, 3, 4, 5),
+		func(t int) int { return t % 2 },
 	)
+	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMap(
-			linq.GroupBy(
-				linq.From(1, 2, 3, 4, 5),
-				func(t int) int { return t % 2 },
-			),
+		linq.MustToMapKV(q),
+	)
+
+	q2 := linq.GroupBy(
+		linq.From(1, 2, 3, 4, 5),
+		func(t int) int { return t % 2 },
+	)
+	assertExhaustedEnumeratorBehavesWell(t, q2)
+	assert.Equal(t,
+		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
+		linq.MustToMap(q2,
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
@@ -37,23 +39,24 @@ func TestGroupBy(t *testing.T) {
 func TestGroupBySelect(t *testing.T) {
 	t.Parallel()
 
+	q := linq.GroupBySelectSlices(
+		linq.From(1, 2, 3, 4, 5),
+		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
+	)
+	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMapKV(
-			linq.GroupBySelectSlices(
-				linq.From(1, 2, 3, 4, 5),
-				func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-			),
-		),
+		linq.MustToMapKV(q),
 	)
 
+	q2 := linq.GroupBySelect(
+		linq.From(1, 2, 3, 4, 5),
+		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
+	)
+	assertExhaustedEnumeratorBehavesWell(t, q2)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMap(
-			linq.GroupBySelect(
-				linq.From(1, 2, 3, 4, 5),
-				func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-			),
+		linq.MustToMap(q2,
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
