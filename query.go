@@ -13,21 +13,6 @@ func NewQuery[T any](i func() Enumerator[T]) Query[T] {
 	return Query[T]{enumerator: i}
 }
 
-// NewNonReplayableQuery returns a new query based on a function that returns
-// enumerators. It is tagged as non-replayable to indicate that its values can
-// only be enumerated once. This applies to consumable sources such as channels
-// and io.Reader.
-func NewNonReplayableQuery[T any](
-	i func() Enumerator[T],
-	nonReplayable bool,
-) Query[T] {
-	q := Query[T]{enumerator: i}
-	if nonReplayable {
-		q.extra = &queryExtra[T]{oneShot: true}
-	}
-	return q
-}
-
 // Enumerator returns an enumerator for q.
 func (q Query[T]) Enumerator() Enumerator[T] {
 	return q.enumerator()
@@ -93,13 +78,6 @@ type queryExtra[T any] struct {
 	oneShot bool
 }
 
-func (qe *queryExtra[T]) ifNonZero() *queryExtra[T] {
-	if qe.lesser != nil || qe.oneShot {
-		return qe
-	}
-	return nil
-}
-
 func (qe *queryExtra[T]) ifNeeded(needed bool) *queryExtra[T] {
 	switch {
 	case !needed:
@@ -112,19 +90,19 @@ func (qe *queryExtra[T]) ifNeeded(needed bool) *queryExtra[T] {
 }
 
 func (qe *queryExtra[T]) withLesser(lesser lesserFunc[T]) *queryExtra[T] {
-	if qe = qe.ifNeeded(lesser != nil); qe != nil {
-		qe.lesser = lesser
-		return qe.ifNonZero()
+	if qe == nil {
+		qe = &queryExtra[T]{}
 	}
-	return nil
+	qe.lesser = lesser
+	return qe
 }
 
 func (qe *queryExtra[T]) withOneShot(oneShot bool) *queryExtra[T] {
-	if qe = qe.ifNeeded(oneShot); qe != nil {
+	qe = qe.ifNeeded(oneShot)
+	if qe != nil {
 		qe.oneShot = oneShot
-		return qe.ifNonZero()
 	}
-	return nil
+	return qe
 }
 
 type lesserFunc[T any] func([]T) func(i, j int) bool

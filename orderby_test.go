@@ -109,8 +109,8 @@ func TestThenBy(t *testing.T) {
 			func(kv linq.KV[string, int]) int { return kv.Value }))
 
 	assertQueryEqual(t,
-		[]linq.KV[string, int]{{"Frank", 20}, {"Charlotte", 25}},
-		linq.ThenBy(linq.OrderBy(data,
+		[]linq.KV[string, int]{{"Frank", 20}, {"Frank", 20}, {"Charlotte", 25}},
+		linq.ThenBy(linq.OrderBy(data.Append(linq.NewKV("Frank", 20)),
 			func(kv linq.KV[string, int]) int { return kv.Value }),
 			func(kv linq.KV[string, int]) string { return kv.Key }))
 
@@ -164,9 +164,18 @@ func TestOrderByComp(t *testing.T) {
 	nothing := linq.None[int]()
 
 	assertQueryEqual(t, []int{}, linq.OrderByComp(nothing))
+
 	assertQueryEqual(t,
 		[]int{1, 2, 3, 4, 5},
 		linq.OrderByComp(data, func(a, b int) bool { return a < b }))
+
+	assertQueryEqual(t,
+		[]int{4, 4, 2, 2, 5, 5, 3, 3, 1, 1},
+		linq.OrderByComp(data.Concat(data.Reverse()),
+			func(a, b int) bool { return a%2 < b%2 },
+			func(a, b int) bool { return a > b },
+		))
+
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.OrderByComp(q, func(a, b int) bool { return a > b })
 	}
@@ -183,9 +192,18 @@ func TestOrderByCompDesc(t *testing.T) {
 	nothing := linq.None[int]()
 
 	assertQueryEqual(t, []int{}, linq.OrderByCompDesc(nothing))
+
 	assertQueryEqual(t,
 		[]int{5, 4, 3, 2, 1},
 		linq.OrderByCompDesc(data, func(a, b int) bool { return a < b }))
+
+	assertQueryEqual(t,
+		[]int{1, 1, 3, 3, 5, 5, 2, 2, 4, 4},
+		linq.OrderByCompDesc(data.Concat(data.Reverse()),
+			func(a, b int) bool { return a%2 < b%2 },
+			func(a, b int) bool { return a > b },
+		))
+
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.OrderByCompDesc(q, func(a, b int) bool { return a > b })
 	}
