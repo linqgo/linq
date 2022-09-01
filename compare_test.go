@@ -50,7 +50,7 @@ func TestSmaller(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			ssm, esm := len(a) < len(b), linq.Smaller(qa, qb)
+			ssm, esm := len(a) < len(b), linq.Shorter(qa, qb)
 			assert.Equal(t, ssm, esm, "len(%q) < len(%q) expected %v, got %v", a, b, ssm, esm)
 		}
 	}

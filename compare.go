@@ -49,8 +49,8 @@ func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
 	}
 }
 
-// Smaller true if and only if a has fewer elements than b.
-func Smaller[T any](a, b Query[T]) bool {
+// Shorter returns true if and only if a has fewer elements than b.
+func Shorter[T any](a, b Query[T]) bool {
 	anext := a.Enumerator()
 	bnext := b.Enumerator()
 	for {

@@ -2,7 +2,11 @@ package linq
 
 import "sync"
 
-func (q Query[T]) Memoize() Query[T] { //nolint:revive
+func (q Query[T]) Memoize() Query[T] {
+	return Memoize(q)
+}
+
+func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
 	var cache []T
 	var mux sync.Mutex
 	var next Enumerator[T]
