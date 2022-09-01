@@ -40,8 +40,7 @@ func GroupBySelectSlices[T, U any, K comparable](
 	q Query[T],
 	sel func(t T) KV[K, U],
 ) Query[KV[K, []U]] {
-	return NewQuery(func() Enumerator[KV[K, []U]] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[KV[K, []U]] {
 		m := map[K][]U{}
 		for t, ok := next(); ok; t, ok = next() {
 			kv := sel(t)

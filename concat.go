@@ -9,13 +9,20 @@ func (q Query[T]) Concat(r Query[T]) Query[T] {
 // Concat returns the concatenation of queries. Enumerating it enumerates the
 // elements of each Query in turn.
 func Concat[T any](queries ...Query[T]) Query[T] {
+	oneshot := false
+	for _, q := range queries {
+		if q.OneShot() {
+			oneshot = true
+			break
+		}
+	}
 	return NewQuery(func() Enumerator[T] {
 		enumerators := make([]Enumerator[T], 0, len(queries))
 		for _, q := range queries {
 			enumerators = append(enumerators, q.Enumerator())
 		}
 		return concatEnumerators(enumerators...)
-	})
+	}).withOneShot(oneshot)
 }
 
 func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {

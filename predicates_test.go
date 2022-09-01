@@ -13,7 +13,7 @@ func TestAll(t *testing.T) {
 
 	assert.True(t, linq.Iota1(5).All(func(t int) bool { return t < 10 }))
 	assert.False(t, linq.Iota1(5).All(func(t int) bool { return t < 3 }))
-	assert.True(t, linq.Iota1(0).All(func(t int) bool { return false }))
+	assert.True(t, linq.Iota1(0).All(linq.False[int]))
 }
 
 func TestAny(t *testing.T) {
@@ -21,7 +21,7 @@ func TestAny(t *testing.T) {
 
 	assert.True(t, linq.Iota1(5).Any(func(t int) bool { return t < 3 }))
 	assert.False(t, linq.Iota1(5).Any(func(t int) bool { return t > 10 }))
-	assert.False(t, linq.Iota1(0).Any(func(t int) bool { return true }))
+	assert.False(t, linq.Iota1(0).Any(linq.True[int]))
 }
 
 func TestEmpty(t *testing.T) {

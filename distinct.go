@@ -11,8 +11,7 @@ func Distinct[T comparable](q Query[T]) Query[T] {
 //
 //	DistinctBy(names, strings.ToUpper)
 func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		s := set[U]{}
 		return func() (t T, ok bool) {
 			for t, ok = next(); ok; t, ok = next() {

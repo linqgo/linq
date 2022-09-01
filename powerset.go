@@ -3,11 +3,8 @@ package linq
 import "math/bits"
 
 func PowerSet[T any](q Query[T]) Query[Query[T]] {
-	return NewQuery(func() Enumerator[Query[T]] {
+	return Pipe(q, func(next Enumerator[T]) Enumerator[Query[T]] {
 		var cache []T
-
-		next := q.Enumerator()
-
 		var mask uint64 = 0
 		mask--
 		return func() (q Query[T], ok bool) {

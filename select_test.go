@@ -9,10 +9,12 @@ import (
 func TestSelect(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t,
-		[]int{0, 1, 4, 9, 16},
-		linq.Select(linq.Iota1(5), func(x int) int { return x * x }),
-	)
+	square := func(x int) int { return x * x }
+	q := linq.Select(linq.Iota1(5), square)
+	assertQueryEqual(t, []int{0, 1, 4, 9, 16}, q)
+
+	assertOneShot(t, false, q)
+	assertOneShot(t, true, linq.Select(oneshot, square))
 }
 
 func primeFactors(n int) linq.Query[int] {
@@ -33,10 +35,9 @@ func primeFactors(n int) linq.Query[int] {
 func TestSelectMany(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t,
-		[]int{2, 3, 7, 2, 2, 2, 7},
-		linq.SelectMany(linq.From(42, 56), func(e int) linq.Query[int] {
-			return primeFactors(e)
-		}),
-	)
+	q := linq.SelectMany(linq.From(42, 56), primeFactors)
+	assertQueryEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
+
+	assertOneShot(t, false, q)
+	assertOneShot(t, true, linq.SelectMany(oneshot, primeFactors))
 }

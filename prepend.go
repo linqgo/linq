@@ -14,6 +14,6 @@ func (q Query[T]) Prepend(t ...T) Query[T] {
 // that takes q.
 func Prepend[T any](t ...T) func(q Query[T]) Query[T] {
 	return func(q Query[T]) Query[T] {
-		return q.Concat(From(t...))
+		return From(t...).Concat(q)
 	}
 }

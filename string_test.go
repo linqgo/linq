@@ -23,4 +23,6 @@ func TestString(t *testing.T) {
 			func(r rune) rune { return unicode.ToUpper(r) },
 		)),
 	)
+
+	assertOneShot(t, false, linq.FromString("abc"))
 }

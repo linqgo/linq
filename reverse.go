@@ -17,5 +17,5 @@ func Reverse[T any](q Query[T]) Query[T] {
 			}
 			return e, last >= 0
 		}
-	})
+	}).withOneShot(q.OneShot())
 }

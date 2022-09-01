@@ -20,14 +20,15 @@ func Take[T any](q Query[T], count int) Query[T] {
 	if count == 0 {
 		return None[T]()
 	}
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
-		return func() (t T, ok bool) {
-			if count > 0 {
-				count--
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
+		i := 0
+		return func() (T, bool) {
+			if i < count {
+				i++
 				return next()
 			}
-			return t, ok
+			var t T
+			return t, false
 		}
 	})
 }
@@ -37,8 +38,8 @@ func TakeLast[T any](q Query[T], count int) Query[T] {
 	if count == 0 {
 		return None[T]()
 	}
-	return NewQuery(func() Enumerator[T] {
-		buf := newBuffer(q.Enumerator(), count)
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
+		buf := newBuffer(next, count)
 		drain(buf.Next)
 		return buf.Enumerator()
 	})
@@ -46,8 +47,7 @@ func TakeLast[T any](q Query[T], count int) Query[T] {
 
 // TakeWhile returns a query that takes elements of q while pred returns true.
 func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		return func() (t T, ok bool) {
 			if t, ok := next(); ok && pred(t) {
 				return t, ok

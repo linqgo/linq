@@ -3,8 +3,7 @@ package linq
 // Chunk returns the elements of q in queries containing chunks of the specified
 // size.
 func Chunk[T any](q Query[T], size int) Query[Query[T]] {
-	return NewQuery(func() Enumerator[Query[T]] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[Query[T]] {
 		return func() (Query[T], bool) {
 			chunk := make([]T, 0, size)
 			for i := 0; i < size; i++ {

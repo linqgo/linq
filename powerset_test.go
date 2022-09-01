@@ -19,8 +19,11 @@ func TestPowerSet(t *testing.T) {
 		[][]int{nil, {1}, {4}, {1, 4}},
 		powerset(linq.From(1, 4)),
 	)
+	q := powerset(linq.From(1, 4, 9))
 	assertQueryElementsMatch(t,
 		[][]int{nil, {1}, {4}, {1, 4}, {9}, {1, 9}, {4, 9}, {1, 4, 9}},
-		powerset(linq.From(1, 4, 9)),
-	)
+		q)
+
+	assertOneShot(t, false, q)
+	assertOneShot(t, true, powerset(oneshot))
 }

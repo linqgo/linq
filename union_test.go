@@ -15,4 +15,9 @@ func TestUnion(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(1, 2, 3, 4, 5)))
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(4, 5)))
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(3, 4, 5)))
+
+	assertOneShot(t, false, linq.Union(f(1, 2, 3), f(3, 4, 5)))
+	assertOneShot(t, true, linq.Union(oneshot, f(3, 4, 5)))
+	assertOneShot(t, true, linq.Union(f(1, 2, 3), oneshot))
+	assertOneShot(t, true, linq.Union(oneshot, oneshot))
 }

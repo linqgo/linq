@@ -9,8 +9,7 @@ func (q Query[T]) DefaultIfEmpty(alt T) Query[T] {
 // DefaultIfEmpty returns q if not empty, otherwise it returns a query
 // containing alt.
 func DefaultIfEmpty[T any](q Query[T], alt T) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		delivered := false
 		return func() (T, bool) {
 			if next != nil {

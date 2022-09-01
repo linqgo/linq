@@ -130,12 +130,9 @@ func lessesToLesserDesc[T any](lesses ...func(a, b T) bool) lesserFunc[T] {
 }
 
 func orderByLesser[T any](q Query[T], lesser lesserFunc[T]) Query[T] {
-	return Query[T]{
-		enumerator: func() Enumerator[T] {
-			data := q.ToSlice()
-			sort.Slice(data, lesser(data))
-			return From(data...).Enumerator()
-		},
-		extra: &queryExtra[T]{lesser: lesser},
-	}
+	return NewQuery(func() Enumerator[T] {
+		data := q.ToSlice()
+		sort.Slice(data, lesser(data))
+		return From(data...).Enumerator()
+	}).withLesser(lesser).withOneShot(q.OneShot())
 }

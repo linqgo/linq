@@ -16,6 +16,8 @@ func TestFromMap(t *testing.T) {
 		[]linq.KV[int, int]{{1, 1}, {2, 3}},
 		linq.FromMap(map[int]int{1: 1, 2: 3}),
 	)
+
+	assertOneShot(t, false, linq.FromMap(map[int]int{1: 2, 2: 3}))
 }
 
 func TestMustToMapKV(t *testing.T) {

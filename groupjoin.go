@@ -12,5 +12,5 @@ func GroupJoin[Outer, Inner, Result any, Key comparable](
 		return Select(outer, func(o Outer) Result {
 			return result(o, From(lup[outerKey(o)]...))
 		}).Enumerator()
-	})
+	}).withOneShot(outer.OneShot() || inner.OneShot())
 }

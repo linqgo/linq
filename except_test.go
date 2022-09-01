@@ -15,4 +15,9 @@ func TestExcept(t *testing.T) {
 	assertQueryEqual(t, []int{}, linq.Except(f(1, 2, 3), f(1, 2, 3, 4, 5)))
 	assertQueryEqual(t, []int{1, 2, 3}, linq.Except(f(1, 2, 3), f(4, 5)))
 	assertQueryEqual(t, []int{1, 2}, linq.Except(f(1, 2, 3), f(3, 4, 5)))
+
+	assertOneShot(t, false, linq.Except(f(1, 2, 3), f(3, 4, 5)))
+	assertOneShot(t, true, linq.Except(oneshot, f(3, 4, 5)))
+	assertOneShot(t, true, linq.Except(f(1, 2, 3), oneshot))
+	assertOneShot(t, true, linq.Except(oneshot, oneshot))
 }

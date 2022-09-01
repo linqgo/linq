@@ -5,8 +5,7 @@ func Index[T any](q Query[T]) Query[KV[int, T]] {
 }
 
 func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
-	return NewQuery(func() Enumerator[KV[int, T]] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[KV[int, T]] {
 		i := start - 1
 		return func() (kv KV[int, T], ok bool) {
 			if t, ok := next(); ok {

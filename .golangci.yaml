@@ -18,7 +18,7 @@ linters:
     # extra linters
     - gofumpt
     - goimports
-    - revive
+    # - revive
 
 linters-settings:
   gofumpt:

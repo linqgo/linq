@@ -15,4 +15,9 @@ func TestIntersect(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3}, linq.Intersect(f(1, 2, 3), f(1, 2, 3, 4, 5)))
 	assertQueryEqual(t, []int{}, linq.Intersect(f(1, 2, 3), f(4, 5)))
 	assertQueryEqual(t, []int{3}, linq.Intersect(f(1, 2, 3), f(3, 4, 5)))
+
+	assertOneShot(t, false, linq.Intersect(f(1, 2, 3), f(3, 4, 5)))
+	assertOneShot(t, true, linq.Intersect(oneshot, f(3, 4, 5)))
+	assertOneShot(t, true, linq.Intersect(f(1, 2, 3), oneshot))
+	assertOneShot(t, true, linq.Intersect(oneshot, oneshot))
 }

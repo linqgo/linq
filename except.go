@@ -11,8 +11,8 @@ func ExceptBy[T, K comparable](
 	b Query[K],
 	key func(t T) K,
 ) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		s := setFrom(b.Enumerator())
+	return Pipe(b, func(next Enumerator[K]) Enumerator[T] {
+		s := setFrom(next)
 		return a.Where(func(t T) bool { return !s.Has(key(t)) }).Enumerator()
-	})
+	}).withOneShot(a.OneShot() || b.OneShot())
 }

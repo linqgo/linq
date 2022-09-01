@@ -20,8 +20,7 @@ func Skip[T any](q Query[T], n int) Query[T] {
 	if n == 0 {
 		return q
 	}
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		for i := 0; i < n; i++ {
 			if _, ok := next(); !ok {
 				return noneEnumerator[T]
@@ -36,15 +35,14 @@ func SkipLast[T any](q Query[T], n int) Query[T] {
 	if n == 0 {
 		return q
 	}
-	return NewQuery(func() Enumerator[T] {
-		return newBuffer(q.Enumerator(), n).Next
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
+		return newBuffer(next, n).Next
 	})
 }
 
 // SkipWhile returns a query that skips elements of q while pred returns true.
 func SkipWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		for t, ok := next(); ok; t, ok = next() {
 			if !pred(t) {
 				return concatEnumerators(valueEnumerator(t), next)

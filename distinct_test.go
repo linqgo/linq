@@ -18,4 +18,7 @@ func TestDistinct(t *testing.T) {
 			linq.From(3, 4, 5, 6, 7),
 		)),
 	)
+
+	assertOneShot(t, false, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)))
+	assertOneShot(t, true, linq.Distinct(oneshot))
 }

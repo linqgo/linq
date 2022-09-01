@@ -5,6 +5,14 @@ func Identity[T any](t T) T {
 	return t
 }
 
+func True[T any](T) bool {
+	return true
+}
+
+func False[T any](T) bool {
+	return false
+}
+
 func drain[T any](next Enumerator[T]) {
 	for _, ok := next(); ok; {
 		_, ok = next()

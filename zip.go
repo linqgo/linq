@@ -17,7 +17,7 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 			}
 			return zip(x, y), true
 		}
-	})
+	}).withOneShot(a.OneShot() || b.OneShot())
 }
 
 func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
@@ -33,12 +33,10 @@ func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
 //	func DivMod(q Query[int], n int) (div, mod Query[int]) {
 //	    return Unzip(q, func(i int) (int, int) { return i / n, i % n })
 //	}
-//
-// Caveat: The current implementation relies on a repeatable, deterministic
-// input query that returns the same elements each time it is enumerated. It
-// also calls unzip twice for each element. Future implementations will use
-// buffering to avoid these limitations.
 func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (Query[R], Query[S]) {
+	if q.OneShot() {
+		q = q.Memoize()
+	}
 	r := Select(q, func(t T) R {
 		r, _ := unzip(t)
 		return r

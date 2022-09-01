@@ -15,4 +15,6 @@ func TestChannel(t *testing.T) {
 	}
 	close(c)
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.FromChannel(c))
+
+	assertOneShot(t, true, linq.FromChannel(c))
 }

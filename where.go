@@ -7,8 +7,7 @@ func (q Query[T]) Where(pred func(t T) bool) Query[T] {
 
 // Where returns a query with elements from q for which pred returns true.
 func Where[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		next := q.Enumerator()
+	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		return func() (t T, ok bool) {
 			for t, ok := next(); ok; t, ok = next() {
 				if pred(t) {

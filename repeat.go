@@ -8,12 +8,14 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 		return None[T]()
 	}
 	return NewQuery(func() Enumerator[T] {
+		var i I = 0
 		return func() (T, bool) {
-			if count == 0 {
-				return value, false
+			if i < count {
+				i++
+				return value, true
 			}
-			count--
-			return value, true
+			var t T
+			return t, false
 		}
 	})
 }

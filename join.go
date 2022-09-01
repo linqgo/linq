@@ -39,5 +39,5 @@ func Join[A, B, R any, K comparable](
 				}).Enumerator()
 			}
 		}
-	})
+	}).withOneShot(a.OneShot() || b.OneShot())
 }

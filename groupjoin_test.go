@@ -40,17 +40,19 @@ func TestGroupJoin(t *testing.T) {
 	// Create a list where each element is an anonymous
 	// type that contains a person's name and
 	// a collection of names of the pets they own.
-	query := linq.GroupJoin(people, pets,
-		linq.Identity[Person],
-		func(pet Pet) Person { return pet.Owner },
-		func(person Person, pets linq.Query[Pet]) Ownership {
-			return Ownership{
-				Owner: person.Name,
-				Pets:  linq.Select(pets, func(pet Pet) string { return pet.Name }).ToSlice(),
-			}
-		},
-	)
-	assertExhaustedEnumeratorBehavesWell(t, query)
+	query := func(people linq.Query[Person], pets linq.Query[Pet]) linq.Query[Ownership] {
+		return linq.GroupJoin(people, pets,
+			linq.Identity[Person],
+			func(pet Pet) Person { return pet.Owner },
+			func(person Person, pets linq.Query[Pet]) Ownership {
+				return Ownership{
+					Owner: person.Name,
+					Pets:  linq.Select(pets, func(pet Pet) string { return pet.Name }).ToSlice(),
+				}
+			},
+		)
+	}
+	assertExhaustedEnumeratorBehavesWell(t, query(people, pets))
 
 	assert.Equal(t,
 		[]Ownership{
@@ -58,6 +60,13 @@ func TestGroupJoin(t *testing.T) {
 			{"Adams, Terry", []string{"Barley", "Boots"}},
 			{"Weiss, Charlotte", []string{"Whiskers"}},
 		},
-		query.ToSlice(),
+		query(people, pets).ToSlice(),
 	)
+
+	assertOneShot(t, false, query(people, pets))
+	assertOneShot(t, true, query(linq.FromChannel(make(chan Person)), pets))
+	assertOneShot(t, true, query(people, linq.FromChannel(make(chan Pet))))
+	assertOneShot(t, true, query(
+		linq.FromChannel(make(chan Person)),
+		linq.FromChannel(make(chan Pet))))
 }

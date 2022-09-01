@@ -26,6 +26,9 @@ func TestMemoize(t *testing.T) {
 	m := linq.FromChannel(fiveInts()).Memoize()
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
+
+	assertOneShot(t, true, linq.OfType[int](q))
+	assertOneShot(t, false, linq.OfType[int](m))
 }
 
 func TestMemoizeParallel(t *testing.T) {

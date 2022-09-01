@@ -13,4 +13,7 @@ func TestChunk(t *testing.T) {
 		[][]int{{1, 2}, {3, 4}, {5}},
 		linq.ChunkSlices(linq.From(1, 2, 3, 4, 5), 2),
 	)
+
+	assertOneShot(t, false, linq.ChunkSlices(linq.From(1, 2, 3, 4, 5), 2))
+	assertOneShot(t, true, linq.ChunkSlices(oneshot, 2))
 }

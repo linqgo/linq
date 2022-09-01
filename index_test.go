@@ -18,4 +18,10 @@ func TestIndex(t *testing.T) {
 		[]linq.KV[int, string]{{10, "foo"}, {11, "bar"}, {12, "baz"}},
 		linq.IndexFrom(data, 10),
 	)
+
+	assertOneShot(t, false, linq.Index(data))
+	assertOneShot(t, true, linq.Index(oneshot))
+
+	assertOneShot(t, false, linq.IndexFrom(data, 10))
+	assertOneShot(t, true, linq.IndexFrom(oneshot, 10))
 }
