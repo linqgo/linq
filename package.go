@@ -93,7 +93,7 @@
 //   - Contains
 //   - Ⓜ️Empty
 //   - Sequence(Equal/*Less)
-//   - *Shorter
+//   - ❇️Shorter
 //
 // ## Compose
 //
