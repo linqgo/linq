@@ -47,12 +47,12 @@
 // available as methods of Query are indicated by Ⓜ️. New capabilities that
 // are not provided in .Net are indicated by ❇️.
 //
-// ## Query methods
+// Query methods:
 //
 //   - Enumerator
 //   - (Set)OneShot
 //
-// ## Construct
+// Construct:
 //
 //   - From(ByteReader/Channel/Map/RuneReader/(Scanner)(String))
 //   - Iota(1/2/3) (equivalent to Enumerable.Range)
@@ -61,14 +61,14 @@
 //   - Pipe
 //   - Repeat(❇️Forever)
 //
-// ## Convert to Go types
+// Convert to Go types:
 //
 //   - (Must)ToMap
 //   - ❇️(Must)ToMapKV
 //   - Ⓜ️ToSlice
 //   - ❇️ToString
 //
-// ## Math
+// Math:
 //
 //   - (Must)Average(❇️Else/❇️OrNaN)
 //   - Ⓜ️Aggregate(❇️Else/Seed)/MustAggregate
@@ -80,13 +80,13 @@
 //   - ❇️Product
 //   - Sum
 //
-// ## Element access
+// Element access:
 //
 //   - Ⓜ️ElementAt(Else)/MustElementAt
 //   - Ⓜ️First(Else)/MustFirst
 //   - Ⓜ️Last(Else)/MustLast
 //
-// ## Predicate
+// Predicate:
 //
 //   - Ⓜ️All
 //   - Ⓜ️Any
@@ -95,19 +95,19 @@
 //   - Sequence(Equal/*Less)
 //   - ❇️Shorter
 //
-// ## Compose
+// Compose:
 //
 //   - Ⓜ️Append/Prepend
 //   - Ⓜ️Concat
 //
-// ## Transform
+// Transform:
 //
 //   - ❇️Index(From)
 //   - Select(❇️Keys/❇️Values)
 //   - ❇️Unzip(KV)
 //   - Zip(❇️KV)
 //
-// ## Filter
+// Filter:
 //
 //   - Distinct(By)
 //   - ❇️Ⓜ️Every(From)
@@ -117,13 +117,13 @@
 //   - Ⓜ️Take(Last/While)
 //   - Ⓜ️Where
 //
-// ## Rearrange
+// Rearrange:
 //
 //   - Ⓜ️Reverse
 //   - Order(By(Comp))(Desc)
 //   - Then(By(Comp))(Desc)
 //
-// ## Group and ungroup
+// Group and ungroup:
 //
 //   - Chunk(Slices)
 //   - ❇️Flatten(Slices)
@@ -131,7 +131,7 @@
 //   - GroupJoin
 //   - SelectMany
 //
-// ## Set and relational operations
+// Set and relational operations:
 //
 //   - Except(By)
 //   - Join
@@ -139,13 +139,13 @@
 //   - ❇️PowerSet
 //   - Union
 //
-// ## Helper functions for predicates, keys and transforms
+// Helper functions for predicates, keys and transforms:
 //
 //   - ❇️False
 //   - ❇️Identity
 //   - ❇️True
 //
-// ## Miscellaneous
+// Miscellaneous:
 //
 //   - ❇️Memoize
 //   - Ⓜ️DefaultIfEmpty: Return a query with a single default value if the input
