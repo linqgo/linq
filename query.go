@@ -1,31 +1,32 @@
 package linq
 
-type QueryOption[T any] func(q *queryExtra[T])
+type QueryOption[T any] func(q *queryExtra[T], count *int)
 
 // Query represents a query that can be enumerated. This is the main Linq
 // object, with many methods defined against it. Most Linq functions take and
 // return instances of this type.
 type Query[T any] struct {
 	enumerator func() Enumerator[T]
+	count      int
 	extra      *queryExtra[T]
 }
 
 // NewQuery returns a new query based on a function that returns enumerators.
 func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T] {
-	q := Query[T]{enumerator: i}
+	q := Query[T]{enumerator: i, count: -1}
 
 	for _, option := range options {
 		if option != nil {
-			q.extra = &queryExtra[T]{count: -1}
+			q.extra = &queryExtra[T]{}
 			for _, option := range options {
 				if option != nil {
-					option(q.extra)
+					option(q.extra, &q.count)
 				}
 			}
 			break
 		}
 	}
-	if q.extra != nil && q.extra.count == 0 {
+	if q.extra != nil && q.count == 0 {
 		return None[T]()
 	}
 	return q
@@ -49,7 +50,7 @@ func (q Query[T]) lesser() lesserFunc[T] {
 
 func (q *Query[T]) fastCount() int {
 	if q.extra != nil {
-		return q.extra.count
+		return q.count
 	}
 	return -1
 }
@@ -59,8 +60,8 @@ func (q *Query[T]) fastCount() int {
 // This will be used by (Query).FastCount &co.
 func FastCountOption[T any](count int) QueryOption[T] {
 	if count >= 0 {
-		return func(e *queryExtra[T]) {
-			e.count = count
+		return func(e *queryExtra[T], c *int) {
+			*c = count
 		}
 	}
 	return nil
@@ -103,7 +104,7 @@ func FastCountIfEmptyOption[T any](count int) QueryOption[T] {
 // Prefer it over NewQuery when it makes sense.
 func OneShotOption[T any](oneShot bool) QueryOption[T] {
 	if oneShot {
-		return func(e *queryExtra[T]) {
+		return func(e *queryExtra[T], _ *int) {
 			e.oneShot = oneShot
 		}
 	}
@@ -115,21 +116,20 @@ func ComputedFastCountOption[T any](
 	compute func(count int) int,
 ) QueryOption[T] {
 	if count >= 0 {
-		return func(e *queryExtra[T]) {
-			e.count = compute(count)
+		return func(e *queryExtra[T], c *int) {
+			*c = compute(count)
 		}
 	}
 	return nil
 }
 
 func LesserOption[T any](lesser lesserFunc[T]) QueryOption[T] {
-	return func(e *queryExtra[T]) {
+	return func(e *queryExtra[T], _ *int) {
 		e.lesser = lesser
 	}
 }
 
 type queryExtra[T any] struct {
-	count   int
 	lesser  lesserFunc[T]
 	oneShot bool
 }
