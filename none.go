@@ -6,7 +6,6 @@ func None[T any]() Query[T] {
 		enumerator: func() Enumerator[T] {
 			return noneEnumerator[T]
 		},
-		extra: &queryExtra[T]{},
 	}
 }
 
