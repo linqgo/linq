@@ -49,10 +49,7 @@ func (q Query[T]) lesser() lesserFunc[T] {
 }
 
 func (q *Query[T]) fastCount() int {
-	if q.extra != nil {
-		return q.count
-	}
-	return -1
+	return q.count
 }
 
 // FastCountOption is used when implementing a third-party Query.
@@ -137,5 +134,5 @@ type queryExtra[T any] struct {
 type lesserFunc[T any] func([]T) func(i, j int) bool
 
 func newQueryFromEnumerator[T any](e Enumerator[T]) Query[T] {
-	return Query[T]{enumerator: func() Enumerator[T] { return e }}
+	return NewQuery(func() Enumerator[T] { return e })
 }
