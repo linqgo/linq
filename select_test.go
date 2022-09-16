@@ -14,7 +14,10 @@ func TestSelect(t *testing.T) {
 	assertQueryEqual(t, []int{0, 1, 4, 9, 16}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.Select(oneshot, square))
+	assertOneShot(t, true, linq.Select(oneshot(), square))
+
+	assertFastCountEqual(t, 5, q)
+	assertNoFastCount(t, linq.Select(oneshot(), square))
 }
 
 func primeFactors(n int) linq.Query[int] {
@@ -39,5 +42,8 @@ func TestSelectMany(t *testing.T) {
 	assertQueryEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.SelectMany(oneshot, primeFactors))
+	assertOneShot(t, true, linq.SelectMany(oneshot(), primeFactors))
+
+	assertNoFastCount(t, q)
+	assertNoFastCount(t, linq.SelectMany(oneshot(), primeFactors))
 }

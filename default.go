@@ -9,6 +9,14 @@ func (q Query[T]) DefaultIfEmpty(alt T) Query[T] {
 // DefaultIfEmpty returns q if not empty, otherwise it returns a query
 // containing alt.
 func DefaultIfEmpty[T any](q Query[T], alt T) Query[T] {
+	count := q.fastCount()
+	switch count {
+	case -1:
+	case 0:
+		return From(alt)
+	default:
+		return q
+	}
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		delivered := false
 		return func() (T, bool) {
@@ -26,5 +34,5 @@ func DefaultIfEmpty[T any](q Query[T], alt T) Query[T] {
 			var t T
 			return t, false
 		}
-	})
+	}, FastCountOption[T](count))
 }

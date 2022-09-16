@@ -40,7 +40,7 @@ func FromScanner(s *bufio.Scanner) Query[[]byte] {
 				return nil, s.Err()
 			}
 		})
-	}).withOneShot(true)
+	}, OneShotOption[[]byte](true))
 }
 
 // FromScannerString reads a query containing string tokens read from s. Hint: use
@@ -57,13 +57,13 @@ func FromScannerString(r *bufio.Scanner) Query[string] {
 				return "", r.Err()
 			}
 		})
-	}).withOneShot(true)
+	}, OneShotOption[string](true))
 }
 
 func readerQuery[T any](read func() (T, error)) Query[T] {
 	return NewQuery(func() Enumerator[T] {
 		return readerEnumerator(read)
-	}).withOneShot(true)
+	}, OneShotOption[T](true))
 }
 
 func readerEnumerator[T any](read func() (T, error)) Enumerator[T] {

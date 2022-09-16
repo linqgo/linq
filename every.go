@@ -32,5 +32,7 @@ func EveryFrom[T any](q Query[T], start, n int) Query[T] {
 			var t T
 			return t, false
 		}
-	})
+	}, ComputedFastCountOption[T](q.fastCount(), func(count int) int {
+		return (count-start-1)/n + 1
+	}))
 }

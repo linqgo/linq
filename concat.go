@@ -16,13 +16,38 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 			break
 		}
 	}
+
+	nonempty := 0
+	count := 0
+	for i, q := range queries {
+		c := q.fastCount()
+		if c != 0 {
+			if nonempty < i {
+				queries[nonempty] = q
+			}
+			nonempty++
+			if c < 0 {
+				count = -1
+			}
+		}
+		if count >= 0 {
+			count += c
+		}
+	}
+
+	// Exactly one non-empty input?
+	if nonempty == 1 {
+		return queries[0]
+	}
+	queries = queries[:nonempty]
+
 	return NewQuery(func() Enumerator[T] {
 		enumerators := make([]Enumerator[T], 0, len(queries))
 		for _, q := range queries {
 			enumerators = append(enumerators, q.Enumerator())
 		}
 		return concatEnumerators(enumerators...)
-	}).withOneShot(oneshot)
+	}, OneShotOption[T](oneshot), FastCountOption[T](count))
 }
 
 func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {

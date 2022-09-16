@@ -39,7 +39,7 @@ func TestJoin(t *testing.T) {
 		),
 	)
 
-	f := func(a, b linq.Query[int]) linq.Query[string] {
+	join := func(a, b linq.Query[int]) linq.Query[string] {
 		return linq.Join(
 			a,
 			b,
@@ -50,10 +50,17 @@ func TestJoin(t *testing.T) {
 	}
 	assertQueryElementsMatch(t,
 		[]string{"0,6", "1,7", "0,9", "2,6", "2,9", "3,7", "4,6", "4,9"},
-		f(linq.Iota2(0, 5), linq.Iota2(5, 10)))
+		join(linq.Iota2(0, 5), linq.Iota2(5, 10)))
 
-	assertOneShot(t, false, f(linq.Iota2(0, 5), linq.Iota2(5, 10)))
-	assertOneShot(t, true, f(oneshot, linq.Iota2(5, 10)))
-	assertOneShot(t, true, f(linq.Iota2(0, 5), oneshot))
-	assertOneShot(t, true, f(oneshot, oneshot))
+	assertOneShot(t, false, join(linq.Iota2(0, 5), linq.Iota2(5, 10)))
+	assertOneShot(t, true, join(oneshot(), linq.Iota2(5, 10)))
+	assertOneShot(t, true, join(linq.Iota2(0, 5), oneshot()))
+	assertOneShot(t, true, join(oneshot(), oneshot()))
+
+	assertFastCountEqual(t, 0, join(linq.Iota2(0, 0), linq.Iota2(5, 10)))
+	assertFastCountEqual(t, 0, join(linq.Iota2(0, 5), linq.Iota2(5, 5)))
+	assertNoFastCount(t, join(linq.Iota2(0, 5), linq.Iota2(5, 10)))
+	assertNoFastCount(t, join(slowcount, linq.Iota2(5, 10)))
+	assertNoFastCount(t, join(linq.Iota2(0, 5), slowcount))
+	assertNoFastCount(t, join(slowcount, slowcount))
 }

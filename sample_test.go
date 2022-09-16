@@ -17,7 +17,7 @@ func TestRandomSample(t *testing.T) {
 	assertQueryEqual(t, []int{0, 8, 9, 12}, linq.Iota1(20).SampleSeed(0.3, 1234))
 
 	assertOneShot(t, false, linq.Iota1(10000).Sample(0.1))
-	assertOneShot(t, true, oneshot.Sample(0.1))
+	assertOneShot(t, true, oneshot().Sample(0.1))
 	assertOneShot(t, false, linq.Iota1(10).SampleSeed(0.6, 0))
-	assertOneShot(t, true, oneshot.SampleSeed(0.6, 0))
+	assertOneShot(t, true, oneshot().SampleSeed(0.6, 0))
 }

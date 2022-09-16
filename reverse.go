@@ -7,15 +7,19 @@ func (q Query[T]) Reverse() Query[T] {
 
 // Reverse returns a query with the elements of q in reverse.
 func Reverse[T any](q Query[T]) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		data := q.ToSlice()
-		return func() (T, bool) {
-			var e T
-			last := len(data) - 1
-			if last >= 0 {
-				e, data = data[last], data[:last]
+	return NewQuery(
+		func() Enumerator[T] {
+			data := q.ToSlice()
+			return func() (T, bool) {
+				var e T
+				last := len(data) - 1
+				if last >= 0 {
+					e, data = data[last], data[:last]
+				}
+				return e, last >= 0
 			}
-			return e, last >= 0
-		}
-	}).withOneShot(q.OneShot())
+		},
+		OneShotOption[T](q.OneShot()),
+		FastCountOption[T](q.fastCount()),
+	)
 }

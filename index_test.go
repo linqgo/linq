@@ -20,8 +20,14 @@ func TestIndex(t *testing.T) {
 	)
 
 	assertOneShot(t, false, linq.Index(data))
-	assertOneShot(t, true, linq.Index(oneshot))
+	assertOneShot(t, true, linq.Index(oneshot()))
 
 	assertOneShot(t, false, linq.IndexFrom(data, 10))
-	assertOneShot(t, true, linq.IndexFrom(oneshot, 10))
+	assertOneShot(t, true, linq.IndexFrom(oneshot(), 10))
+
+	assertFastCountEqual(t, 3, linq.Index(data))
+	assertNoFastCount(t, linq.Index(oneshot()))
+
+	assertFastCountEqual(t, 3, linq.IndexFrom(data, 10))
+	assertNoFastCount(t, linq.IndexFrom(oneshot(), 10))
 }

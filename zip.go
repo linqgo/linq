@@ -3,21 +3,30 @@ package linq
 // Zip zips the elements pairwise from a and b into a single query, using the
 // zip function to produce output elements.
 func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
-	return NewQuery(func() Enumerator[R] {
-		a := a.Enumerator()
-		b := b.Enumerator()
-		return func() (r R, ok bool) {
-			x, ok := a()
-			if !ok {
-				return r, ok
+	ac, bc := a.fastCount(), b.fastCount()
+	if ac > bc {
+		ac = bc
+	}
+
+	return NewQuery(
+		func() Enumerator[R] {
+			a := a.Enumerator()
+			b := b.Enumerator()
+			return func() (r R, ok bool) {
+				x, ok := a()
+				if !ok {
+					return r, ok
+				}
+				y, ok := b()
+				if !ok {
+					return r, ok
+				}
+				return zip(x, y), true
 			}
-			y, ok := b()
-			if !ok {
-				return r, ok
-			}
-			return zip(x, y), true
-		}
-	}).withOneShot(a.OneShot() || b.OneShot())
+		},
+		OneShotOption[R](a.OneShot() || b.OneShot()),
+		FastCountOption[R](ac),
+	)
 }
 
 func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {

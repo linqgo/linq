@@ -14,5 +14,5 @@ func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
 			}
 			return kv, false
 		}
-	})
+	}, FastCountOption[KV[int, T]](q.fastCount()))
 }

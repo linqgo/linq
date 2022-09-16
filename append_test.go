@@ -13,5 +13,8 @@ func TestAppend(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5, 6, 7}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, oneshot.Append(6).Append(7))
+	assertOneShot(t, true, oneshot().Append(6).Append(7))
+
+	assertFastCountEqual(t, 7, q)
+	assertNoFastCount(t, slowcount.Append(6).Append(7))
 }

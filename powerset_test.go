@@ -25,5 +25,8 @@ func TestPowerSet(t *testing.T) {
 		q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, powerset(oneshot))
+	assertOneShot(t, true, powerset(oneshot()))
+
+	assertFastCountEqual(t, 8, q)
+	assertNoFastCount(t, powerset(oneshot()))
 }

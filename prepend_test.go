@@ -13,5 +13,5 @@ func TestPrepend(t *testing.T) {
 	assertQueryEqual(t, []int{8, 9, 6, 7, 1, 2, 3, 4, 5}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, oneshot.Reverse())
+	assertOneShot(t, true, oneshot().Reverse())
 }

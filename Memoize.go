@@ -2,10 +2,16 @@ package linq
 
 import "sync"
 
+// Memoize caches the elements of q. It returns a query that contains the same
+// elements as q, but, in the process of enumerating it, remembers the sequence
+// of values seen and ensures that every enumeration yields the same sequence.
 func (q Query[T]) Memoize() Query[T] {
 	return Memoize(q)
 }
 
+// Memoize caches the elements of q. It returns a query that contains the same
+// elements as q, but, in the process of enumerating it, remembers the sequence
+// of values seen and ensures that every enumeration yields the same sequence.
 func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
 	var cache []T
 	var mux sync.Mutex
@@ -47,5 +53,6 @@ func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
 			}
 			return c[i], true
 		}
-	})
+	}, FastCountOption[T](q.fastCount()))
+	// TODO: Can we switch to fast count after the input is exhausted?
 }

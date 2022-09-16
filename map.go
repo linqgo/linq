@@ -17,7 +17,7 @@ func FromMap[K comparable, V any](m map[K]V) Query[KV[K, V]] {
 			}
 			return kv, ok
 		}
-	})
+	}, FastCountOption[KV[K, V]](len(m)))
 }
 
 // MustToMap converts a query to a map, with sel providing key/value pairs. If

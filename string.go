@@ -13,7 +13,7 @@ func FromString(s string) Query[rune] {
 			ch, _, err := r.ReadRune()
 			return ch, err == nil
 		}
-	})
+	}, FastCountOption[rune](len(s)))
 }
 
 // ToString converts a Query[rune] to a string.

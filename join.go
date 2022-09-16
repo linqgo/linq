@@ -10,34 +10,40 @@ func Join[A, B, R any, K comparable](
 	selKeyB func(b B) K,
 	selResult func(a A, b B) R,
 ) Query[R] {
-	return NewQuery(func() Enumerator[R] {
-		lupA := newLookupBuilder(a, selKeyA)
-		lupB := newLookupBuilder(b, selKeyB)
+	if a.fastCount() == 0 || b.fastCount() == 0 {
+		return None[R]()
+	}
+	return NewQuery(
+		func() Enumerator[R] {
+			lupA := newLookupBuilder(a, selKeyA)
+			lupB := newLookupBuilder(b, selKeyB)
 
-		// Scan both inputs till one runs out. The exhausted input's map will be
-		// used for lookups. The other side will be repackaged into a new query
-		// for full traversal. This includes the entries already loaded into the
-		// now unneeded lookup and the values remaining in the enumerator.
-		for {
-			okA := lupA.Next()
-			okB := lupB.Next()
+			// Scan both inputs till one runs out. The exhausted input's map will be
+			// used for lookups. The other side will be repackaged into a new query
+			// for full traversal. This includes the entries already loaded into the
+			// now unneeded lookup and the values remaining in the enumerator.
+			for {
+				okA := lupA.Next()
+				okB := lupB.Next()
 
-			switch {
-			case !okA:
-				lup := lupA.Lookup()
-				return SelectMany(lupB.Requery(), func(b B) Query[R] {
-					return Select(From(lup[selKeyB(b)]...), func(a A) R {
-						return selResult(a, b)
-					})
-				}).Enumerator()
-			case !okB:
-				lup := lupB.Lookup()
-				return SelectMany(lupA.Requery(), func(a A) Query[R] {
-					return Select(From(lup[selKeyA(a)]...), func(b B) R {
-						return selResult(a, b)
-					})
-				}).Enumerator()
+				switch {
+				case !okA:
+					lup := lupA.Lookup()
+					return SelectMany(lupB.Requery(), func(b B) Query[R] {
+						return Select(From(lup[selKeyB(b)]...), func(a A) R {
+							return selResult(a, b)
+						})
+					}).Enumerator()
+				case !okB:
+					lup := lupB.Lookup()
+					return SelectMany(lupA.Requery(), func(a A) Query[R] {
+						return Select(From(lup[selKeyA(a)]...), func(b B) R {
+							return selResult(a, b)
+						})
+					}).Enumerator()
+				}
 			}
-		}
-	}).withOneShot(a.OneShot() || b.OneShot())
+		},
+		OneShotOption[R](a.OneShot() || b.OneShot()),
+	)
 }
