@@ -13,5 +13,5 @@ func OfType[U, T any](q Query[T]) Query[U] {
 			var u U
 			return u, false
 		}
-	})
+	}, FastCountIfEmptyOption[U](q.fastCount()))
 }

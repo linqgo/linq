@@ -16,5 +16,5 @@ func Where[T any](q Query[T], pred func(t T) bool) Query[T] {
 			}
 			return t, ok
 		}
-	})
+	}, FastCountIfEmptyOption[T](q.fastCount()))
 }

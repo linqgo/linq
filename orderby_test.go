@@ -18,7 +18,10 @@ func TestOrder(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Order(data))
 
 	assertOneShot(t, false, linq.Order(data))
-	assertOneShot(t, true, linq.Order(oneshot))
+	assertOneShot(t, true, linq.Order(oneshot()))
+
+	assertFastCountEqual(t, data.Count(), linq.Order(data))
+	assertNoFastCount(t, linq.Order(oneshot()))
 }
 
 func TestOrderDesc(t *testing.T) {
@@ -31,7 +34,10 @@ func TestOrderDesc(t *testing.T) {
 	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, linq.OrderDesc(data))
 
 	assertOneShot(t, false, linq.OrderDesc(data))
-	assertOneShot(t, true, linq.OrderDesc(oneshot))
+	assertOneShot(t, true, linq.OrderDesc(oneshot()))
+
+	assertFastCountEqual(t, data.Count(), linq.OrderDesc(data))
+	assertNoFastCount(t, linq.OrderDesc(oneshot()))
 }
 
 func TestOrderBy(t *testing.T) {
@@ -47,7 +53,10 @@ func TestOrderBy(t *testing.T) {
 		linq.OrderBy(data, func(i int) int { return (i + 2) % 5 }))
 
 	assertOneShot(t, false, linq.OrderBy(data, linq.Identity[int]))
-	assertOneShot(t, true, linq.OrderBy(oneshot, linq.Identity[int]))
+	assertOneShot(t, true, linq.OrderBy(oneshot(), linq.Identity[int]))
+
+	assertFastCountEqual(t, data.Count(), linq.OrderBy(data, linq.Identity[int]))
+	assertNoFastCount(t, linq.OrderBy(oneshot(), linq.Identity[int]))
 }
 
 func TestOrderByDesc(t *testing.T) {
@@ -63,7 +72,10 @@ func TestOrderByDesc(t *testing.T) {
 		linq.OrderByDesc(data, func(i int) int { return (i + 2) % 5 }))
 
 	assertOneShot(t, false, linq.OrderByDesc(data, linq.Identity[int]))
-	assertOneShot(t, true, linq.OrderByDesc(oneshot, linq.Identity[int]))
+	assertOneShot(t, true, linq.OrderByDesc(oneshot(), linq.Identity[int]))
+
+	assertFastCountEqual(t, data.Count(), linq.OrderByDesc(data, linq.Identity[int]))
+	assertNoFastCount(t, linq.OrderByDesc(oneshot(), linq.Identity[int]))
 }
 
 func TestThen(t *testing.T) {
@@ -78,7 +90,11 @@ func TestThen(t *testing.T) {
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true,
-		linq.Then(linq.OrderBy(oneshot, func(i int) int { return i % 3 })))
+		linq.Then(linq.OrderBy(oneshot(), func(i int) int { return i % 3 })))
+
+	assertFastCountEqual(t, q.Count(), q)
+	assertNoFastCount(t,
+		linq.Then(linq.OrderBy(oneshot(), func(i int) int { return i % 3 })))
 }
 
 func TestThenDesc(t *testing.T) {
@@ -94,7 +110,10 @@ func TestThenDesc(t *testing.T) {
 	assertQueryEqual(t, []int{5, 2, 7, 4, 1, 6, 3}, f(linq.Iota3(7, 0, -1)))
 
 	assertOneShot(t, false, f(linq.Iota3(7, 0, -1)))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 7, f(linq.Iota3(7, 0, -1)))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestThenBy(t *testing.T) {
@@ -124,7 +143,10 @@ func TestThenBy(t *testing.T) {
 	assert.Panics(t, func() { linq.ThenBy(linq.None[int](), linq.Identity[int]) })
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 7, f(linq.Iota2(1, 8)))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestThenByDesc(t *testing.T) {
@@ -154,7 +176,10 @@ func TestThenByDesc(t *testing.T) {
 	assert.Panics(t, func() { linq.ThenByDesc(linq.None[int](), linq.Identity[int]) })
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 7, f(linq.Iota2(1, 8)))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestOrderByComp(t *testing.T) {
@@ -167,7 +192,7 @@ func TestOrderByComp(t *testing.T) {
 
 	assertQueryEqual(t,
 		[]int{1, 2, 3, 4, 5},
-		linq.OrderByComp(data, func(a, b int) bool { return a < b }))
+		linq.OrderByComp(data, linq.Less[int]))
 
 	assertQueryEqual(t,
 		[]int{4, 4, 2, 2, 5, 5, 3, 3, 1, 1},
@@ -182,7 +207,10 @@ func TestOrderByComp(t *testing.T) {
 	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, f(data))
 
 	assertOneShot(t, false, f(data))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 5, f(data))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestOrderByCompDesc(t *testing.T) {
@@ -195,7 +223,7 @@ func TestOrderByCompDesc(t *testing.T) {
 
 	assertQueryEqual(t,
 		[]int{5, 4, 3, 2, 1},
-		linq.OrderByCompDesc(data, func(a, b int) bool { return a < b }))
+		linq.OrderByCompDesc(data, linq.Less[int]))
 
 	assertQueryEqual(t,
 		[]int{1, 1, 3, 3, 5, 5, 2, 2, 4, 4},
@@ -210,7 +238,10 @@ func TestOrderByCompDesc(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, f(data))
 
 	assertOneShot(t, false, f(data))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 5, f(data))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestThenByComp(t *testing.T) {
@@ -233,14 +264,17 @@ func TestThenByComp(t *testing.T) {
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.ThenByComp(linq.OrderBy(q,
 			func(i int) int { return i % 3 }),
-			func(a, b int) bool { return a < b })
+			linq.Less[int])
 	}
 	assertQueryEqual(t, []int{3, 6, 1, 4, 7, 2, 5}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.ThenByComp(linq.None[int](), func(a, b int) bool { return a < b }) })
+	assert.Panics(t, func() { linq.ThenByComp(linq.None[int](), linq.Less[int]) })
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 7, f(linq.Iota2(1, 8)))
+	assertNoFastCount(t, f(oneshot()))
 }
 
 func TestThenByCompDesc(t *testing.T) {
@@ -263,12 +297,18 @@ func TestThenByCompDesc(t *testing.T) {
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.ThenByCompDesc(linq.OrderByDesc(q,
 			func(i int) int { return i % 3 }),
-			func(a, b int) bool { return a < b })
+			linq.Less[int])
 	}
 	assertQueryEqual(t, []int{5, 2, 7, 4, 1, 6, 3}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.ThenByCompDesc(linq.None[int](), func(a, b int) bool { return a < b }) })
+	assert.Panics(t, func() { linq.ThenByCompDesc(linq.None[int](), linq.Less[int]) })
+	assert.Panics(t, func() {
+		linq.ThenByCompDesc(linq.From(1, 2, 3).Where(linq.False[int]), linq.Less[int])
+	})
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
-	assertOneShot(t, true, f(oneshot))
+	assertOneShot(t, true, f(oneshot()))
+
+	assertFastCountEqual(t, 7, f(linq.Iota2(1, 8)))
+	assertNoFastCount(t, f(oneshot()))
 }

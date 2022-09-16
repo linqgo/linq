@@ -11,7 +11,19 @@ func (q Query[T]) CountLimit(limit int) int {
 }
 
 // Count returns the number of elements in q.
+func (q Query[T]) FastCount() (int, bool) {
+	return FastCount(q)
+}
+
+func (q Query[T]) MustFastCount() int {
+	return MustFastCount(q)
+}
+
+// Count returns the number of elements in q.
 func Count[T any](q Query[T]) int {
+	if c, ok := q.FastCount(); ok {
+		return c
+	}
 	next := q.Enumerator()
 	n := 0
 	for _, ok := next(); ok; _, ok = next() {
@@ -31,4 +43,16 @@ func CountLimit[T any](q Query[T], limit int) int {
 		n++
 	}
 	return n
+}
+
+func FastCount[T any](q Query[T]) (int, bool) {
+	count := q.fastCount()
+	return count, count >= 0
+}
+
+func MustFastCount[T any](q Query[T]) int {
+	if c, ok := FastCount(q); ok {
+		return c
+	}
+	panic(noFastCountError)
 }

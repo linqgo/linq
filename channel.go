@@ -10,5 +10,5 @@ func FromChannel[T any](c <-chan T) Query[T] {
 			t, ok := <-c
 			return t, ok
 		}
-	}).withOneShot(true)
+	}, OneShotOption[T](true))
 }

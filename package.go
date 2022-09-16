@@ -65,14 +65,14 @@
 //
 //   - (Must)ToMap
 //   - ❇️(Must)ToMapKV
-//   - Ⓜ️ToSlice
+//   - Ⓜ️ ToSlice
 //   - ❇️ToString
 //
 // Math:
 //
 //   - (Must)Average(❇️Else/❇️OrNaN)
-//   - Ⓜ️Aggregate(❇️Else/Seed)/MustAggregate
-//   - Ⓜ️Count(Limit)
+//   - Ⓜ️ Aggregate(❇️Else/Seed)/MustAggregate
+//   - Ⓜ️ Count(Limit)
 //   - ❇️(Must)GeometricMean(Else/OrNaN)
 //   - ❇️(Must)HarmonicMean(Else/OrNaN)
 //   - Max(By/❇️Else/❇️OrNaN)/MustMax(By)
@@ -82,23 +82,23 @@
 //
 // Element access:
 //
-//   - Ⓜ️ElementAt(Else)/MustElementAt
-//   - Ⓜ️First(Else)/MustFirst
-//   - Ⓜ️Last(Else)/MustLast
+//   - Ⓜ️ ElementAt(Else)/MustElementAt
+//   - Ⓜ️ First(Else)/MustFirst
+//   - Ⓜ️ Last(Else)/MustLast
 //
 // Predicate:
 //
-//   - Ⓜ️All
-//   - Ⓜ️Any
+//   - Ⓜ️ All
+//   - Ⓜ️ Any
 //   - Contains
-//   - Ⓜ️Empty
+//   - Ⓜ️ Empty
 //   - Sequence(Equal/*Less)
 //   - ❇️Shorter
 //
 // Compose:
 //
-//   - Ⓜ️Append/Prepend
-//   - Ⓜ️Concat
+//   - Ⓜ️ Append/Prepend
+//   - Ⓜ️ Concat
 //
 // Transform:
 //
@@ -110,16 +110,16 @@
 // Filter:
 //
 //   - Distinct(By)
-//   - ❇️Ⓜ️Every(From)
+//   - ❇️ Ⓜ️ Every(From)
 //   - OfType
-//   - ❇️Ⓜ️Sample(Seed)
-//   - Ⓜ️Skip(Last/While)
-//   - Ⓜ️Take(Last/While)
-//   - Ⓜ️Where
+//   - ❇️ Ⓜ️ Sample(Seed)
+//   - Ⓜ️ Skip(Last/While)
+//   - Ⓜ️ Take(Last/While)
+//   - Ⓜ️ Where
 //
 // Rearrange:
 //
-//   - Ⓜ️Reverse
+//   - Ⓜ️ Reverse
 //   - Order(By(Comp))(Desc)
 //   - Then(By(Comp))(Desc)
 //
@@ -141,13 +141,16 @@
 //
 // Helper functions for predicates, keys and transforms:
 //
-//   - ❇️False
+//   - ❇️False/❇️True
 //   - ❇️Identity
-//   - ❇️True
+//   - ❇️Less/*Greater
+//   - ❇️(Longer/Shorter)(Slice/Map)
+//   - *Pointer/*Deref
+//   - *Zero
 //
 // Miscellaneous:
 //
 //   - ❇️Memoize
-//   - Ⓜ️DefaultIfEmpty: Return a query with a single default value if the input
+//   - Ⓜ️ DefaultIfEmpty: Return a query with a single default value if the input
 //     is empty.
 package linq

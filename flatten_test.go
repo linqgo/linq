@@ -14,6 +14,10 @@ func TestFlatten(t *testing.T) {
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))))
+
+	assertFastCountEqual(t, 0, linq.Flatten(linq.None[linq.Query[int]]()))
+	assertNoFastCount(t, q)
+	assertNoFastCount(t, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))))
 }
 
 func TestFlattenSlices(t *testing.T) {
@@ -24,4 +28,8 @@ func TestFlattenSlices(t *testing.T) {
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.FlattenSlices(linq.FromChannel(make(chan []int))))
+
+	assertFastCountEqual(t, 0, linq.FlattenSlices(linq.None[[]int]()))
+	assertNoFastCount(t, q)
+	assertNoFastCount(t, linq.FlattenSlices(linq.FromChannel(make(chan []int))))
 }

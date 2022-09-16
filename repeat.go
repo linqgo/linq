@@ -17,7 +17,7 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 			var t T
 			return t, false
 		}
-	})
+	}, FastCountOption[T](int(count)))
 }
 
 // RepeatForever returns a query with value repeated forever.

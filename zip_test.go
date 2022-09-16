@@ -32,13 +32,13 @@ func TestZip(t *testing.T) {
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.Zip(
-		oneshot,
+		oneshot(),
 		linq.From(1, 2, 3),
 		func(a, b int) int { return a + b },
 	))
 	assertOneShot(t, true, linq.Zip(
 		linq.From(1, 2, 3),
-		oneshot,
+		oneshot(),
 		func(a, b int) int { return a + b },
 	))
 }

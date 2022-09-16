@@ -34,7 +34,7 @@ func Iota3[I constraints.Integer](start, stop, step I) Query[I] {
 				i += step
 				return i, i < stop
 			}
-		})
+		}, FastCountOption[I](int((stop-start-1)/step+1)))
 	case step < 0:
 		return NewQuery(func() Enumerator[I] {
 			i := start - step
@@ -42,7 +42,7 @@ func Iota3[I constraints.Integer](start, stop, step I) Query[I] {
 				i += step
 				return i, i > stop
 			}
-		})
+		}, FastCountOption[I](int((start-stop-1)/-step+1)))
 	default:
 		if start == stop {
 			return None[I]()

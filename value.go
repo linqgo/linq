@@ -26,13 +26,8 @@ func From[T any](t ...T) Query[T] {
 	if len(t) == 0 {
 		return None[T]()
 	}
-	if len(t) == 1 {
-		v := t[0]
-		return NewQuery(func() Enumerator[T] {
-			return valueEnumerator(v)
-		})
-	}
+
 	return NewQuery(func() Enumerator[T] {
 		return sliceEnumerator(t)
-	})
+	}, FastCountOption[T](len(t)))
 }

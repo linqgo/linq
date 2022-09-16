@@ -16,5 +16,9 @@ func TestOfType(t *testing.T) {
 	assertQueryEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data))
 
 	assertOneShot(t, false, linq.OfType[int](data))
-	assertOneShot(t, true, linq.OfType[int](oneshot))
+	assertOneShot(t, true, linq.OfType[int](oneshot()))
+
+	assertFastCountEqual(t, 0, linq.OfType[int](linq.None[any]()))
+	assertNoFastCount(t, linq.OfType[int](data))
+	assertNoFastCount(t, linq.OfType[int](oneshot()))
 }

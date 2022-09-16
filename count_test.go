@@ -32,3 +32,12 @@ func TestCountLimit(t *testing.T) {
 	assert.Equal(t, 3, linq.From(1, 2, 3, 4, 5).CountLimit(3))
 	assert.Equal(t, 5, linq.From(1, 2, 3, 4, 5).CountLimit(10))
 }
+
+func TestFastCount(t *testing.T) {
+	t.Parallel()
+
+	assertFastCountEqual(t, 5, linq.Iota1(5))
+	assert.Equal(t, 5, linq.Iota1(5).MustFastCount())
+	assertNoFastCount(t, linq.Iota[int]())
+	assert.Panics(t, func() { linq.Iota[int]().MustFastCount() })
+}

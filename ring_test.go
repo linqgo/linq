@@ -64,6 +64,8 @@ func TestRing(t *testing.T) {
 }
 
 func TestRingEnumerator(t *testing.T) {
+	t.Parallel()
+
 	r := newRing[int](3)
 
 	r.Push(1)
@@ -74,4 +76,19 @@ func TestRingEnumerator(t *testing.T) {
 
 	x, ok := r.Enumerator()()
 	assert.False(t, ok, x)
+}
+
+func TestRingEnumeratorPartial(t *testing.T) {
+	t.Parallel()
+
+	r := newRing[int](3)
+
+	r.Push(1)
+	r.Push(2)
+
+	r.Pop()
+
+	x, ok := r.Enumerator()()
+	assert.True(t, ok)
+	assert.Equal(t, 2, x)
 }

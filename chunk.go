@@ -16,7 +16,9 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 			}
 			return From(chunk...), true
 		}
-	})
+	}, ComputedFastCountOption[Query[T]](q.fastCount(), func(count int) int {
+		return (count-1)/size + 1
+	}))
 }
 
 // ChunkSlices returns the elements of q in slices of the specified size.

@@ -48,8 +48,7 @@ func assertQueryEqual[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
 	if len(s) == 0 && len(expected) == 0 {
 		return true
 	}
-	return assert.Equal(t, q.Empty(), q.OneShot()) &&
-		assert.Equal(t, expected, s) &&
+	return assert.Equal(t, expected, s) &&
 		assertExhaustedEnumeratorBehavesWell(t, q)
 }
 
@@ -65,13 +64,26 @@ func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) 
 		assert.False(t, ok)
 }
 
-var oneshot = func() linq.Query[int] {
+func oneshot() linq.Query[int] {
 	c := make(chan int, 1)
 	c <- 42
 	close(c)
 	return linq.FromChannel(c)
-}()
+}
+
+var slowcount = oneshot()
 
 func assertOneShot[T any](t *testing.T, oneshot bool, q linq.Query[T]) bool {
+	t.Helper()
 	return assert.Equal(t, oneshot, q.OneShot())
+}
+
+func assertFastCountEqual[T any](t *testing.T, expected int, q linq.Query[T]) bool {
+	t.Helper()
+	return assertResultEqual(t, expected, maybe(q.FastCount()))
+}
+
+func assertNoFastCount[T any](t *testing.T, q linq.Query[T]) bool {
+	t.Helper()
+	return assertNoResult(t, maybe(q.FastCount()))
 }

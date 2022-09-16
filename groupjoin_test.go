@@ -63,10 +63,31 @@ func TestGroupJoin(t *testing.T) {
 		query(people, pets).ToSlice(),
 	)
 
+	assert.Equal(t,
+		[]Ownership{
+			{"Hedlund, Magnus", nil},
+			{"Adams, Terry", nil},
+			{"Weiss, Charlotte", nil},
+		},
+		query(people, pets.Where(linq.False[Pet])).ToSlice(),
+	)
+
+	assert.Equal(t,
+		[]Ownership(nil),
+		query(people.Skip(10), pets).ToSlice(),
+	)
+
 	assertOneShot(t, false, query(people, pets))
 	assertOneShot(t, true, query(linq.FromChannel(make(chan Person)), pets))
 	assertOneShot(t, true, query(people, linq.FromChannel(make(chan Pet))))
 	assertOneShot(t, true, query(
+		linq.FromChannel(make(chan Person)),
+		linq.FromChannel(make(chan Pet))))
+
+	assertFastCountEqual(t, 3, query(people, pets))
+	assertNoFastCount(t, query(linq.FromChannel(make(chan Person)), pets))
+	assertFastCountEqual(t, 3, query(people, linq.FromChannel(make(chan Pet))))
+	assertNoFastCount(t, query(
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet))))
 }

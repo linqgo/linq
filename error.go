@@ -14,6 +14,7 @@ func (e linqError) Error() string {
 
 const (
 	emptySourceError  linqError = "empty source"
+	noFastCountError  linqError = "fast count unavailable"
 	zeroIotaStepError linqError = "iota step is zero"
 )
 

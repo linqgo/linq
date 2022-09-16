@@ -47,7 +47,7 @@ func GroupBySelectSlices[T, U any, K comparable](
 			m[kv.Key] = append(m[kv.Key], kv.Value)
 		}
 		return FromMap(m).Enumerator()
-	})
+	}, FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
 }
 
 func keyIdentity[T any, K comparable](key func(t T) K) func(t T) KV[K, T] {

@@ -17,6 +17,8 @@ func TestIota(t *testing.T) {
 	}
 
 	assertOneShot(t, false, linq.Iota[int]())
+
+	assertNoFastCount(t, linq.Iota[int]())
 }
 
 func TestIota12(t *testing.T) {
@@ -28,6 +30,9 @@ func TestIota12(t *testing.T) {
 
 	assertOneShot(t, false, linq.Iota1(10))
 	assertOneShot(t, false, linq.Iota2(0, 10))
+
+	assertFastCountEqual(t, 10, linq.Iota1(10))
+	assertFastCountEqual(t, 10, linq.Iota2(0, 10))
 }
 
 func TestIota3(t *testing.T) {
@@ -39,4 +44,7 @@ func TestIota3(t *testing.T) {
 	assert.Panics(t, func() { linq.Iota3(0, 1, 0) })
 
 	assertOneShot(t, false, linq.Iota3(0, 10, 2))
+
+	assertFastCountEqual(t, 5, linq.Iota3(0, 10, 2))
+	assertFastCountEqual(t, 4, linq.Iota3(0, 10, 3))
 }

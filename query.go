@@ -1,5 +1,7 @@
 package linq
 
+type QueryOption[T any] func(q *queryExtra[T])
+
 // Query represents a query that can be enumerated. This is the main Linq
 // object, with many methods defined against it. Most Linq functions take and
 // return instances of this type.
@@ -9,8 +11,24 @@ type Query[T any] struct {
 }
 
 // NewQuery returns a new query based on a function that returns enumerators.
-func NewQuery[T any](i func() Enumerator[T]) Query[T] {
-	return Query[T]{enumerator: i}
+func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T] {
+	q := Query[T]{enumerator: i}
+
+	for _, option := range options {
+		if option != nil {
+			q.extra = &queryExtra[T]{count: -1}
+			for _, option := range options {
+				if option != nil {
+					option(q.extra)
+				}
+			}
+			break
+		}
+	}
+	if q.extra != nil && q.extra.count == 0 {
+		return None[T]()
+	}
+	return q
 }
 
 // Enumerator returns an enumerator for q.
@@ -19,24 +37,49 @@ func (q Query[T]) Enumerator() Enumerator[T] {
 }
 
 func (q Query[T]) OneShot() bool {
-	if q.extra == nil {
-		return false
-	}
-	return q.extra.oneShot
+	return q.extra != nil && q.extra.oneShot
 }
 
 func (q Query[T]) lesser() lesserFunc[T] {
-	if q.extra == nil {
-		return nil
+	if q.extra != nil {
+		return q.extra.lesser
 	}
-	return q.extra.lesser
+	return nil
 }
 
-// SetOneShot is for internal use when implementing a third-party Query. Some
-// queries are consumed during enumeration and will thus be empty the second
-// time you try to enumerate the (e.g., a query that reads a channel). You must
-// tag such queries by passing true to this method. This also applies when
-// consuming other queries, for example:
+func (q *Query[T]) fastCount() int {
+	if q.extra != nil {
+		return q.extra.count
+	}
+	return -1
+}
+
+// FastCountOption is used when implementing a third-party Query.
+// If a query's count can be determined in O(1) time, the value may be supplied as a FastCountOption to NewQuery.
+// This will be used by (Query).FastCount &co.
+func FastCountOption[T any](count int) QueryOption[T] {
+	if count >= 0 {
+		return func(e *queryExtra[T]) {
+			e.count = count
+		}
+	}
+	return nil
+}
+
+// FastCountIfEmptyOption is used when implementing a third-party Query.
+// If an empty input query produces an empty output query, use FastCountIfEmptyOption to report a FastCount of 0 for the output query.
+// This will be used by (Query).FastCount &co.
+func FastCountIfEmptyOption[T any](count int) QueryOption[T] {
+	if count != 0 {
+		return nil
+	}
+	return FastCountOption[T](0)
+}
+
+// OneShotOption is used when implementing a third-party Query.
+// Some queries are consumed during enumeration and will thus be empty the second time you try to enumerate them (e.g., a query that reads a channel).
+// You must tag such queries by passing true to this method.
+// This also applies when consuming other queries, for example:
 //
 //	func Exclamate(q Query[string]) Query[string] {
 //	    result := NewQuery(func() Enumerator[string] {
@@ -48,61 +91,47 @@ func (q Query[T]) lesser() lesserFunc[T] {
 //	            return "", false
 //	        }
 //	    })
-//	    result.SetOneShot(q.OneShot())
+//	    result.SetOneShot(q.OneShotOption())
 //	}
 //
-// Note that a non one-shot query doesn't guarantee that it won't consume its
-// inputs. It only says that this query can be enumerated multiple times. For
-// example, q.Memoize() is never one-shot, even though it may consume a one-shot
+// Note that a non one-shot query doesn't guarantee that it won't consume its inputs.
+// It only says that this query can be enumerated multiple times.
+// For example, q.Memoize() is never one-shot, even though it may consume a one-shot
 // q.
 //
-// The Pipe convenience function offers a simpler mechanism to implement Queries
-// and will automatically tag the output query as one-shot if the input query
-// is. Prefer it over NewQuery when it makes sense.
-func (q *Query[T]) SetOneShot(oneShot bool) {
-	q.extra = q.extra.withOneShot(oneShot)
+// The Pipe convenience function offers a simpler mechanism to implement Queries and will automatically tag the output query as one-shot if the input query is.
+// Prefer it over NewQuery when it makes sense.
+func OneShotOption[T any](oneShot bool) QueryOption[T] {
+	if oneShot {
+		return func(e *queryExtra[T]) {
+			e.oneShot = oneShot
+		}
+	}
+	return nil
 }
 
-func (q Query[T]) withOneShot(oneShot bool) Query[T] {
-	q.SetOneShot(oneShot)
-	return q
+func ComputedFastCountOption[T any](
+	count int,
+	compute func(count int) int,
+) QueryOption[T] {
+	if count >= 0 {
+		return func(e *queryExtra[T]) {
+			e.count = compute(count)
+		}
+	}
+	return nil
 }
 
-func (q Query[T]) withLesser(lesser lesserFunc[T]) Query[T] {
-	q.extra = q.extra.withLesser(lesser)
-	return q
+func LesserOption[T any](lesser lesserFunc[T]) QueryOption[T] {
+	return func(e *queryExtra[T]) {
+		e.lesser = lesser
+	}
 }
 
 type queryExtra[T any] struct {
+	count   int
 	lesser  lesserFunc[T]
 	oneShot bool
-}
-
-func (qe *queryExtra[T]) ifNeeded(needed bool) *queryExtra[T] {
-	switch {
-	case !needed:
-		return qe
-	case qe == nil:
-		return &queryExtra[T]{}
-	default:
-		return qe
-	}
-}
-
-func (qe *queryExtra[T]) withLesser(lesser lesserFunc[T]) *queryExtra[T] {
-	if qe == nil {
-		qe = &queryExtra[T]{}
-	}
-	qe.lesser = lesser
-	return qe
-}
-
-func (qe *queryExtra[T]) withOneShot(oneShot bool) *queryExtra[T] {
-	qe = qe.ifNeeded(oneShot)
-	if qe != nil {
-		qe.oneShot = oneShot
-	}
-	return qe
 }
 
 type lesserFunc[T any] func([]T) func(i, j int) bool

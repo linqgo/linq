@@ -10,7 +10,7 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 			var u U
 			return u, false
 		}
-	})
+	}, FastCountOption[U](q.fastCount()))
 }
 
 // SelectMany projects each element of q to a subquery and flattens the
@@ -37,5 +37,5 @@ func SelectMany[T, U any](q Query[T], project func(t T) Query[U]) Query[U] {
 			}
 			return u, ok
 		}
-	})
+	}, FastCountIfEmptyOption[U](q.fastCount()))
 }

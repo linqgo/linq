@@ -20,5 +20,11 @@ func TestDistinct(t *testing.T) {
 	)
 
 	assertOneShot(t, false, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)))
-	assertOneShot(t, true, linq.Distinct(oneshot))
+	assertOneShot(t, true, linq.Distinct(oneshot()))
+
+	assertFastCountEqual(t, 0, linq.Distinct(linq.None[int]()))
+	assertFastCountEqual(t, 1, linq.Distinct(linq.From(1)))
+	assertFastCountEqual(t, 1, linq.Distinct(linq.Concat(linq.None[int](), linq.From(1), linq.None[int]())))
+	assertNoFastCount(t, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)))
+	assertNoFastCount(t, linq.Distinct(oneshot()))
 }

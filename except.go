@@ -11,8 +11,17 @@ func ExceptBy[T, K comparable](
 	b Query[K],
 	key func(t T) K,
 ) Query[T] {
-	return Pipe(b, func(next Enumerator[K]) Enumerator[T] {
-		s := setFrom(next)
-		return a.Where(func(t T) bool { return !s.Has(key(t)) }).Enumerator()
-	}).withOneShot(a.OneShot() || b.OneShot())
+	if a.fastCount() == 0 {
+		return None[T]()
+	}
+	if b.fastCount() == 0 {
+		return a
+	}
+	return Pipe(b,
+		func(next Enumerator[K]) Enumerator[T] {
+			s := setFrom(next)
+			return a.Where(func(t T) bool { return !s.Has(key(t)) }).Enumerator()
+		},
+		OneShotOption[T](a.OneShot() || b.OneShot()),
+	)
 }
