@@ -1,4 +1,4 @@
-module github.com/marcelocantos/linq
+module github.com/linqgo/linq
 
 go 1.18
 

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 var fiveInts = func() <-chan int {
