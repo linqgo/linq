@@ -188,21 +188,21 @@ func TestOrderByComp(t *testing.T) {
 	data := linq.From(4, 5, 2, 3, 1)
 	nothing := linq.None[int]()
 
-	assertQueryEqual(t, []int{}, linq.OrderByComp(nothing))
+	assertQueryEqual(t, []int{}, linq.OrderComp(nothing))
 
 	assertQueryEqual(t,
 		[]int{1, 2, 3, 4, 5},
-		linq.OrderByComp(data, linq.Less[int]))
+		linq.OrderComp(data, linq.Less[int]))
 
 	assertQueryEqual(t,
 		[]int{4, 4, 2, 2, 5, 5, 3, 3, 1, 1},
-		linq.OrderByComp(data.Concat(data.Reverse()),
+		linq.OrderComp(data.Concat(data.Reverse()),
 			func(a, b int) bool { return a%2 < b%2 },
 			func(a, b int) bool { return a > b },
 		))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return linq.OrderByComp(q, func(a, b int) bool { return a > b })
+		return linq.OrderComp(q, func(a, b int) bool { return a > b })
 	}
 	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, f(data))
 
@@ -219,21 +219,21 @@ func TestOrderByCompDesc(t *testing.T) {
 	data := linq.From(3, 5, 4, 2, 1)
 	nothing := linq.None[int]()
 
-	assertQueryEqual(t, []int{}, linq.OrderByCompDesc(nothing))
+	assertQueryEqual(t, []int{}, linq.OrderCompDesc(nothing))
 
 	assertQueryEqual(t,
 		[]int{5, 4, 3, 2, 1},
-		linq.OrderByCompDesc(data, linq.Less[int]))
+		linq.OrderCompDesc(data, linq.Less[int]))
 
 	assertQueryEqual(t,
 		[]int{1, 1, 3, 3, 5, 5, 2, 2, 4, 4},
-		linq.OrderByCompDesc(data.Concat(data.Reverse()),
+		linq.OrderCompDesc(data.Concat(data.Reverse()),
 			func(a, b int) bool { return a%2 < b%2 },
 			func(a, b int) bool { return a > b },
 		))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return linq.OrderByCompDesc(q, func(a, b int) bool { return a > b })
+		return linq.OrderCompDesc(q, func(a, b int) bool { return a > b })
 	}
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, f(data))
 
@@ -251,24 +251,24 @@ func TestThenByComp(t *testing.T) {
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Charlotte", 25}, {"Frank", 20}},
-		linq.ThenByComp(linq.OrderBy(data,
+		linq.ThenComp(linq.OrderBy(data,
 			func(kv linq.KV[string, int]) string { return kv.Key }),
 			func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Frank", 20}, {"Charlotte", 25}},
-		linq.ThenByComp(linq.OrderBy(data,
+		linq.ThenComp(linq.OrderBy(data,
 			func(kv linq.KV[string, int]) int { return kv.Value }),
 			func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return linq.ThenByComp(linq.OrderBy(q,
+		return linq.ThenComp(linq.OrderBy(q,
 			func(i int) int { return i % 3 }),
 			linq.Less[int])
 	}
 	assertQueryEqual(t, []int{3, 6, 1, 4, 7, 2, 5}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.ThenByComp(linq.None[int](), linq.Less[int]) })
+	assert.Panics(t, func() { linq.ThenComp(linq.None[int](), linq.Less[int]) })
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
 	assertOneShot(t, true, f(oneshot()))
@@ -284,26 +284,26 @@ func TestThenByCompDesc(t *testing.T) {
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Frank", 20}, {"Charlotte", 25}},
-		linq.ThenByCompDesc(linq.OrderByDesc(data,
+		linq.ThenCompDesc(linq.OrderByDesc(data,
 			func(kv linq.KV[string, int]) string { return kv.Key }),
 			func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Charlotte", 25}, {"Frank", 20}},
-		linq.ThenByCompDesc(linq.OrderByDesc(data,
+		linq.ThenCompDesc(linq.OrderByDesc(data,
 			func(kv linq.KV[string, int]) int { return kv.Value }),
 			func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return linq.ThenByCompDesc(linq.OrderByDesc(q,
+		return linq.ThenCompDesc(linq.OrderByDesc(q,
 			func(i int) int { return i % 3 }),
 			linq.Less[int])
 	}
 	assertQueryEqual(t, []int{5, 2, 7, 4, 1, 6, 3}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.ThenByCompDesc(linq.None[int](), linq.Less[int]) })
+	assert.Panics(t, func() { linq.ThenCompDesc(linq.None[int](), linq.Less[int]) })
 	assert.Panics(t, func() {
-		linq.ThenByCompDesc(linq.From(1, 2, 3).Where(linq.False[int]), linq.Less[int])
+		linq.ThenCompDesc(linq.From(1, 2, 3).Where(linq.False[int]), linq.Less[int])
 	})
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))

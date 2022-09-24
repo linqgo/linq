@@ -49,6 +49,18 @@ func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
 	}
 }
 
+// SequenceGreater compares elements pairwise from a and b in sequence order and
+// returns true if and only if one of the following occurs:
+//
+//  1. Two elements differ and the element from a is greater than the one from b.
+//  2. Query b runs out of elements before a.
+//
+// This is known as lexicographical sort and is equivalent to the > operator on
+// strings.
+func SequenceGreater[T constraints.Ordered](a, b Query[T]) bool {
+	return SequenceLess(b, a)
+}
+
 // Shorter returns true if and only if a has fewer elements than b.
 func Shorter[T any](a, b Query[T]) bool {
 	anext := a.Enumerator()
@@ -63,4 +75,9 @@ func Shorter[T any](a, b Query[T]) bool {
 			return false
 		}
 	}
+}
+
+// Longer returns true if and only if a has more elements than b.
+func Longer[T any](a, b Query[T]) bool {
+	return Longer(b, a)
 }
