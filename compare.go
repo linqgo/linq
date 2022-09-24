@@ -79,5 +79,5 @@ func Shorter[T any](a, b Query[T]) bool {
 
 // Longer returns true if and only if a has more elements than b.
 func Longer[T any](a, b Query[T]) bool {
-	return Longer(b, a)
+	return Shorter(b, a)
 }

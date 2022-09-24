@@ -40,7 +40,23 @@ func TestSequenceLess(t *testing.T) {
 	}
 }
 
-func TestSmaller(t *testing.T) {
+func TestSequenceGreater(t *testing.T) {
+	t.Parallel()
+
+	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
+
+	for _, a := range data {
+		qa := linq.FromString(a)
+		for _, b := range data {
+			qb := linq.FromString(b)
+
+			slt, elt := a > b, linq.SequenceGreater(qa, qb)
+			assert.Equal(t, slt, elt, "%q > %q expected %v, got %v", a, b, slt, elt)
+		}
+	}
+}
+
+func TestShorter(t *testing.T) {
 	t.Parallel()
 
 	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
@@ -51,6 +67,22 @@ func TestSmaller(t *testing.T) {
 			qb := linq.FromString(b)
 
 			ssm, esm := len(a) < len(b), linq.Shorter(qa, qb)
+			assert.Equal(t, ssm, esm, "len(%q) < len(%q) expected %v, got %v", a, b, ssm, esm)
+		}
+	}
+}
+
+func TestLonger(t *testing.T) {
+	t.Parallel()
+
+	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
+
+	for _, a := range data {
+		qa := linq.FromString(a)
+		for _, b := range data {
+			qb := linq.FromString(b)
+
+			ssm, esm := len(a) > len(b), linq.Longer(qa, qb)
 			assert.Equal(t, ssm, esm, "len(%q) < len(%q) expected %v, got %v", a, b, ssm, esm)
 		}
 	}
