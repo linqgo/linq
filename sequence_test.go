@@ -1,7 +1,9 @@
 package linq_test
 
 import (
+	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/stretchr/testify/assert"
 
@@ -24,18 +26,21 @@ func TestSequenceEqual(t *testing.T) {
 	}
 }
 
-func TestSequenceLess(t *testing.T) {
+func TestSequenceEqualEq(t *testing.T) {
 	t.Parallel()
 
-	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
+	data := []string{"", "hello", "HELLO", "help!"}
 
 	for _, a := range data {
 		qa := linq.FromString(a)
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			slt, elt := a < b, linq.SequenceLess(qa, qb)
-			assert.Equal(t, slt, elt, "%q < %q expected %v, got %v", a, b, slt, elt)
+			seq := strings.EqualFold(a, b)
+			eeq := qa.SequenceEqualEq(qb, func(a, b rune) bool {
+				return unicode.ToUpper(a) == unicode.ToUpper(b)
+			})
+			assert.Equal(t, seq, eeq, "%q == %q expected %v, got %v", a, b, seq, eeq)
 		}
 	}
 }
@@ -56,23 +61,26 @@ func TestSequenceGreater(t *testing.T) {
 	}
 }
 
-func TestShorter(t *testing.T) {
+func TestSequenceGreaterComp(t *testing.T) {
 	t.Parallel()
 
-	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
+	data := []string{"", "Hello", "abc", "z"}
 
 	for _, a := range data {
 		qa := linq.FromString(a)
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			ssm, esm := len(a) < len(b), linq.Shorter(qa, qb)
-			assert.Equal(t, ssm, esm, "len(%q) < len(%q) expected %v, got %v", a, b, ssm, esm)
+			slt := strings.ToUpper(a) > strings.ToUpper(b)
+			elt := qa.SequenceGreaterComp(qb, func(a, b rune) bool {
+				return unicode.ToUpper(a) < unicode.ToUpper(b)
+			})
+			assert.Equal(t, slt, elt, "%q > %q expected %v, got %v", a, b, slt, elt)
 		}
 	}
 }
 
-func TestLonger(t *testing.T) {
+func TestSequenceLess(t *testing.T) {
 	t.Parallel()
 
 	data := []string{"", "hello", "hello!", "abc", "z", "zzzzzzz"}
@@ -82,8 +90,11 @@ func TestLonger(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			ssm, esm := len(a) > len(b), linq.Longer(qa, qb)
-			assert.Equal(t, ssm, esm, "len(%q) < len(%q) expected %v, got %v", a, b, ssm, esm)
+			slt := strings.ToUpper(a) < strings.ToUpper(b)
+			elt := qa.SequenceLessComp(qb, func(a, b rune) bool {
+				return unicode.ToUpper(a) < unicode.ToUpper(b)
+			})
+			assert.Equal(t, slt, elt, "%q < %q expected %v, got %v", a, b, slt, elt)
 		}
 	}
 }

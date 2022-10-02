@@ -15,17 +15,6 @@ func (q Query[T]) TakeWhile(pred func(t T) bool) Query[T] {
 	return TakeWhile(q, pred)
 }
 
-func takeCount[T any](q Query[T], n int) (count int, all bool) {
-	if n == 0 {
-		return 0, false
-	}
-	count = q.fastCount()
-	if n < count {
-		return n, false
-	}
-	return count, count >= 0
-}
-
 // Take returns a query with the first n elements of q.
 func Take[T any](q Query[T], n int) Query[T] {
 	count, all := takeCount(q, n)
@@ -53,7 +42,7 @@ func TakeLast[T any](q Query[T], n int) Query[T] {
 	}
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		buf := newBuffer(next, n)
-		drain(buf.Next)
+		Drain(buf.Next)
 		return buf.Enumerator()
 	}, FastCountOption[T](count))
 }
@@ -68,4 +57,15 @@ func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
 			return t, ok
 		}
 	}, FastCountIfEmptyOption[T](q.fastCount()))
+}
+
+func takeCount[T any](q Query[T], n int) (count int, all bool) {
+	if n == 0 {
+		return 0, false
+	}
+	count = q.fastCount()
+	if n < count {
+		return n, false
+	}
+	return count, count >= 0
 }

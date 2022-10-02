@@ -6,6 +6,22 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func (q Query[T]) OrderComp(lesses ...func(a, b T) bool) Query[T] {
+	return OrderComp(q, lesses...)
+}
+
+func (q Query[T]) OrderCompDesc(lesses ...func(a, b T) bool) Query[T] {
+	return OrderCompDesc(q, lesses...)
+}
+
+func (q Query[T]) ThenComp(lesses ...func(a, b T) bool) Query[T] {
+	return ThenComp(q, lesses...)
+}
+
+func (q Query[T]) ThenCompDesc(lesses ...func(a, b T) bool) Query[T] {
+	return ThenCompDesc(q, lesses...)
+}
+
 func Order[T constraints.Ordered](q Query[T]) Query[T] {
 	return OrderBy(q, Identity[T])
 }

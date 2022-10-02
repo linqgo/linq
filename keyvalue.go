@@ -13,3 +13,15 @@ func NewKV[K, V any](key K, value V) KV[K, V] {
 		Value: value,
 	}
 }
+
+func (kv KV[K, V]) Values() (K, V) {
+	return kv.Key, kv.Value
+}
+
+func Key[KeyVal KV[K, V], K, V any](kv KV[K, V]) K {
+	return kv.Key
+}
+
+func Value[KeyVal KV[K, V], K, V any](kv KV[K, V]) V {
+	return kv.Value
+}

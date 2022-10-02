@@ -31,3 +31,11 @@ func valueOrPanicf[T any](t T, ok bool, format string, args ...any) T { //nolint
 	}
 	panic(errorf(format, args...))
 }
+
+func valueOrPanicEmpty[T any](t T, ok bool) T {
+	return valueOrPanic(t, ok, emptySourceError)
+}
+
+func valueOrPanicNoFastCount[T any](t T, ok bool) T {
+	return valueOrPanic(t, ok, noFastCountError)
+}

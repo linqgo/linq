@@ -6,7 +6,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// Average returns the arithmetic mean of the numbers in q or ok=false if q is
+// Average returns the arithmetic mean of the numbers in q or ok = false if q is
 // empty.
 func Average[R realNumber](q Query[R]) (mean R, ok bool) {
 	return aggregateThen(q.Enumerator(), 0, add[R], func(sum R, n int) R {
@@ -33,8 +33,8 @@ func MustAverage[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(Average(q))
 }
 
-// GeometricMean returns the geometric mean of the numbers in q or ok=false if q
-// is empty.
+// GeometricMean returns the geometric mean of the numbers in q or ok = false if
+// q is empty.
 func GeometricMean[R realNumber](q Query[R]) (mean R, ok bool) {
 	return aggregateThen(q.Enumerator(), 0, mul[R], func(product R, n int) R {
 		return R(math.Pow(float64(product), float64(n)))
@@ -60,7 +60,7 @@ func MustGeometricMean[R realNumber](q Query[R]) R {
 	return valueOrPanicEmpty(GeometricMean(q))
 }
 
-// HarmonicMean returns the harmonic mean of the numbers in q or ok=false if q
+// HarmonicMean returns the harmonic mean of the numbers in q or ok = false if q
 // is empty.
 func HarmonicMean[F constraints.Float](q Query[F]) (mean F, ok bool) {
 	return aggregateThen(q.Enumerator(), 0, recipAdd[F], func(recipSum F, n int) F {
@@ -87,15 +87,15 @@ func MustHarmonicMean[F constraints.Float](q Query[F]) F {
 	return valueOrPanicEmpty(HarmonicMean(q))
 }
 
-// Max returns the highest number in q or ok=false if q is empty.
+// Max returns the highest number in q or ok = false if q is empty.
 func Max[R realNumber](q Query[R]) (_ R, ok bool) {
 	return Aggregate(q, max[R])
 }
 
-// MaxBy returns the element in q with the highest key or ok=false if q is
+// MaxBy returns the element in q with the highest key or ok = false if q is
 // empty.
 func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) (_ T, ok bool) {
-	return bestBy(q, key, greater[R])
+	return firstBy(q, key, greater[R])
 }
 
 // MaxElse returns the highest number in q or alt if q is empty.
@@ -119,15 +119,15 @@ func MustMaxBy[T any, K constraints.Ordered](q Query[T], key func(T) K) T {
 	return valueOrPanicEmpty(MaxBy(q, key))
 }
 
-// Min returns the highest number in q or ok=false if q is empty.
+// Min returns the highest number in q or ok = false if q is empty.
 func Min[R realNumber](q Query[R]) (_ R, ok bool) {
 	return Aggregate(q, min[R])
 }
 
-// MinBy returns the element in q with the highest key or ok=false if q is
+// MinBy returns the element in q with the highest key or ok = false if q is
 // empty.
 func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) (_ T, ok bool) {
-	return bestBy(q, key, less[K])
+	return firstBy(q, key, less[K])
 }
 
 // MinElse returns the lowest number in q or alt if q is empty.
@@ -175,22 +175,6 @@ func add[N number](a, b N) N {
 	return a + b
 }
 
-func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) (r T, ok bool) {
-	next := q.Enumerator()
-	bestValue, ok := next()
-	if !ok {
-		return r, ok
-	}
-	bestKey := key(bestValue)
-	for u, ok := next(); ok; u, ok = next() {
-		k := key(u)
-		if better(k, bestKey) {
-			bestValue, bestKey = u, k
-		}
-	}
-	return bestValue, true
-}
-
 func greater[O constraints.Ordered](a, b O) bool {
 	return a > b
 }
@@ -223,8 +207,4 @@ func recipAdd[R constraints.Float](a, b R) R {
 
 func valueOrNaN[R realNumber](r R, ok bool) R {
 	return valueElse(r, ok, R(nan))
-}
-
-func valueOrPanicEmpty[T any](t T, ok bool) T {
-	return valueOrPanic(t, ok, emptySourceError)
 }
