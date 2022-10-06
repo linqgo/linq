@@ -37,6 +37,7 @@
 //   - AsEnumerable: not relevant to this library
 //   - Cast: doesn't map cleanly to Go's type system.
 //
-// On the flip side, this library implements a number of methods not provided
-// by .Net. They are indicated in the groupings below.
+// On the flip side, this library implements a number of methods not provided by
+// .Net. They are catalogued at
+// https://github.com/linqgo/linq/wiki/Functional-Catalog.
 package linq
