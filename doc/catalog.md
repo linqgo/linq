@@ -23,7 +23,7 @@ available as methods.
     <h4>Construct</h4>
     <ul>
         <li><code>From[ByteReader,Channel,Map,RuneReader,[Scanner][String]]</code></li>
-        <li><code>Iota[1,2,3]` (equivalent to `Enumerable.Range`)</li>
+        <li><code>Iota[1,2,3]</code> (equivalent to <code>Enumerable.Range</code> in .Net)</li>
         <li><code>NewQuery</code></li>
         <li><code>None</code></li>
         <li><code>Pipe</code></li>
