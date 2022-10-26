@@ -9,4 +9,4 @@ coverage:
 		| sort -rn -k3
 
 lint:
-	golangci-lint run
+	golangci-lint run --max-same-issues 50
