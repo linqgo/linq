@@ -37,24 +37,25 @@ available as methods.
     </ul>
     <h4>Aggregation</h4>
     <ul>
-        <li><code>Ⓜ️Aggregate[Else⁺,Seed],Ⓜ️MustAggregate</code></li>
-        <li><code>Ⓜ️Count[Limit[True]⁺],Ⓜ️[Must]FastCount⁺</code></li>
+        <li><code>Ⓜ️Aggregate[Seed]</code></li>
+        <li><code>Ⓜ️Count[Limit[True]⁺],Ⓜ️FastCount⁺</code></li>
     </ul>
     <h4>Math aggregation</h4>
     <ul>
-        <li><code>Average[Else⁺,OrNaN⁺],MustAverage⁺</code></li>
-        <li><code>GeometricMean[Else,OrNaN]⁺,MustGeometricMean⁺</code></li>
-        <li><code>HarmonicMean[Else,OrNaN]⁺,MustHarmonicMean⁺</code></li>
+        <li><code>Average</code></li>
+        <li><code>GeometricMean⁺</code></li>
+        <li><code>HarmonicMean⁺</code></li>
         <li><code>Product⁺</code></li>
         <li><code>Sum</code></li>
     </ul>
     <h4>Element selection</h4>
     <ul>
-        <li><code>Ⓜ️ElementAt[Else],Ⓜ️MustElementAt</code></li>
-        <li><code>Ⓜ️First[Comp⁺][Else],Ⓜ️MustFirst[Comp⁺]</code></li>
-        <li><code>Ⓜ️Last[Else],Ⓜ️MustLast</code></li>
-        <li><code>Max[By,Else⁺,OrNaN⁺],MustMax[By]</code></li>
-        <li><code>Min[By,Else⁺,OrNaN⁺],MustMin[By]</code></li>
+        <li><code>Ⓜ️[Fast]ElementAt</code></li>
+        <li><code>Ⓜ️First[Comp⁺]</code></li>
+        <li><code>Ⓜ️Last</code></li>
+        <li><code>Max[By]</code></li>
+        <li><code>Min[By]</code></li>
+        <li><code>Ⓜ️Single⁺</code></li>
     </ul>
     <h4>Predicate</h4>
     <ul>
@@ -63,7 +64,7 @@ available as methods.
         <li><code>Contains</code></li>
         <li><code>Ⓜ️Empty</code></li>
         <li><code>SequenceEqual[Ⓜ️Eq⁺],Sequence{Greater,Less}[Ⓜ️Comp]⁺</code></li>
-        <li><code>Ⓜ️[[Must]Fast]{Longer,Shorter}⁺</code></li>
+        <li><code>Ⓜ️[Fast]{Longer,Shorter}⁺</code></li>
     </ul>
     <h4>Compose</h4>
     <ul>
@@ -111,14 +112,16 @@ available as methods.
         <li><code>PowerSet⁺</code></li>
         <li><code>Union</code></li>
     </ul>
-    <h4>Miscellaneous helper functions</h4>
+    <h4>Miscellaneous helpers</h4>
     <ul>
+        <li><code>Array⁺,Getter⁺</code></li>
         <li><code>Drain⁺</code></li>
         <li><code>[Not]Equal⁺,Less⁺,Greater⁺</code></li>
         <li><code>False⁺,True⁺,Zero⁺</code></li>
         <li><code>Identity⁺</code></li>
         <li><code>Key⁺,Value⁺</code></li>
         <li><code>{Longer,Shorter}{Slice,Map}⁺</code></li>
+        <li><code>Maybe⁺,Some⁺,No⁺</code></li>
         <li><code>Not⁺</code></li>
         <li><code>Pointer⁺,Deref⁺</code></li>
         <li><code>SwapArgs⁺</code></li>
