@@ -6,7 +6,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// Average returns the arithmetic mean of the numbers in q or ok=false if q is
+// Average returns the arithmetic mean of the numbers in q or ok = false if q is
 // empty.
 func Average[R realNumber](q Query[R]) Maybe[R] {
 	if sum, n := aggregateN(q, 0, add[R]); n > 0 {
@@ -24,7 +24,7 @@ func GeometricMean[R realNumber](q Query[R]) Maybe[R] {
 	return No[R]()
 }
 
-// HarmonicMean returns the harmonic mean of the numbers in q or ok=false if q
+// HarmonicMean returns the harmonic mean of the numbers in q or ok = false if q
 // is empty.
 func HarmonicMean[F constraints.Float](q Query[F]) Maybe[F] {
 	if recipSum, n := aggregateN(q, 0, recipAdd[F]); n > 0 {
@@ -38,7 +38,7 @@ func Max[R realNumber](q Query[R]) Maybe[R] {
 	return Aggregate(q, max[R])
 }
 
-// MaxBy returns the element in q with the highest key or ok=false if q is
+// MaxBy returns the element in q with the highest key or ok = false if q is
 // empty.
 func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Maybe[T] {
 	return bestBy(q, key, greater[R])
@@ -49,7 +49,7 @@ func Min[R realNumber](q Query[R]) Maybe[R] {
 	return Aggregate(q, min[R])
 }
 
-// MinBy returns the element in q with the highest key or ok=false if q is
+// MinBy returns the element in q with the highest key or ok = false if q is
 // empty.
 func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) Maybe[T] {
 	return bestBy(q, key, less[K])

@@ -10,13 +10,11 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 
 	return NewQuery(
 		func() Enumerator[R] {
-			a := a.Enumerator()
-			b := b.Enumerator()
+			var aok, bok bool
+			next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
 			return func() Maybe[R] {
-				x, xok := a().Get()
-				y, yok := b().Get()
-				if xok && yok {
-					return Some(zip(x, y))
+				if ab, ok := next().Get(); ok {
+					return Some(zip(ab.KV()))
 				}
 				return No[R]()
 			}
@@ -58,4 +56,25 @@ func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (Query[R], Query[S])
 // and another query containing values.
 func UnzipKV[K, V any](q Query[KV[K, V]]) (Query[K], Query[V]) {
 	return Unzip(q, func(kv KV[K, V]) (K, V) { return kv.Key, kv.Value })
+}
+
+func zipEnumerator[A, B any](
+	a Enumerator[A],
+	b Enumerator[B],
+	aok, bok *bool,
+) func() Maybe[KV[A, B]] {
+	return func() Maybe[KV[A, B]] {
+		x, xok := a().Get()
+		y, yok := b().Get()
+		if !xok {
+			*aok, *bok = xok, yok
+			return No[KV[A, B]]()
+		}
+		if !yok {
+			*aok, *bok = xok, yok
+			return No[KV[A, B]]()
+		}
+		*aok, *bok = xok, yok
+		return Some(NewKV(x, y))
+	}
 }

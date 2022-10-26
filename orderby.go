@@ -6,6 +6,22 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func (q Query[T]) OrderComp(lesses ...func(a, b T) bool) Query[T] {
+	return OrderComp(q, lesses...)
+}
+
+func (q Query[T]) OrderCompDesc(lesses ...func(a, b T) bool) Query[T] {
+	return OrderCompDesc(q, lesses...)
+}
+
+func (q Query[T]) ThenComp(lesses ...func(a, b T) bool) Query[T] {
+	return ThenComp(q, lesses...)
+}
+
+func (q Query[T]) ThenCompDesc(lesses ...func(a, b T) bool) Query[T] {
+	return ThenCompDesc(q, lesses...)
+}
+
 func Order[T constraints.Ordered](q Query[T]) Query[T] {
 	return OrderBy(q, Identity[T])
 }
@@ -30,11 +46,11 @@ func OrderByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Quer
 	})
 }
 
-func OrderByComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
+func OrderComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	return orderByLesser(q, lessesToLesser(lesses...))
 }
 
-func OrderByCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
+func OrderCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	return orderByLesser(q, lessesToLesserDesc(lesses...))
 }
 
@@ -58,7 +74,7 @@ func ThenBy[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] 
 	}))
 }
 
-func ThenByComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
+func ThenComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	lesser := q.lesser()
 	if lesser == nil {
 		panic(thenByNoOrderBy)
@@ -66,7 +82,7 @@ func ThenByComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	return orderByLesser(q, chainLessers(lesser, lessesToLesser(lesses...)))
 }
 
-func ThenByCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
+func ThenCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	lesser := q.lesser()
 	if lesser == nil {
 		panic(thenByNoOrderBy)

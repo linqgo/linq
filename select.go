@@ -1,6 +1,9 @@
 package linq
 
 // Select returns a query with the elements of q transformed by sel.
+//
+// Caveat: The output must be of the same type. For transforms to different
+// types, use the corresponding free function.
 func (q Query[T]) Select(sel func(t T) T) Query[T] {
 	return Select(q, sel)
 }

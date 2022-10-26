@@ -52,6 +52,14 @@ func TestLongerSlice(t *testing.T) {
 	assert.True(t, linq.LongerSlice([]int{1, 2, 3}, []int{3, 4}))
 }
 
+func TestNotEqual(t *testing.T) {
+	t.Parallel()
+
+	assert.True(t, linq.NotEqual(10, 5))
+	assert.False(t, linq.NotEqual(5, 5))
+	assert.True(t, linq.NotEqual(5, 10))
+}
+
 func TestPointer(t *testing.T) {
 	t.Parallel()
 
@@ -83,5 +91,5 @@ func TestTrue(t *testing.T) {
 func TestZero(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, "", linq.Zero[int, string](42))
+	assert.Equal(t, "", linq.Zero[string](42))
 }

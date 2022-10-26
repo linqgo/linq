@@ -34,5 +34,5 @@ func TestLast(t *testing.T) {
 
 	assertNo(t, linq.Iota1(0).Last())
 	assertSome(t, 5, linq.Iota2(1, 6).Last())
-	assertSome(t, 3, oneshotN(1, 2, 3).Last())
+	assertSome(t, 3, chanof(1, 2, 3).Last())
 }

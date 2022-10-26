@@ -43,7 +43,7 @@ func TestTakeLast(t *testing.T) {
 func TestTakeLastOneShot(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t, []int{4, 5}, oneshotN(1, 2, 3, 4, 5).TakeLast(2))
+	assertQueryEqual(t, []int{4, 5}, chanof(1, 2, 3, 4, 5).TakeLast(2))
 }
 
 func TestTakeWhile(t *testing.T) {

@@ -68,20 +68,33 @@ func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) 
 	return assert.NotPanics(t, func() { m = next() }) && assertNo(t, m)
 }
 
-func oneshot() linq.Query[int] {
-	return oneshotN(42)
+func assertAll[R any](
+	t *testing.T,
+	test func(r R) bool,
+	r ...R,
+) bool {
+	t.Helper()
+	pass := true
+	for i, r := range r {
+		pass = assert.True(t, test(r), i) && pass
+	}
+	return pass
 }
 
-func oneshotN[T any](data ...T) linq.Query[T] {
-	c := make(chan T, len(data))
-	for _, e := range data {
-		c <- e
+func oneshot() linq.Query[int] {
+	return chanof(42)
+}
+
+var slowcount = oneshot()
+
+func chanof[T any](t ...T) linq.Query[T] {
+	c := make(chan T, len(t))
+	for _, t := range t {
+		c <- t
 	}
 	close(c)
 	return linq.FromChannel(c)
 }
-
-var slowcount = oneshot()
 
 func assertOneShot[T any](t *testing.T, oneshot bool, q linq.Query[T]) bool {
 	t.Helper()

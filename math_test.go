@@ -83,8 +83,8 @@ func TestMinBy(t *testing.T) {
 	peeps := linq.FromMap(map[string]int{"John": 42, "Andrea": 35, "Sanjiv": 22})
 	noone := linq.FromMap(map[string]int{})
 
-	name := func(kv Person) string { return kv.Key }
-	age := func(kv Person) int { return kv.Value }
+	name := linq.Key[Person]
+	age := linq.Value[Person]
 
 	assertSome(t, linq.NewKV("Andrea", 35), linq.MinBy(peeps, name))
 	assertNo(t, linq.MinBy(noone, name))
