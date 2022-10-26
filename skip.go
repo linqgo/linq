@@ -1,13 +1,13 @@
 package linq
 
 // Skip returns a query all elements of q except the first n.
-func (q Query[T]) Skip(n int) Query[T] {
-	return Skip(q, n)
+func (q Query[T]) Skip(skip int) Query[T] {
+	return Skip(q, skip)
 }
 
 // SkipLast returns a query all elements of q except the last n.
-func (q Query[T]) SkipLast(n int) Query[T] {
-	return SkipLast(q, n)
+func (q Query[T]) SkipLast(skip int) Query[T] {
+	return SkipLast(q, skip)
 }
 
 // SkipWhile returns a query that skips elements of q while pred returns true.
@@ -15,11 +15,11 @@ func (q Query[T]) SkipWhile(pred func(t T) bool) Query[T] {
 	return SkipWhile(q, pred)
 }
 
-func skipCount[T any](q Query[T], n int) int {
+func countWhenSkipping[T any](q Query[T], skip int) int {
 	count := q.fastCount()
 	switch {
-	case count > n:
-		return count - n
+	case count > skip:
+		return count - skip
 	case count >= 0:
 		return 0
 	default:
@@ -28,38 +28,57 @@ func skipCount[T any](q Query[T], n int) int {
 }
 
 // Skip returns a query all elements of q except the first n.
-func Skip[T any](q Query[T], n int) Query[T] {
-	if n == 0 {
+func Skip[T any](q Query[T], skip int) Query[T] {
+	if skip <= 0 {
 		return q
 	}
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		for i := 0; i < n; i++ {
-			if _, ok := next(); !ok {
-				return noneEnumerator[T]
+	count := countWhenSkipping(q, skip)
+	if count == 0 {
+		return None[T]()
+	}
+	var get Getter[T]
+	if qget := q.getter(); qget != nil {
+		get = func(i int) Maybe[T] { return qget(skip + i) }
+	}
+	return Pipe(q,
+		func(next Enumerator[T]) Enumerator[T] {
+			for i := 0; i < skip; i++ {
+				if t := next(); !t.Valid() {
+					return No[T]
+				}
 			}
-		}
-		return next
-	}, FastCountOption[T](skipCount(q, n)))
+			return next
+		},
+		FastCountOption[T](count),
+		FastGetOption(get),
+	)
 }
 
 // SkipLast returns a query all elements of q except the last n.
-func SkipLast[T any](q Query[T], n int) Query[T] {
-	if n == 0 {
+func SkipLast[T any](q Query[T], skip int) Query[T] {
+	if skip == 0 {
 		return q
 	}
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		return newBuffer(next, n).Next
-	}, FastCountOption[T](skipCount(q, n)))
+	count := countWhenSkipping(q, skip)
+	if count >= 0 {
+		return Take(q, q.count-skip)
+	}
+	return Pipe(q,
+		func(next Enumerator[T]) Enumerator[T] {
+			return newBuffer(next, skip).Next
+		},
+		FastCountOption[T](count),
+	)
 }
 
 // SkipWhile returns a query that skips elements of q while pred returns true.
 func SkipWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		for t, ok := next(); ok; t, ok = next() {
+		for t, ok := next().Get(); ok; t, ok = next().Get() {
 			if !pred(t) {
 				return concatEnumerators(valueEnumerator(t), next)
 			}
 		}
-		return noneEnumerator[T]
+		return No[T]
 	}, FastCountIfEmptyOption[T](q.fastCount()))
 }

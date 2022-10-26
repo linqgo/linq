@@ -3,7 +3,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestAppend(t *testing.T) {
@@ -15,6 +15,6 @@ func TestAppend(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Append(6).Append(7))
 
-	assertFastCountEqual(t, 7, q)
-	assertNoFastCount(t, slowcount.Append(6).Append(7))
+	assertSome(t, 7, q.FastCount())
+	assertNo(t, slowcount.Append(6).Append(7).FastCount())
 }

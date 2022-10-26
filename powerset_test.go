@@ -3,7 +3,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestPowerSet(t *testing.T) {
@@ -27,6 +27,6 @@ func TestPowerSet(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, powerset(oneshot()))
 
-	assertFastCountEqual(t, 8, q)
-	assertNoFastCount(t, powerset(oneshot()))
+	assertSome(t, 8, q.FastCount())
+	assertNo(t, powerset(oneshot()).FastCount())
 }

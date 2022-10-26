@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestReaderByte(t *testing.T) {
@@ -19,7 +19,7 @@ func TestReaderByte(t *testing.T) {
 	assertQueryEqual(t, []byte{'h', 'e', 'l', 'l', 'o'}, q)
 
 	assertOneShot(t, true, q)
-	assertNoFastCount(t, q)
+	assertNo(t, q.FastCount())
 }
 
 func TestRuneReaderRune(t *testing.T) {
@@ -29,8 +29,8 @@ func TestRuneReaderRune(t *testing.T) {
 	q := linq.FromRuneReader(s)
 	assertQueryEqual(t, []rune{'太', '容', '易', '!'}, q)
 
-	assertOneShot(t, true, q)
-	assertNoFastCount(t, q)
+	assert.True(t, q.OneShot())
+	assertNo(t, q.FastCount())
 }
 
 func TestScanner(t *testing.T) {
@@ -41,7 +41,7 @@ func TestScanner(t *testing.T) {
 	assertQueryEqual(t, [][]byte{[]byte("hello"), []byte("world")}, q)
 
 	assertOneShot(t, true, q)
-	assertNoFastCount(t, q)
+	assertNo(t, q.FastCount())
 }
 
 func TestScannerText(t *testing.T) {
@@ -52,7 +52,7 @@ func TestScannerText(t *testing.T) {
 	assertQueryEqual(t, []string{"hello", "world"}, q)
 
 	assertOneShot(t, true, q)
-	assertNoFastCount(t, q)
+	assertNo(t, q.FastCount())
 }
 
 func TestBadReader(t *testing.T) {

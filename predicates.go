@@ -20,7 +20,7 @@ func (q Query[T]) Empty() bool {
 // is empty.
 func All[T any](q Query[T], pred func(t T) bool) bool {
 	next := q.Enumerator()
-	for t, ok := next(); ok; t, ok = next() {
+	for t, ok := next().Get(); ok; t, ok = next().Get() {
 		if !pred(t) {
 			return false
 		}
@@ -31,7 +31,7 @@ func All[T any](q Query[T], pred func(t T) bool) bool {
 // Any returns true if pred returns true for at least one element in q.
 func Any[T any](q Query[T], pred func(t T) bool) bool {
 	next := q.Enumerator()
-	for t, ok := next(); ok; t, ok = next() {
+	for t, ok := next().Get(); ok; t, ok = next().Get() {
 		if pred(t) {
 			return true
 		}
@@ -41,6 +41,6 @@ func Any[T any](q Query[T], pred func(t T) bool) bool {
 
 // Empty returns true if q has no elements.
 func Empty[T any](q Query[T]) bool {
-	_, ok := q.Enumerator()()
-	return !ok
+	t := q.Enumerator()()
+	return !t.Valid()
 }

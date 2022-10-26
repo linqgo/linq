@@ -20,11 +20,11 @@ linters:
 
 linters-settings:
   gofumpt:
-    module-path: github.com/marcelocantos/linq
+    module-path: github.com/linqgo/linq
     extra-rules: true
 
   goimports:
-    local-prefixes: github.com/marcelocantos/linq
+    local-prefixes: github.com/linqgo/linq
 
   revive:
     # enable-all-rules: true

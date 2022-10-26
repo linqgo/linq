@@ -3,7 +3,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestReverse(t *testing.T) {
@@ -14,6 +14,6 @@ func TestReverse(t *testing.T) {
 	assertOneShot(t, false, linq.Iota2(1, 6).Reverse())
 	assertOneShot(t, true, oneshot().Reverse())
 
-	assertFastCountEqual(t, 5, linq.Iota2(1, 6).Reverse())
-	assertNoFastCount(t, oneshot().Reverse())
+	assertSome(t, 5, linq.Iota2(1, 6).Reverse().FastCount())
+	assertNo(t, oneshot().Reverse().FastCount())
 }

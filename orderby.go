@@ -86,7 +86,7 @@ func ThenByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query
 	}))
 }
 
-var thenByNoOrderBy linqError = "ThenBy not immediately preceded by OrderBy"
+var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy"
 
 func chainLessers[T any](a, b lesserFunc[T]) lesserFunc[T] {
 	return func(data []T) func(i, j int) bool {

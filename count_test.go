@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestCount(t *testing.T) {
@@ -36,8 +36,6 @@ func TestCountLimit(t *testing.T) {
 func TestFastCount(t *testing.T) {
 	t.Parallel()
 
-	assertFastCountEqual(t, 5, linq.Iota1(5))
-	assert.Equal(t, 5, linq.Iota1(5).MustFastCount())
-	assertNoFastCount(t, linq.Iota[int]())
-	assert.Panics(t, func() { linq.Iota[int]().MustFastCount() })
+	assertSome(t, 5, linq.Iota1(5).FastCount())
+	assertNo(t, linq.Iota[int]().FastCount())
 }

@@ -6,9 +6,9 @@ package linq
 // replayable query.
 func FromChannel[T any](c <-chan T) Query[T] {
 	return NewQuery(func() Enumerator[T] {
-		return func() (T, bool) {
+		return func() Maybe[T] {
 			t, ok := <-c
-			return t, ok
+			return NewMaybe(t, ok)
 		}
 	}, OneShotOption[T](true))
 }

@@ -1,5 +1,7 @@
 // Package linq is a data manipulation library inspired by C# Linq.
 //
+// See the [Catalog] for a detailed functional overview of the library.
+//
 // # Usage
 //
 //	// Sample usage
@@ -19,7 +21,7 @@
 // Unfortunately, there are no clean work-arounds. You may wish to use a
 // dot-import to ease the pain a little:
 //
-//	import . "github.com/marcelocantos/linq"
+//	import . "github.com/linqgo/linq"
 //
 //	...
 //
@@ -38,119 +40,7 @@
 //   - Cast: doesn't map cleanly to Go's type system.
 //
 // On the flip side, this library implements a number of methods not provided
-// by .Net. They are indicated in the groupings below.
+// by .Net.
 //
-// # Functions by category
-//
-// The following lists group all functions into major categories. Aside from the
-// first group, Query methods, all functions are global. Those that are also
-// available as methods of Query are indicated by Ⓜ️. New capabilities that
-// are not provided in .Net are indicated by ❇️.
-//
-// Query methods:
-//
-//   - Enumerator
-//   - (Set)OneShot
-//
-// Construct:
-//
-//   - From(ByteReader/Channel/Map/RuneReader/(Scanner)(String))
-//   - Iota(1/2/3) (equivalent to Enumerable.Range)
-//   - NewQuery
-//   - None
-//   - Pipe
-//   - Repeat(❇️Forever)
-//
-// Convert to Go types:
-//
-//   - (Must)ToMap
-//   - ❇️(Must)ToMapKV
-//   - Ⓜ️ ToSlice
-//   - ❇️ToString
-//
-// Math:
-//
-//   - (Must)Average(❇️Else/❇️OrNaN)
-//   - Ⓜ️ Aggregate(❇️Else/Seed)/MustAggregate
-//   - Ⓜ️ Count(Limit)
-//   - ❇️(Must)GeometricMean(Else/OrNaN)
-//   - ❇️(Must)HarmonicMean(Else/OrNaN)
-//   - Max(By/❇️Else/❇️OrNaN)/MustMax(By)
-//   - Min(By/❇️Else/❇️OrNaN)/MustMin(By)
-//   - ❇️Product
-//   - Sum
-//
-// Element access:
-//
-//   - Ⓜ️ ElementAt(Else)/MustElementAt
-//   - Ⓜ️ First(Else)/MustFirst
-//   - Ⓜ️ Last(Else)/MustLast
-//
-// Predicate:
-//
-//   - Ⓜ️ All
-//   - Ⓜ️ Any
-//   - Contains
-//   - Ⓜ️ Empty
-//   - Sequence(Equal/*Less)
-//   - ❇️Shorter
-//
-// Compose:
-//
-//   - Ⓜ️ Append/Prepend
-//   - Ⓜ️ Concat
-//
-// Transform:
-//
-//   - ❇️Index(From)
-//   - Select(❇️Keys/❇️Values)
-//   - ❇️Unzip(KV)
-//   - Zip(❇️KV)
-//
-// Filter:
-//
-//   - Distinct(By)
-//   - ❇️ Ⓜ️ Every(From)
-//   - OfType
-//   - ❇️ Ⓜ️ Sample(Seed)
-//   - Ⓜ️ Skip(Last/While)
-//   - Ⓜ️ Take(Last/While)
-//   - Ⓜ️ Where
-//
-// Rearrange:
-//
-//   - Ⓜ️ Reverse
-//   - Order(By(Comp))(Desc)
-//   - Then(By(Comp))(Desc)
-//
-// Group and ungroup:
-//
-//   - Chunk(Slices)
-//   - ❇️Flatten(Slices)
-//   - GroupBy(Select)(Slices)
-//   - GroupJoin
-//   - SelectMany
-//
-// Set and relational operations:
-//
-//   - Except(By)
-//   - Join
-//   - Intersect(By)
-//   - ❇️PowerSet
-//   - Union
-//
-// Helper functions for predicates, keys and transforms:
-//
-//   - ❇️False/❇️True
-//   - ❇️Identity
-//   - ❇️Less/*Greater
-//   - ❇️(Longer/Shorter)(Slice/Map)
-//   - *Pointer/*Deref
-//   - *Zero
-//
-// Miscellaneous:
-//
-//   - ❇️Memoize
-//   - Ⓜ️ DefaultIfEmpty: Return a query with a single default value if the input
-//     is empty.
+// [Catalog]: https://github.com/linqgo/linq/blob/main/doc/catalog.md
 package linq

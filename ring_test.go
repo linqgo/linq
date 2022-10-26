@@ -74,7 +74,7 @@ func TestRingEnumerator(t *testing.T) {
 	r.Pop()
 	r.Pop()
 
-	x, ok := r.Enumerator()()
+	x, ok := r.Enumerator()().Get()
 	assert.False(t, ok, x)
 }
 
@@ -88,7 +88,7 @@ func TestRingEnumeratorPartial(t *testing.T) {
 
 	r.Pop()
 
-	x, ok := r.Enumerator()()
+	x, ok := r.Enumerator()().Get()
 	assert.True(t, ok)
 	assert.Equal(t, 2, x)
 }

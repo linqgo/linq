@@ -12,16 +12,13 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 		func() Enumerator[R] {
 			a := a.Enumerator()
 			b := b.Enumerator()
-			return func() (r R, ok bool) {
-				x, ok := a()
-				if !ok {
-					return r, ok
+			return func() Maybe[R] {
+				x, xok := a().Get()
+				y, yok := b().Get()
+				if xok && yok {
+					return Some(zip(x, y))
 				}
-				y, ok := b()
-				if !ok {
-					return r, ok
-				}
-				return zip(x, y), true
+				return No[R]()
 			}
 		},
 		OneShotOption[R](a.OneShot() || b.OneShot()),

@@ -19,14 +19,16 @@ func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
 
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		s := set[U]{}
-		return func() (t T, ok bool) {
-			for t, ok = next(); ok; t, ok = next() {
+		return func() Maybe[T] {
+			var t T
+			var ok bool
+			for t, ok = next().Get(); ok; t, ok = next().Get() {
 				if u := sel(t); !s.Has(u) {
 					s.Add(u)
-					return t, ok
+					return Some(t)
 				}
 			}
-			return t, ok
+			return No[T]()
 		}
 	}, fastCountOption)
 }

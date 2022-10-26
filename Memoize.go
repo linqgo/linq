@@ -13,46 +13,54 @@ func (q Query[T]) Memoize() Query[T] {
 // elements as q, but, in the process of enumerating it, remembers the sequence
 // of values seen and ensures that every enumeration yields the same sequence.
 func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
-	var cache []T
-	var mux sync.Mutex
-	var next Enumerator[T]
-	done := false
-	return NewQuery(func() Enumerator[T] {
-		mux.Lock()
-		defer mux.Unlock()
-		if next == nil {
-			next = q.Enumerator()
+	m := newMemoizer(q.Enumerator)
+	return NewQuery(m.enumerator)
+}
+
+type memoizer[T any] struct {
+	enum  func() Enumerator[T]
+	next  Enumerator[T]
+	cache []T
+	mux   sync.Mutex
+	once  sync.Once
+	done  bool
+}
+
+func newMemoizer[T any](enum func() Enumerator[T]) *memoizer[T] {
+	return &memoizer[T]{enum: enum}
+}
+
+func (m *memoizer[T]) enumerator() Enumerator[T] {
+	m.once.Do(func() {
+		m.next = m.enum()
+	})
+	i := -1
+	c := m.cache
+	return func() Maybe[T] {
+		// This is an unsafe check, since the access to done isn't protected
+		// by a mutex, but an incorrect outcome doesn't break the logic, it
+		// just misses out on the optimisation opportunity.
+		if m.done {
+			c = m.cache
 		}
-		i := -1
-		c := cache
-		return func() (T, bool) {
-			// This is an unsafe check, since the access to done isn't protected
-			// by a mutex, but an incorrect outcome doesn't break the logic, it
-			// just misses out on the optimisation opportunity.
-			if done {
-				c = cache
+		if i++; i == len(c) {
+			if m.done {
+				i--
+				return No[T]()
 			}
-			if i++; i == len(c) {
-				if done {
+			m.mux.Lock()
+			defer m.mux.Unlock()
+			if i == len(m.cache) {
+				t, ok := m.next().Get()
+				if !ok {
 					i--
-					var t T
-					return t, false
+					m.done = true
+					return No[T]()
 				}
-				mux.Lock()
-				defer mux.Unlock()
-				if i == len(cache) {
-					t, ok := next()
-					if !ok {
-						i--
-						done = true
-						return t, false
-					}
-					cache = append(cache, t)
-					c = cache
-				}
+				m.cache = append(m.cache, t)
+				c = m.cache
 			}
-			return c[i], true
 		}
-	}, FastCountOption[T](q.fastCount()))
-	// TODO: Can we switch to fast count after the input is exhausted?
+		return Some(c[i])
+	}
 }

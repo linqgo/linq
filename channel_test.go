@@ -3,7 +3,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestChannel(t *testing.T) {
@@ -17,5 +17,5 @@ func TestChannel(t *testing.T) {
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.FromChannel(c))
 
 	assertOneShot(t, true, linq.FromChannel(c))
-	assertNoFastCount(t, linq.FromChannel(c))
+	assertNo(t, linq.FromChannel(c).FastCount())
 }

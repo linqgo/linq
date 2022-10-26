@@ -52,15 +52,7 @@ func Zero[T, U any](T) U {
 	return u
 }
 
-func drain[T any](next Enumerator[T]) {
-	for _, ok := next(); ok; {
-		_, ok = next()
+func Drain[T any](next Enumerator[T]) {
+	for _, ok := next().Get(); ok; _, ok = next().Get() {
 	}
-}
-
-func valueElse[T any](t T, ok bool, alt T) T { //nolint:revive
-	if ok {
-		return t
-	}
-	return alt
 }

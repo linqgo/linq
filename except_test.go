@@ -3,7 +3,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/marcelocantos/linq"
+	"github.com/linqgo/linq"
 )
 
 func TestExcept(t *testing.T) {
@@ -22,10 +22,10 @@ func TestExcept(t *testing.T) {
 	assertOneShot(t, true, linq.Except(f(1, 2, 3), oneshot()))
 	assertOneShot(t, true, linq.Except(oneshot(), oneshot()))
 
-	assertNoFastCount(t, linq.Except(f(1, 2, 3), f(3, 4, 5)))
-	assertFastCountEqual(t, 3, linq.Except(f(1, 2, 3), f()))
-	assertFastCountEqual(t, 0, linq.Except(f(), oneshot()))
-	assertNoFastCount(t, linq.Except(oneshot(), f(3, 4, 5)))
-	assertNoFastCount(t, linq.Except(f(1, 2, 3), oneshot()))
-	assertNoFastCount(t, linq.Except(oneshot(), oneshot()))
+	assertNo(t, linq.Except(f(1, 2, 3), f(3, 4, 5)).FastCount())
+	assertSome(t, 3, linq.Except(f(1, 2, 3), f()).FastCount())
+	assertSome(t, 0, linq.Except(f(), oneshot()).FastCount())
+	assertNo(t, linq.Except(oneshot(), f(3, 4, 5)).FastCount())
+	assertNo(t, linq.Except(f(1, 2, 3), oneshot()).FastCount())
+	assertNo(t, linq.Except(oneshot(), oneshot()).FastCount())
 }

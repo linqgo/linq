@@ -17,7 +17,7 @@ func (r *ring[T]) Cap() int {
 
 func (r *ring[T]) Enumerator() Enumerator[T] {
 	if r.size == 0 {
-		return noneEnumerator[T]
+		return No[T]
 	}
 	tail := r.tail()
 	if r.head < tail {

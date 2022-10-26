@@ -5,14 +5,23 @@ func Index[T any](q Query[T]) Query[KV[int, T]] {
 }
 
 func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[KV[int, T]] {
-		i := start - 1
-		return func() (kv KV[int, T], ok bool) {
-			if t, ok := next(); ok {
-				i++
-				return NewKV(i, t), true
+	var get Getter[KV[int, T]]
+	if qget := q.getter(); qget != nil {
+		get = func(i int) Maybe[KV[int, T]] {
+			if t, ok := qget(i).Get(); ok {
+				return Some(NewKV(start+i, t))
 			}
-			return kv, false
+			return No[KV[int, T]]()
 		}
-	}, FastCountOption[KV[int, T]](q.fastCount()))
+	}
+	return PipeOneToOne(q,
+		func() func(t T) KV[int, T] {
+			i := start - 1
+			return func(t T) KV[int, T] {
+				i++
+				return NewKV(i, t)
+			}
+		},
+		FastGetOption(get),
+	)
 }

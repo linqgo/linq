@@ -9,8 +9,8 @@ func SequenceEqual[T comparable](a, b Query[T]) bool {
 	anext := a.Enumerator()
 	bnext := b.Enumerator()
 	for {
-		x, aok := anext()
-		y, bok := bnext()
+		x, aok := anext().Get()
+		y, bok := bnext().Get()
 		if aok != bok {
 			return false
 		}
@@ -35,8 +35,8 @@ func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
 	anext := a.Enumerator()
 	bnext := b.Enumerator()
 	for {
-		x, aok := anext()
-		y, bok := bnext()
+		x, aok := anext().Get()
+		y, bok := bnext().Get()
 		if !aok {
 			return bok
 		}
@@ -54,8 +54,8 @@ func Shorter[T any](a, b Query[T]) bool {
 	anext := a.Enumerator()
 	bnext := b.Enumerator()
 	for {
-		_, aok := anext()
-		_, bok := bnext()
+		_, aok := anext().Get()
+		_, bok := bnext().Get()
 		if !aok {
 			return bok
 		}

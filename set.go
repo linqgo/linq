@@ -13,7 +13,7 @@ func (s set[T]) Add(t T) {
 
 func setFrom[T comparable](i Enumerator[T]) set[T] {
 	m := set[T]{}
-	for t, ok := i(); ok; t, ok = i() {
+	for t, ok := i().Get(); ok; t, ok = i().Get() {
 		m.Add(t)
 	}
 	return m

@@ -1,23 +1,23 @@
 package linq
 
 func valueEnumerator[T any](t T) Enumerator[T] {
-	done := false
-	return func() (T, bool) {
-		valid := !done
-		done = true
-		return t, valid
+	ok := true
+	return func() Maybe[T] {
+		valid := ok
+		ok = false
+		return NewMaybe(t, valid)
 	}
 }
 
 func sliceEnumerator[T any](s []T) Enumerator[T] {
-	i := -1
-	return func() (T, bool) {
-		if i++; i == len(s) {
-			i--
-			var t T
-			return t, false
+	i := 0
+	return func() Maybe[T] {
+		if i == len(s) {
+			return No[T]()
 		}
-		return s[i], true
+		t := s[i]
+		i++
+		return Some(t)
 	}
 }
 
@@ -27,7 +27,11 @@ func From[T any](t ...T) Query[T] {
 		return None[T]()
 	}
 
-	return NewQuery(func() Enumerator[T] {
-		return sliceEnumerator(t)
-	}, FastCountOption[T](len(t)))
+	return NewQuery(
+		func() Enumerator[T] {
+			return sliceEnumerator(t)
+		},
+		FastCountOption[T](len(t)),
+		FastGetOption(LenGetGetter(len(t), func(i int) T { return t[i] })),
+	)
 }
