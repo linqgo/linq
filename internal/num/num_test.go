@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq
+package num_test
 
 import (
 	"math"
+	"testing"
 
-	"golang.org/x/exp/constraints"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/internal/num"
 )
 
-type number interface {
-	realNumber | constraints.Complex
-}
+func TestNaN(t *testing.T) {
+	t.Parallel()
 
-type realNumber interface {
-	constraints.Integer | constraints.Float
+	assert.True(t, math.IsNaN(num.NaN))
 }
-
-var nan = math.NaN()

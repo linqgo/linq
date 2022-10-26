@@ -12,29 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq_test
+package num
 
 import (
-	"testing"
+	"math"
 
-	"github.com/linqgo/linq"
-
-	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/constraints"
 )
 
-func TestAverage(t *testing.T) {
-	t.Parallel()
-
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, linq.Average(data))
-		assertNo(t, linq.Average(emptyNums))
-	}
+type Number interface {
+	RealNumber | constraints.Complex
 }
 
-func TestSum(t *testing.T) {
-	t.Parallel()
-
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assert.EqualValues(t, 55, linq.Sum(data))
-	}
+type RealNumber interface {
+	constraints.Integer | constraints.Float
 }
+
+var NaN = math.NaN()

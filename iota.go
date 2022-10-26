@@ -14,10 +14,10 @@
 
 package linq
 
-import "golang.org/x/exp/constraints"
+import "github.com/linqgo/linq/internal/num"
 
 // Iota returns a query with all integers from 0 up.
-func Iota[I constraints.Integer]() Query[I] {
+func Iota[I num.RealNumber]() Query[I] {
 	return NewQuery(
 		func() Enumerator[I] {
 			var i I
@@ -32,17 +32,17 @@ func Iota[I constraints.Integer]() Query[I] {
 }
 
 // Iota1 returns a query with all integers in the range [0, stop).
-func Iota1[I constraints.Integer](stop I) Query[I] {
+func Iota1[I num.RealNumber](stop I) Query[I] {
 	return Iota3(0, stop, 1)
 }
 
 // Iota2 returns a query with all integers in the range [start, stop).
-func Iota2[I constraints.Integer](start, stop I) Query[I] {
+func Iota2[I num.RealNumber](start, stop I) Query[I] {
 	return Iota3(start, stop, 1)
 }
 
 // Iota3 returns a query with every step-th integer in the range [start, stop).
-func Iota3[I constraints.Integer](start, stop, step I) Query[I] {
+func Iota3[I num.RealNumber](start, stop, step I) Query[I] {
 	switch {
 	case step > 0:
 		n := int((stop-start-1)/step + 1)
