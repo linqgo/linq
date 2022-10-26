@@ -9,9 +9,9 @@ func FromString(s string) Query[rune] {
 	}
 	return NewQuery(func() Enumerator[rune] {
 		r := strings.NewReader(s)
-		return func() (rune, bool) {
+		return func() Maybe[rune] {
 			ch, _, err := r.ReadRune()
-			return ch, err == nil
+			return NewMaybe(ch, err == nil)
 		}
 	}, FastCountOption[rune](len(s)))
 }

@@ -21,10 +21,10 @@ func TestUnion(t *testing.T) {
 	assertOneShot(t, true, linq.Union(f(1, 2, 3), oneshot()))
 	assertOneShot(t, true, linq.Union(oneshot(), oneshot()))
 
-	assertFastCountEqual(t, 3, linq.Union(f(), f(3, 4, 5)))
-	assertFastCountEqual(t, 3, linq.Union(f(1, 2, 3), f()))
-	assertNoFastCount(t, linq.Union(f(1, 2, 3), f(3, 4, 5)))
-	assertNoFastCount(t, linq.Union(oneshot(), f(3, 4, 5)))
-	assertNoFastCount(t, linq.Union(f(1, 2, 3), oneshot()))
-	assertNoFastCount(t, linq.Union(oneshot(), oneshot()))
+	assertSome(t, 3, linq.Union(f(), f(3, 4, 5)).FastCount())
+	assertSome(t, 3, linq.Union(f(1, 2, 3), f()).FastCount())
+	assertNo(t, linq.Union(f(1, 2, 3), f(3, 4, 5)).FastCount())
+	assertNo(t, linq.Union(oneshot(), f(3, 4, 5)).FastCount())
+	assertNo(t, linq.Union(f(1, 2, 3), oneshot()).FastCount())
+	assertNo(t, linq.Union(oneshot(), oneshot()).FastCount())
 }

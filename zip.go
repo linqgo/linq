@@ -12,11 +12,11 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 		func() Enumerator[R] {
 			var aok, bok bool
 			next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-			return func() (r R, ok bool) {
-				if ab, ok := next(); ok {
-					return zip(ab.Values()), true
+			return func() Maybe[R] {
+				if ab, ok := next().Get(); ok {
+					return Some(zip(ab.KV()))
 				}
-				return r, false
+				return No[R]()
 			}
 		},
 		OneShotOption[R](a.OneShot() || b.OneShot()),
@@ -62,19 +62,19 @@ func zipEnumerator[A, B any](
 	a Enumerator[A],
 	b Enumerator[B],
 	aok, bok *bool,
-) func() (ab KV[A, B], ok bool) {
-	return func() (ab KV[A, B], ok bool) {
-		x, xok := a()
-		y, yok := b()
+) func() Maybe[KV[A, B]] {
+	return func() Maybe[KV[A, B]] {
+		x, xok := a().Get()
+		y, yok := b().Get()
 		if !xok {
 			*aok, *bok = xok, yok
-			return ab, false
+			return No[KV[A, B]]()
 		}
 		if !yok {
 			*aok, *bok = xok, yok
-			return ab, false
+			return No[KV[A, B]]()
 		}
 		*aok, *bok = xok, yok
-		return NewKV(x, y), true
+		return Some(NewKV(x, y))
 	}
 }

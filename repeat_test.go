@@ -17,7 +17,7 @@ func TestRepeat(t *testing.T) {
 
 	assertOneShot(t, false, linq.Repeat(1, 5))
 
-	assertFastCountEqual(t, 5, linq.Repeat(1, 5))
+	assertSome(t, 5, linq.Repeat(1, 5).FastCount())
 }
 
 func TestRepeatForever(t *testing.T) {
@@ -27,5 +27,25 @@ func TestRepeatForever(t *testing.T) {
 
 	assertOneShot(t, false, linq.RepeatForever(42))
 
-	assertNoFastCount(t, linq.RepeatForever(42))
+	assertNo(t, linq.RepeatForever(42).FastCount())
+}
+
+func TestRepeatElementAt(t *testing.T) {
+	t.Parallel()
+
+	q := linq.Repeat(42, 10)
+	assertSome(t, 42, q.FastElementAt(0))
+	assertSome(t, 42, q.FastElementAt(5))
+	assertSome(t, 42, q.FastElementAt(9))
+	assertNo(t, q.FastElementAt(10))
+	assertNo(t, q.FastElementAt(-1))
+}
+
+func TestRepeatForeverElementAt(t *testing.T) {
+	t.Parallel()
+
+	q := linq.RepeatForever(42)
+	assertSome(t, 42, q.FastElementAt(0))
+	assertSome(t, 42, q.FastElementAt(999))
+	assertNo(t, q.FastElementAt(-1))
 }

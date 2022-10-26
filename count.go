@@ -29,19 +29,13 @@ func (q Query[T]) CountLimitTrue(limit int) (int, bool) {
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
-func (q Query[T]) FastCount() (int, bool) {
+func (q Query[T]) FastCount() Maybe[int] {
 	return FastCount(q)
-}
-
-// FastCount returns the number of elements in q if it can be computed in O(1)
-// time, otherwise it panics.
-func (q Query[T]) MustFastCount() int {
-	return MustFastCount(q)
 }
 
 // Count returns the number of elements in q.
 func Count[T any](q Query[T]) int {
-	if c, ok := q.FastCount(); ok {
+	if c, ok := q.FastCount().Get(); ok {
 		return c
 	}
 	return Drain(q.Enumerator())
@@ -67,7 +61,7 @@ func CountLimit[T any](q Query[T], limit int) int {
 //
 // The second return value is true if the returned count is the true count.
 func CountLimitTrue[T any](q Query[T], limit int) (int, bool) {
-	if c, ok := FastCount(q); ok {
+	if c, ok := FastCount(q).Get(); ok {
 		return c, true
 	}
 
@@ -79,16 +73,7 @@ func CountLimitTrue[T any](q Query[T], limit int) (int, bool) {
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
-func FastCount[T any](q Query[T]) (int, bool) {
+func FastCount[T any](q Query[T]) Maybe[int] {
 	count := q.fastCount()
-	return count, count >= 0
-}
-
-// FastCount returns the number of elements in q if it can be computed in O(1)
-// time, otherwise it panics.
-func MustFastCount[T any](q Query[T]) int {
-	if c, ok := FastCount(q); ok {
-		return c
-	}
-	panic(noFastCountError)
+	return NewMaybe(count, count >= 0)
 }

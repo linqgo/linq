@@ -67,14 +67,14 @@ func readerQuery[T any](read func() (T, error)) Query[T] {
 }
 
 func readerEnumerator[T any](read func() (T, error)) Enumerator[T] {
-	return func() (T, bool) {
+	return func() Maybe[T] {
 		c, err := read()
 		if err == nil {
-			return c, true
+			return Some(c)
 		}
 		if err != io.EOF {
 			panic(err)
 		}
-		return c, false
+		return No[T]()
 	}
 }

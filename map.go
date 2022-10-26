@@ -11,11 +11,11 @@ func FromMap[K comparable, V any](m map[K]V) Query[KV[K, V]] {
 			keys = append(keys, k)
 		}
 		ki := From(keys...).Enumerator()
-		return func() (kv KV[K, V], ok bool) {
-			if key, ok := ki(); ok {
-				return KV[K, V]{Key: key, Value: m[key]}, true
+		return func() Maybe[KV[K, V]] {
+			if key, ok := ki().Get(); ok {
+				return Some(NewKV(key, m[key]))
 			}
-			return kv, ok
+			return No[KV[K, V]]()
 		}
 	}, FastCountOption[KV[K, V]](len(m)))
 }
@@ -55,7 +55,7 @@ func SelectValues[K, V any](q Query[KV[K, V]]) Query[V] {
 func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U, error) {
 	next := q.Enumerator()
 	ret := map[K]U{}
-	for t, ok := next(); ok; t, ok = next() {
+	for t, ok := next().Get(); ok; t, ok = next().Get() {
 		kv := sel(t)
 		if _, ok := ret[kv.Key]; ok {
 			return nil, errorf("duplicate key %v", kv.Key)

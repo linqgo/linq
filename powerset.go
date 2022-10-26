@@ -13,8 +13,7 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 	// Slight problem: If FastCount(q) >= 64, then the actual count can't be
 	// represented with an int.
 	count := -1
-	c, ok := FastCount(q)
-	if ok && count < positiveIntBits {
+	if c, ok := FastCount(q).Get(); ok && count < positiveIntBits {
 		count = 1 << c
 	}
 
@@ -22,31 +21,31 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 		var cache []T
 		var mask uint64 = 0
 		mask--
-		return func() (q Query[T], ok bool) {
+		return func() Maybe[Query[T]] {
 			mask++
 			if mask > 0 && mask&(mask-1) == 0 {
 				// New bit
-				t, ok := next()
+				t, ok := next().Get()
 				if !ok {
 					mask--
-					return q, false
+					return No[Query[T]]()
 				}
 				cache = append(cache, t)
 			}
-			return powerSubSet(cache, mask), true
+			return Some(powerSubSet(cache, mask))
 		}
 	}, FastCountOption[Query[T]](count))
 }
 
 func powerSubSet[T any](cache []T, mask uint64) Query[T] {
 	return NewQuery(func() Enumerator[T] {
-		return func() (t T, ok bool) {
+		return func() Maybe[T] {
 			if mask == 0 {
-				return t, false
+				return No[T]()
 			}
 			i := bits.TrailingZeros64(mask)
 			mask &= mask - 1
-			return cache[i], true
+			return Some(cache[i])
 		}
 	}, FastCountOption[T](bits.OnesCount64(mask)))
 }

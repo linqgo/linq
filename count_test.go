@@ -39,22 +39,29 @@ func TestCountLimit(t *testing.T) {
 	assert.Equal(t, 3, linq.FromChannel(c).CountLimit(3))
 }
 
+type countTrue[T any] struct {
+	t      T
+	isTrue bool
+}
+
+func ct[T any](t T, isTrue bool) countTrue[T] {
+	return countTrue[T]{t: t, isTrue: isTrue}
+}
+
 func TestCountLimitTrue(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, maybe(0, true), maybe(linq.From[int]().CountLimitTrue(10)))
-	assert.Equal(t, maybe(5, true), maybe(linq.From(1, 2, 3, 4, 5).CountLimitTrue(3)))
-	assert.Equal(t, maybe(5, true), maybe(linq.From(1, 2, 3, 4, 5).CountLimitTrue(10)))
+	assert.Equal(t, ct(0, true), ct(linq.From[int]().CountLimitTrue(10)))
+	assert.Equal(t, ct(5, true), ct(linq.From(1, 2, 3, 4, 5).CountLimitTrue(3)))
+	assert.Equal(t, ct(5, true), ct(linq.From(1, 2, 3, 4, 5).CountLimitTrue(10)))
 
-	assert.Equal(t, maybe(3, false), maybe(chanof(1, 2, 3, 4, 5).CountLimitTrue(3)))
-	assert.Equal(t, maybe(3, true), maybe(chanof(1, 2, 3).CountLimitTrue(5)))
+	assert.Equal(t, ct(3, false), ct(chanof(1, 2, 3, 4, 5).CountLimitTrue(3)))
+	assert.Equal(t, ct(3, true), ct(chanof(1, 2, 3).CountLimitTrue(5)))
 }
 
 func TestFastCount(t *testing.T) {
 	t.Parallel()
 
-	assertFastCountEqual(t, 5, linq.Iota1(5))
-	assert.Equal(t, 5, linq.Iota1(5).MustFastCount())
-	assertNoFastCount(t, linq.Iota[int]())
-	assert.Panics(t, func() { linq.Iota[int]().MustFastCount() })
+	assertSome(t, 5, linq.Iota1(5).FastCount())
+	assertNo(t, linq.Iota[int]().FastCount())
 }

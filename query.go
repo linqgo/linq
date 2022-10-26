@@ -48,6 +48,13 @@ func (q Query[T]) lesser() lesserFunc[T] {
 	return nil
 }
 
+func (q Query[T]) getter() Getter[T] {
+	if q.extra != nil {
+		return q.extra.get
+	}
+	return nil
+}
+
 func (q *Query[T]) fastCount() int {
 	return q.count
 }
@@ -72,6 +79,18 @@ func FastCountIfEmptyOption[T any](count int) QueryOption[T] {
 		return nil
 	}
 	return FastCountOption[T](0)
+}
+
+// FastGetOption is used when implement a third-party Query.
+// If any element can be accessed by index in O(1) time, the accessor may be
+// supplied via this option.
+func FastGetOption[T any](get Getter[T]) QueryOption[T] {
+	if get != nil {
+		return func(q *queryExtra[T], count *int) {
+			q.get = get
+		}
+	}
+	return nil
 }
 
 // OneShotOption is used when implementing a third-party Query.
@@ -113,9 +132,8 @@ func ComputedFastCountOption[T any](
 	compute func(count int) int,
 ) QueryOption[T] {
 	if count >= 0 {
-		return func(e *queryExtra[T], c *int) {
-			*c = compute(count)
-		}
+		n := compute(count)
+		return func(e *queryExtra[T], c *int) { *c = n }
 	}
 	return nil
 }
@@ -128,6 +146,7 @@ func LesserOption[T any](lesser lesserFunc[T]) QueryOption[T] {
 
 type queryExtra[T any] struct {
 	lesser  lesserFunc[T]
+	get     Getter[T]
 	oneShot bool
 }
 

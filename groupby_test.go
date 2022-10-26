@@ -27,9 +27,9 @@ func TestGroupBy(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.GroupBy(oneshot(), mod2))
 
-	assertFastCountEqual(t, 0, linq.GroupBy(linq.None[int](), mod2))
-	assertNoFastCount(t, q)
-	assertNoFastCount(t, linq.GroupBy(slowcount, mod2))
+	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
+	assertNo(t, q.FastCount())
+	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
 }
 
 func TestGroupBySlices(t *testing.T) {
@@ -47,9 +47,9 @@ func TestGroupBySlices(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.GroupBySlices(linq.FromChannel(make(chan int)), mod2))
 
-	assertFastCountEqual(t, 0, linq.GroupBy(linq.None[int](), mod2))
-	assertNoFastCount(t, q)
-	assertNoFastCount(t, linq.GroupBy(slowcount, mod2))
+	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
+	assertNo(t, q.FastCount())
+	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
 }
 
 func TestGroupBySelect(t *testing.T) {
@@ -75,15 +75,15 @@ func TestGroupBySelect(t *testing.T) {
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertFastCountEqual(t, 0, linq.GroupBySelect(
+	assertSome(t, 0, linq.GroupBySelect(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	))
-	assertNoFastCount(t, q)
-	assertNoFastCount(t, linq.GroupBySelect(
+	).FastCount())
+	assertNo(t, q.FastCount())
+	assertNo(t, linq.GroupBySelect(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	))
+	).FastCount())
 }
 
 func TestGroupBySelectSlices(t *testing.T) {
@@ -105,13 +105,13 @@ func TestGroupBySelectSlices(t *testing.T) {
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertFastCountEqual(t, 0, linq.GroupBySelectSlices(
+	assertSome(t, 0, linq.GroupBySelectSlices(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	))
-	assertNoFastCount(t, q)
-	assertNoFastCount(t, linq.GroupBySelectSlices(
+	).FastCount())
+	assertNo(t, q.FastCount())
+	assertNo(t, linq.GroupBySelectSlices(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	))
+	).FastCount())
 }

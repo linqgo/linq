@@ -51,15 +51,14 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 }
 
 func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
-	next := noneEnumerator[T]
-	return func() (T, bool) {
+	next := No[T]
+	return func() Maybe[T] {
 		for {
-			if t, ok := next(); ok {
-				return t, ok
+			if t := next(); t.Valid() {
+				return t
 			}
 			if len(nexts) == 0 {
-				var t T
-				return t, false
+				return No[T]()
 			}
 			next, nexts = nexts[0], nexts[1:]
 		}

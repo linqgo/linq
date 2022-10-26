@@ -91,15 +91,8 @@ func Zero[U, T any](T) U {
 // Drain consumes next and returns the number of elements consumed.
 func Drain[T any](next Enumerator[T]) int {
 	n := 0
-	for _, ok := next(); ok; _, ok = next() {
+	for t := next(); t.Valid(); t = next() {
 		n++
 	}
 	return n
-}
-
-func valueElse[T any](t T, ok bool, alt T) T { //nolint:revive
-	if ok {
-		return t
-	}
-	return alt
 }

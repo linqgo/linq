@@ -21,16 +21,15 @@ func Every[T any](q Query[T], n int) Query[T] {
 func EveryFrom[T any](q Query[T], start, n int) Query[T] {
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		skip := start
-		return func() (T, bool) {
-			for t, ok := next(); ok; t, ok = next() {
+		return func() Maybe[T] {
+			for t := next(); t.Valid(); t = next() {
 				if skip == 0 {
 					skip = n - 1
-					return t, true
+					return t
 				}
 				skip--
 			}
-			var t T
-			return t, false
+			return No[T]()
 		}
 	}, ComputedFastCountOption[T](q.fastCount(), func(count int) int {
 		return (count-start-1)/n + 1

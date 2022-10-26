@@ -26,5 +26,5 @@ func TestString(t *testing.T) {
 
 	assertOneShot(t, false, linq.FromString("abc"))
 
-	assertFastCountEqual(t, 3, linq.FromString("abc"))
+	assertSome(t, 3, linq.FromString("abc").FastCount())
 }

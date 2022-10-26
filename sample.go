@@ -38,13 +38,13 @@ func SampleSeed[T any](q Query[T], p float64, seed int64) Query[T] {
 	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
 		src := rand.NewSource(seed)
 		rnd := rand.New(src)
-		return func() (t T, ok bool) {
-			for t, ok = next(); ok; t, ok = next() {
+		return func() Maybe[T] {
+			for t := next(); t.Valid(); t = next() {
 				if rnd.Float64() < p {
-					return t, ok
+					return t
 				}
 			}
-			return t, ok
+			return No[T]()
 		}
 	})
 }

@@ -8,25 +8,32 @@ import (
 	"github.com/linqgo/linq"
 )
 
-type result[T any] struct {
-	t  T
-	ok bool
-}
-
-func maybe[T any](t T, ok bool) result[T] {
-	return result[T]{t: t, ok: ok}
-}
-
-func assertNoResult[T any](t *testing.T, r result[T]) bool {
+func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
 	t.Helper()
 
-	return assert.False(t, r.ok, r.t)
+	v, valid := m.Get()
+	return assert.False(t, valid, v)
 }
 
-func assertResultEqual[T any](t *testing.T, expected T, r result[T]) bool {
+func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
 	t.Helper()
 
-	return assert.True(t, r.ok) && assert.Equal(t, expected, r.t)
+	v, valid := m.Get()
+	return assert.True(t, valid) && assert.Equal(t, expected, v)
+}
+
+func assertSomeInEpsilon[T any](t *testing.T, expected T, m linq.Maybe[T], ε float64) bool {
+	t.Helper()
+
+	v, valid := m.Get()
+	return assert.True(t, valid) && assert.InEpsilon(t, expected, v, ε)
+}
+
+func assertSomeQuery[T any](t *testing.T, expected []T, m linq.Maybe[linq.Query[T]]) bool {
+	t.Helper()
+
+	v, valid := m.Get()
+	return assert.True(t, valid) && assertQueryEqual(t, expected, v)
 }
 
 func assertQueryElementsMatch[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
@@ -56,12 +63,9 @@ func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) 
 	t.Helper()
 
 	next := q.Enumerator()
-	for _, ok := next(); ok; {
-		_, ok = next()
-	}
-	var ok bool
-	return assert.NotPanics(t, func() { _, ok = next() }) &&
-		assert.False(t, ok)
+	linq.Drain(next)
+	var m linq.Maybe[T]
+	return assert.NotPanics(t, func() { m = next() }) && assertNo(t, m)
 }
 
 func assertAll[R any](
@@ -78,10 +82,7 @@ func assertAll[R any](
 }
 
 func oneshot() linq.Query[int] {
-	c := make(chan int, 1)
-	c <- 42
-	close(c)
-	return linq.FromChannel(c)
+	return chanof(42)
 }
 
 var slowcount = oneshot()
@@ -98,14 +99,4 @@ func chanof[T any](t ...T) linq.Query[T] {
 func assertOneShot[T any](t *testing.T, oneshot bool, q linq.Query[T]) bool {
 	t.Helper()
 	return assert.Equal(t, oneshot, q.OneShot())
-}
-
-func assertFastCountEqual[T any](t *testing.T, expected int, q linq.Query[T]) bool {
-	t.Helper()
-	return assertResultEqual(t, expected, maybe(q.FastCount()))
-}
-
-func assertNoFastCount[T any](t *testing.T, q linq.Query[T]) bool {
-	t.Helper()
-	return assertNoResult(t, maybe(q.FastCount()))
 }

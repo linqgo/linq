@@ -18,7 +18,7 @@ func TestDefaultIfEmpty(t *testing.T) {
 	assertOneShot(t, false, linq.From(1, 2, 3).DefaultIfEmpty(42))
 	assertOneShot(t, true, oneshot().DefaultIfEmpty(42))
 
-	assertFastCountEqual(t, 1, linq.From[int]().DefaultIfEmpty(42))
-	assertFastCountEqual(t, 3, linq.From(1, 2, 3).DefaultIfEmpty(42))
-	assertNoFastCount(t, oneshot().DefaultIfEmpty(42))
+	assertSome(t, 1, linq.From[int]().DefaultIfEmpty(42).FastCount())
+	assertSome(t, 3, linq.From(1, 2, 3).DefaultIfEmpty(42).FastCount())
+	assertNo(t, oneshot().DefaultIfEmpty(42).FastCount())
 }

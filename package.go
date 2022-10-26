@@ -1,5 +1,7 @@
 // Package linq is a data manipulation library inspired by C# Linq.
 //
+// See the [Catalog] for a detailed functional overview of the library.
+//
 // # Usage
 //
 //	// Sample usage
@@ -37,7 +39,8 @@
 //   - AsEnumerable: not relevant to this library
 //   - Cast: doesn't map cleanly to Go's type system.
 //
-// On the flip side, this library implements a number of methods not provided by
-// .Net. They are catalogued at
-// https://github.com/linqgo/linq/wiki/Functional-Catalog.
+// On the flip side, this library implements a number of methods not provided
+// by .Net.
+//
+// [Catalog]: https://github.com/linqgo/linq/blob/main/doc/catalog.md
 package linq

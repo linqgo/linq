@@ -22,7 +22,7 @@ func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
 }
 
 func (b *lookupBuilder[T, K]) Next() bool {
-	if t, ok := b.next(); ok {
+	if t, ok := b.next().Get(); ok {
 		k := b.key(t)
 		b.lup[k] = append(b.lup[k], t)
 		return true

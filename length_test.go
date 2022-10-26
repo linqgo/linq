@@ -26,27 +26,23 @@ func TestShorter(t *testing.T) {
 				qa.Shorter(qb), linq.Shorter(qa, qb),
 				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa, chanof([]rune(b)...)),
 				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...), qb),
-				qa.MustFastShorter(qb), linq.MustFastShorter(qa, qb),
+				qa.FastShorter(qb).Must(), linq.FastShorter(qa, qb).Must(),
 			)
 
-			assertAll(t, func(qr result[bool]) bool {
-				return assert.True(t, qr.ok) && assert.Equal(t, sr, qr.t,
-					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr.t)
+			assertAll(t, func(qr linq.Maybe[bool]) bool {
+				v, valid := qr.Get()
+				return assert.True(t, valid) && assert.Equal(t, sr, v,
+					"len(%q) < len(%q) expected %v, got %v", a, b, sr, v)
 			},
-				maybe(qa.FastShorter(qb)), maybe(linq.FastShorter(qa, qb)),
+				qa.FastShorter(qb), linq.FastShorter(qa, qb),
 			)
 
-			assertAll(t, func(qr result[bool]) bool { return assert.False(t, qr.ok, qr.t) },
-				maybe(qa.FastShorter(chanof([]rune(b)...))),
-				maybe(linq.FastShorter(qa, chanof([]rune(b)...))),
-				maybe(chanof([]rune(a)...).FastShorter(qb)),
-				maybe(linq.FastShorter(chanof([]rune(a)...), qb)),
+			assertAll(t, func(qr linq.Maybe[bool]) bool { return assertNo(t, qr) },
+				qa.FastShorter(chanof([]rune(b)...)),
+				linq.FastShorter(qa, chanof([]rune(b)...)),
+				chanof([]rune(a)...).FastShorter(qb),
+				linq.FastShorter(chanof([]rune(a)...), qb),
 			)
-
-			assert.Panics(t, func() { qa.MustFastShorter(chanof([]rune(b)...)) })
-			assert.Panics(t, func() { linq.MustFastShorter(qa, chanof([]rune(b)...)) })
-			assert.Panics(t, func() { chanof([]rune(a)...).MustFastShorter(qb) })
-			assert.Panics(t, func() { linq.MustFastShorter(chanof([]rune(a)...), qb) })
 		}
 	}
 }
@@ -69,27 +65,23 @@ func TestLonger(t *testing.T) {
 				qa.Longer(qb), linq.Longer(qa, qb),
 				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa, chanof([]rune(b)...)),
 				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...), qb),
-				qa.MustFastLonger(qb), linq.MustFastLonger(qa, qb),
+				qa.FastLonger(qb).Must(), linq.FastLonger(qa, qb).Must(),
 			)
 
-			assertAll(t, func(qr result[bool]) bool {
-				return assert.True(t, qr.ok) && assert.Equal(t, sr, qr.t,
-					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr.t)
+			assertAll(t, func(qr linq.Maybe[bool]) bool {
+				v, valid := qr.Get()
+				return assert.True(t, valid) && assert.Equal(t, sr, v,
+					"len(%q) < len(%q) expected %v, got %v", a, b, sr, v)
 			},
-				maybe(qa.FastLonger(qb)), maybe(linq.FastLonger(qa, qb)),
+				qa.FastLonger(qb), linq.FastLonger(qa, qb),
 			)
 
-			assertAll(t, func(qr result[bool]) bool { return assert.False(t, qr.ok, qr.t) },
-				maybe(qa.FastLonger(chanof([]rune(b)...))),
-				maybe(linq.FastLonger(qa, chanof([]rune(b)...))),
-				maybe(chanof([]rune(a)...).FastLonger(qb)),
-				maybe(linq.FastLonger(chanof([]rune(a)...), qb)),
+			assertAll(t, func(qr linq.Maybe[bool]) bool { return assertNo(t, qr) },
+				qa.FastLonger(chanof([]rune(b)...)),
+				linq.FastLonger(qa, chanof([]rune(b)...)),
+				chanof([]rune(a)...).FastLonger(qb),
+				linq.FastLonger(chanof([]rune(a)...), qb),
 			)
-
-			assert.Panics(t, func() { qa.MustFastLonger(chanof([]rune(b)...)) })
-			assert.Panics(t, func() { linq.MustFastLonger(qa, chanof([]rune(b)...)) })
-			assert.Panics(t, func() { chanof([]rune(a)...).MustFastLonger(qb) })
-			assert.Panics(t, func() { linq.MustFastLonger(chanof([]rune(a)...), qb) })
 		}
 	}
 }

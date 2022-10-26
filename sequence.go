@@ -46,14 +46,14 @@ func SequenceEqual[T comparable](a, b Query[T]) bool {
 // and each sequential element from a equals the corresponding sequential
 // element from b. The eq function is called to determine equality.
 func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
-	if lenDiff, ok := fastLenDiff(a, b); ok && lenDiff != 0 {
+	if lenDiff, ok := fastLenDiff(a, b).Get(); ok && lenDiff != 0 {
 		return false
 	}
 
 	var aok, bok bool
 	next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-	for ab, ok := next(); ok; ab, ok = next() {
-		x, y := ab.Values()
+	for ab, ok := next().Get(); ok; ab, ok = next().Get() {
+		x, y := ab.KV()
 		if !eq(x, y) {
 			return false
 		}
@@ -108,8 +108,8 @@ func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
 func SequenceLessComp[T any](a, b Query[T], less func(a, b T) bool) bool {
 	var aok, bok bool
 	next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-	for ab, ok := next(); ok; ab, ok = next() {
-		x, y := ab.Values()
+	for ab, ok := next().Get(); ok; ab, ok = next().Get() {
+		x, y := ab.KV()
 		if less(x, y) {
 			return true
 		}
