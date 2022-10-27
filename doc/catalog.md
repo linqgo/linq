@@ -48,8 +48,7 @@ available as methods.
         <li><code>Ⓜ️[Fast]ElementAt</code></li>
         <li><code>Ⓜ️First[Comp⁺]</code></li>
         <li><code>Ⓜ️Last</code></li>
-        <li><code>Max[By]</code></li>
-        <li><code>Min[By]</code></li>
+        <li><code>{Max,Min}[By]</code></li>
         <li><code>Ⓜ️Single⁺</code></li>
     </ul>
     <h4>Predicate</h4>
@@ -66,8 +65,6 @@ available as methods.
         <li><code>Ⓜ️Append,Ⓜ️Prepend</code></li>
         <li><code>Ⓜ️Concat</code></li>
     </ul>
-</td>
-<td>
     <h4>Transform</h4>
     <ul>
         <li><code>Index[From]⁺</code></li>
@@ -76,6 +73,8 @@ available as methods.
         <li><code>Unzip[KV]⁺</code></li>
         <li><code>Zip[KV⁺]</code></li>
     </ul>
+</td>
+<td>
     <h4>Filter</h4>
     <ul>
         <li><code>Distinct[By]</code></li>
