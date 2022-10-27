@@ -45,6 +45,26 @@ func TestMemoize(t *testing.T) {
 	assertOneShot(t, false, linq.OfType[int](m))
 }
 
+func TestMemoizeTwofer(t *testing.T) {
+	t.Parallel()
+
+	m := linq.FromChannel(fiveInts()).Memoize()
+	a := m.Enumerator()
+	b := m.Enumerator()
+	assertSome(t, 0, a())
+	assertSome(t, 0, b())
+	assertSome(t, 1, a())
+	assertSome(t, 2, a())
+	assertSome(t, 1, b())
+	assertSome(t, 2, b())
+	assertSome(t, 3, b())
+	assertSome(t, 3, a())
+	assertSome(t, 4, a())
+	assertSome(t, 4, b())
+	assertNo(t, a())
+	assertNo(t, b())
+}
+
 func TestMemoizeParallel(t *testing.T) {
 	t.Parallel()
 

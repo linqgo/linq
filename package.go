@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package linq is a data manipulation library inspired by C# Linq.
+// Package linq is a data manipulation library inspired by .Net Linq.
 //
 // See the [Catalog] for a detailed functional overview of the library.
 //

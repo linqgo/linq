@@ -21,7 +21,7 @@ import (
 // Average returns the arithmetic mean of the numbers in q or ok = false if q is
 // empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".ArithmeticMean.
+// This function is equivalent to "github.com/linqgo/linq/stats".Mean.
 // It is retained here for parity with .Net's Enumerable class.
 func Average[R num.RealNumber](q Query[R]) Maybe[R] {
 	if sum, n := aggregateN(q, 0, add[R]); n > 0 {
@@ -32,8 +32,8 @@ func Average[R num.RealNumber](q Query[R]) Maybe[R] {
 
 // Sum returns the sum of the num.Numbers in q or 0 if q is empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".Sum. It remains
-// here for parity with the C# Enumerable class.
+// This function is equivalent to "github.com/linqgo/linq/stats".Sum. It is
+// retained here for parity with .Net's Enumerable class.
 func Sum[R num.Number](q Query[R]) R {
 	return aggregate(q, 0, add[R])
 }

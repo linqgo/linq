@@ -23,12 +23,12 @@ import (
 	"github.com/linqgo/linq/internal/num"
 )
 
-// ArithmeticMean returns the arithmetic mean of the numbers in q or ok = false
+// Mean returns the arithmetic mean of the numbers in q or ok = false
 // if q is empty.
 //
 // This function is equivalent to "github.com/linqgo/linq".Average, which is
 // retained for parity with .Net's Enumerable class.
-func ArithmeticMean[R num.RealNumber](q linq.Query[R]) linq.Maybe[R] {
+func Mean[R num.RealNumber](q linq.Query[R]) linq.Maybe[R] {
 	return linq.Average(q)
 }
 

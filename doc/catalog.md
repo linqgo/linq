@@ -13,6 +13,8 @@ available as methods.
 - `⁺` - new capability, not ported from .Net
 - `term1,term2...` - one of term1, term2…
 
+## github.com/linqgo/linq
+
 <table><tbody><tr>
 <td>
     <h4>Query methods</h4>
@@ -39,14 +41,7 @@ available as methods.
     <ul>
         <li><code>Ⓜ️Aggregate[Seed]</code></li>
         <li><code>Ⓜ️Count[Limit[True]⁺],Ⓜ️FastCount⁺</code></li>
-    </ul>
-    <h4>Math aggregation</h4>
-    <ul>
-        <li><code>Average</code></li>
-        <li><code>GeometricMean⁺</code></li>
-        <li><code>HarmonicMean⁺</code></li>
-        <li><code>Product⁺</code></li>
-        <li><code>Sum</code></li>
+        <li><code>Average,Sum</code></li>
     </ul>
     <h4>Element selection</h4>
     <ul>
@@ -131,6 +126,21 @@ available as methods.
         <li><code>Ⓜ️DefaultIfEmpty</code></li>
         <li><code>Ⓜ️Memoize⁺</code></li>
         <li><code>NewKV</code></li>
+    </ul>
+</td>
+</tr></tbody></table>
+
+## github.com/linqgo/linq/stats
+
+<table><tbody><tr>
+<td>
+    <h4>Math aggregation</h4>
+    <ul>
+        <li><code>[Acc⁺]Mean</code></li>
+        <li><code>[Acc]GeometricMean⁺</code></li>
+        <li><code>[Acc]HarmonicMean⁺</code></li>
+        <li><code>[Acc]Product⁺</code></li>
+        <li><code>[Acc⁺]Sum</code></li>
     </ul>
 </td>
 </tr></tbody></table>

@@ -23,10 +23,9 @@ import (
 	"github.com/linqgo/linq/internal/num"
 )
 
-// AccArithmeticMean accumulates the arithmetic mean of the input values within
-// a sliding window. Use the Window... functions to construct a suitable input
-// window.
-func AccArithmeticMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
+// AccMean accumulates the arithmetic mean of the input values within a sliding
+// window. Use the Window... functions to construct a suitable input window.
+func AccMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
 	return linq.PipeOneToOne(q, func() func(r linq.KV[R, linq.Query[R]]) R {
 		sum := R(0)
 		n := 0
@@ -39,10 +38,10 @@ func AccArithmeticMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]
 	})
 }
 
-// // AccArithmeticMean accumulates the arithmetic mean of the input values within
+// // AccMean accumulates the arithmetic mean of the input values within
 // // a sliding window. Use the Window... functions to construct a suitable input
 // // window.
-// func AccArithmeticMeanWt[W, R num.RealNumber](
+// func AccMeanWt[W, R num.RealNumber](
 // 	q linq.Query[linq.KV[linq.KV[W, R], linq.Query[linq.KV[W, R]]]],
 // ) linq.Query[R] {
 // 	return linq.PipeOneToOne(q,

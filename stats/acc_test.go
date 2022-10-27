@@ -21,18 +21,18 @@ import (
 	"github.com/linqgo/linq/stats"
 )
 
-func TestAccArithmeticMean(t *testing.T) {
+func TestAccMean(t *testing.T) {
 	t.Parallel()
 
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
-		stats.AccArithmeticMean(stats.WindowAll(linq.Repeat(2.0, 5))), 1.001)
+		stats.AccMean(stats.WindowAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5},
-		stats.AccArithmeticMean(stats.WindowAll(linq.Iota3(1, 11, 2))))
+		stats.AccMean(stats.WindowAll(linq.Iota3(1, 11, 2))))
 	assertQueryEqual(t, []int{1, 2, 4, 6, 8},
-		stats.AccArithmeticMean(stats.WindowFixed(linq.Iota3(1, 11, 2), 2)))
+		stats.AccMean(stats.WindowFixed(linq.Iota3(1, 11, 2), 2)))
 }
 
-// func TestAccArithmeticMeanWt(t *testing.T) {
+// func TestAccMeanWt(t *testing.T) {
 // 	t.Parallel()
 // }
 
