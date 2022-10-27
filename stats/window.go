@@ -57,7 +57,7 @@ func WindowAll[T any](q linq.Query[T]) linq.Query[linq.KV[T, linq.Query[T]]] {
 
 // WindowTime implements a sliding window of at most windowSize elements.
 func WindowFixed[T any](q linq.Query[T], windowSize int) linq.Query[linq.KV[T, linq.Query[T]]] {
-	return WindowValues(WindowTime(linq.Index(q), windowSize))
+	return windowValues(WindowTime(linq.Index(q), windowSize))
 }
 
 // WindowTime implements a sliding window of elements that are younger than the
@@ -71,7 +71,7 @@ func WindowTime[Time num.RealNumber, T any](
 	})
 }
 
-func WindowValues[K, V any](
+func windowValues[K, V any](
 	q linq.Query[linq.KV[linq.KV[K, V], linq.Query[linq.KV[K, V]]]],
 ) linq.Query[linq.KV[V, linq.Query[V]]] {
 	return linq.Select(q,
