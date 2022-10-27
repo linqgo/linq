@@ -12,29 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq_test
+package stats_test
 
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/stats"
 )
 
-func TestAverage(t *testing.T) {
+func TestWindowAll(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, linq.Average(data))
-		assertNo(t, linq.Average(emptyNums))
+	s := stats.WindowAll(chanof(1, 2, 3)).ToSlice()
+	for i, kv := range s {
+		assert.Equal(t, i+1, kv.Key)
+		assertQueryEqual(t, []int{}, kv.Value)
 	}
 }
 
-func TestSum(t *testing.T) {
+func TestWindowFixed(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assert.EqualValues(t, 55, linq.Sum(data))
+	s := stats.WindowFixed(chanof(1, 2, 3, 4, 5), 2).ToSlice()
+	for i, kv := range s {
+		t.Log(i, kv.Key, kv.Value.ToSlice())
+	}
+	for i, kv := range s[:2] {
+		assert.Equal(t, i+1, kv.Key)
+		assertQueryEqual(t, []int{}, kv.Value)
+	}
+	for i, kv := range s[2:] {
+		assert.Equal(t, i+3, kv.Key)
+		assertQueryEqual(t, []int{i + 1}, kv.Value)
 	}
 }

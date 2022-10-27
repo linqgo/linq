@@ -48,33 +48,49 @@ func (m *memoizer[T]) enumerator() Enumerator[T] {
 	m.once.Do(func() {
 		m.next = m.enum()
 	})
-	i := -1
-	c := m.cache
+	m.mux.Lock()
+	defer m.mux.Unlock()
+	m.next = m.enum()
+	i := 0
+	cache := m.cache
+	done := false
+
+	next := func() Maybe[T] {
+		t := cache[i]
+		i++
+		return Some(t)
+	}
+
 	return func() Maybe[T] {
-		// This is an unsafe check, since the access to done isn't protected
-		// by a mutex, but an incorrect outcome doesn't break the logic, it
-		// just misses out on the optimisation opportunity.
-		if m.done {
-			c = m.cache
+		if i < len(cache) {
+			return next()
 		}
-		if i++; i == len(c) {
-			if m.done {
-				i--
+		if done {
+			return No[T]()
+		}
+
+		// TODO: Reduce locking footprint.
+		m.mux.Lock()
+		defer m.mux.Unlock()
+
+		cache = m.cache
+		done = m.done
+		if i < len(cache) {
+			return next()
+		}
+		if m.done {
+			return No[T]()
+		}
+
+		if i == len(m.cache) {
+			t, ok := m.next().Get()
+			if !ok {
+				m.done = true
 				return No[T]()
 			}
-			m.mux.Lock()
-			defer m.mux.Unlock()
-			if i == len(m.cache) {
-				t, ok := m.next().Get()
-				if !ok {
-					i--
-					m.done = true
-					return No[T]()
-				}
-				m.cache = append(m.cache, t)
-				c = m.cache
-			}
+			m.cache = append(m.cache, t)
+			cache = m.cache
 		}
-		return Some(c[i])
+		return next()
 	}
 }

@@ -12,29 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq_test
+package stats
 
-import (
-	"testing"
+import "github.com/linqgo/linq"
 
-	"github.com/linqgo/linq"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestAverage(t *testing.T) {
-	t.Parallel()
-
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, linq.Average(data))
-		assertNo(t, linq.Average(emptyNums))
-	}
+func aggregate[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) A {
+	t, _ := aggregateN(q, acc, agg)
+	return t
 }
 
-func TestSum(t *testing.T) {
-	t.Parallel()
+func aggregateN[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) (A, int) {
+	return aggregateNEnum(q.Enumerator(), acc, agg)
+}
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assert.EqualValues(t, 55, linq.Sum(data))
+func aggregateNEnum[T, A any](next linq.Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
+	n := 0
+	for e, ok := next().Get(); ok; e, ok = next().Get() {
+		acc = agg(acc, e)
+		n++
 	}
+	return acc, n
 }

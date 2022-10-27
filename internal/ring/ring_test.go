@@ -12,39 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq
+package ring_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/internal/ring"
 )
 
-func assertRingEmptyFull[T any](t *testing.T, r *ring[T], empty, full bool) bool {
+func assertRingEmpty[T any](t *testing.T, r *ring.Ring[T], empty bool) bool {
 	t.Helper()
-	return assert.Equal(t, empty, r.Empty()) &&
-		assert.Equal(t, full, r.Full())
+	return assert.Equal(t, empty, r.Empty())
 }
 
-func assertRingPush[T any](t *testing.T, r *ring[T], x T, full bool) bool {
+func assertRingPush[T any](t *testing.T, r *ring.Ring[T], x T) bool {
 	t.Helper()
 	r.Push(x)
-	return assertRingEmptyFull(t, r, false, full)
+	return assertRingEmpty(t, r, false)
 }
 
-func assertRingPushPanics[T any](t *testing.T, r *ring[T]) bool {
-	t.Helper()
-	var x T
-	return assert.Panics(t, func() { r.Push(x) })
-}
-
-func assertRingPop[T any](t *testing.T, r *ring[T], i int, empty bool) bool {
+func assertRingPop[T any](t *testing.T, r *ring.Ring[T], i int, empty bool) bool {
 	t.Helper()
 	return assert.Equal(t, i, r.Pop()) &&
-		assertRingEmptyFull(t, r, empty, false)
+		assertRingEmpty(t, r, empty)
 }
 
-func assertRingPopPanics[T any](t *testing.T, r *ring[T]) bool {
+func assertRingPopPanics[T any](t *testing.T, r *ring.Ring[T]) bool {
 	t.Helper()
 	return assert.Panics(t, func() { r.Pop() })
 }
@@ -52,27 +47,28 @@ func assertRingPopPanics[T any](t *testing.T, r *ring[T]) bool {
 func TestRing(t *testing.T) {
 	t.Parallel()
 
-	r := newRing[int](3)
+	r := ring.New[int](3)
 	assert.True(t, r.Empty())
-	assert.False(t, r.Full())
 
-	assertRingPush(t, &r, 1, false)
-	assertRingPush(t, &r, 2, false)
-	assertRingPush(t, &r, 3, true)
-
-	assertRingPushPanics(t, &r)
+	assertRingPush(t, &r, 1)
+	assertRingPush(t, &r, 2)
+	assertRingPush(t, &r, 3)
+	assertRingPush(t, &r, 4)
 
 	assertRingPop(t, &r, 1, false)
 	assertRingPop(t, &r, 2, false)
 
-	assertRingPush(t, &r, 4, false)
-	assertRingPush(t, &r, 5, true)
-
-	assertRingPushPanics(t, &r)
+	assertRingPush(t, &r, 5)
+	assertRingPush(t, &r, 6)
+	assertRingPush(t, &r, 7)
+	assertRingPush(t, &r, 8)
 
 	assertRingPop(t, &r, 3, false)
 	assertRingPop(t, &r, 4, false)
-	assertRingPop(t, &r, 5, true)
+	assertRingPop(t, &r, 5, false)
+	assertRingPop(t, &r, 6, false)
+	assertRingPop(t, &r, 7, false)
+	assertRingPop(t, &r, 8, true)
 
 	assertRingPopPanics(t, &r)
 }
@@ -80,7 +76,7 @@ func TestRing(t *testing.T) {
 func TestRingEnumerator(t *testing.T) {
 	t.Parallel()
 
-	r := newRing[int](3)
+	r := ring.New[int](3)
 
 	r.Push(1)
 	r.Push(2)
@@ -88,21 +84,38 @@ func TestRingEnumerator(t *testing.T) {
 	r.Pop()
 	r.Pop()
 
-	x, ok := r.Enumerator()().Get()
+	x, ok := r.Enumerator()()
 	assert.False(t, ok, x)
 }
 
 func TestRingEnumeratorPartial(t *testing.T) {
 	t.Parallel()
 
-	r := newRing[int](3)
+	r := ring.New[int](3)
 
 	r.Push(1)
 	r.Push(2)
 
 	r.Pop()
 
-	x, ok := r.Enumerator()().Get()
+	next := r.Enumerator()
+	x, ok := next()
 	assert.True(t, ok)
 	assert.Equal(t, 2, x)
+	_, ok = next()
+	assert.False(t, ok)
+
+	r.Push(3)
+	r.Pop()
+	r.Push(4)
+
+	next = r.Enumerator()
+	x, ok = next()
+	assert.True(t, ok)
+	assert.Equal(t, 3, x)
+	x, ok = next()
+	assert.True(t, ok)
+	assert.Equal(t, 4, x)
+	_, ok = next()
+	assert.False(t, ok)
 }

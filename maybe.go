@@ -14,6 +14,8 @@
 
 package linq
 
+import "github.com/linqgo/linq/internal/num"
+
 type Maybe[T any] struct {
 	t     T
 	valid bool
@@ -53,6 +55,6 @@ func (m Maybe[T]) Valid() bool {
 	return m.valid
 }
 
-func ElseNaN[R realNumber](r Maybe[R]) R {
-	return r.Else(R(nan))
+func ElseNaN[R num.RealNumber](r Maybe[R]) R {
+	return r.Else(R(num.NaN))
 }
