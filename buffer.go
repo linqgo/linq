@@ -23,12 +23,12 @@ import "github.com/linqgo/linq/internal/ring"
 // consumed via the Enumerator method.
 type buffer[T any] struct {
 	next Enumerator[T]
-	buf  ring.Ring[T]
+	buf  *ring.Ring[T]
 }
 
 // newBuffer creates a new buffer
 func newBuffer[T any](next Enumerator[T], bufsize int) *buffer[T] {
-	buf := ring.New[T](bufsize)
+	buf := ring.New(make([]T, 0, bufsize)...)
 
 	// Pre-fill the buffer.
 	for i := 0; i < bufsize; i++ {
@@ -58,8 +58,5 @@ func (b *buffer[T]) Next() Maybe[T] {
 
 // Enumerator returns an enumerator for the elements in the buffer.
 func (b *buffer[T]) Enumerator() Enumerator[T] {
-	next := b.buf.Enumerator()
-	return func() Maybe[T] {
-		return NewMaybe(next())
-	}
+	return FromArray[T](b.buf).Enumerator()
 }

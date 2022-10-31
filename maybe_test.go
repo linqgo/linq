@@ -41,3 +41,10 @@ func TestMaybeElseNaN(t *testing.T) {
 
 	assert.True(t, math.IsNaN(linq.ElseNaN(linq.No[float64]())))
 }
+
+func TestMaybeMap(t *testing.T) {
+	t.Parallel()
+
+	assertSome(t, 56, linq.MaybeMap(linq.Some(42), func(i int) int { return i + 14 }))
+	assertNo(t, linq.MaybeMap(linq.No[int](), func(i int) int { return i + 14 }))
+}

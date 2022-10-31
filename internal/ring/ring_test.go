@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/linqgo/linq"
 	"github.com/linqgo/linq/internal/ring"
 )
 
@@ -47,36 +48,36 @@ func assertRingPopPanics[T any](t *testing.T, r *ring.Ring[T]) bool {
 func TestRing(t *testing.T) {
 	t.Parallel()
 
-	r := ring.New[int](3)
+	r := ring.New(make([]int, 0, 3)...)
 	assert.True(t, r.Empty())
 
-	assertRingPush(t, &r, 1)
-	assertRingPush(t, &r, 2)
-	assertRingPush(t, &r, 3)
-	assertRingPush(t, &r, 4)
+	assertRingPush(t, r, 1)
+	assertRingPush(t, r, 2)
+	assertRingPush(t, r, 3)
+	assertRingPush(t, r, 4)
 
-	assertRingPop(t, &r, 1, false)
-	assertRingPop(t, &r, 2, false)
+	assertRingPop(t, r, 1, false)
+	assertRingPop(t, r, 2, false)
 
-	assertRingPush(t, &r, 5)
-	assertRingPush(t, &r, 6)
-	assertRingPush(t, &r, 7)
-	assertRingPush(t, &r, 8)
+	assertRingPush(t, r, 5)
+	assertRingPush(t, r, 6)
+	assertRingPush(t, r, 7)
+	assertRingPush(t, r, 8)
 
-	assertRingPop(t, &r, 3, false)
-	assertRingPop(t, &r, 4, false)
-	assertRingPop(t, &r, 5, false)
-	assertRingPop(t, &r, 6, false)
-	assertRingPop(t, &r, 7, false)
-	assertRingPop(t, &r, 8, true)
+	assertRingPop(t, r, 3, false)
+	assertRingPop(t, r, 4, false)
+	assertRingPop(t, r, 5, false)
+	assertRingPop(t, r, 6, false)
+	assertRingPop(t, r, 7, false)
+	assertRingPop(t, r, 8, true)
 
-	assertRingPopPanics(t, &r)
+	assertRingPopPanics(t, r)
 }
 
 func TestRingEnumerator(t *testing.T) {
 	t.Parallel()
 
-	r := ring.New[int](3)
+	r := ring.New(make([]int, 0, 3)...)
 
 	r.Push(1)
 	r.Push(2)
@@ -84,38 +85,43 @@ func TestRingEnumerator(t *testing.T) {
 	r.Pop()
 	r.Pop()
 
-	x, ok := r.Enumerator()()
-	assert.False(t, ok, x)
+	assertNo(t, linq.FromArray[int](r).Enumerator()())
 }
 
 func TestRingEnumeratorPartial(t *testing.T) {
 	t.Parallel()
 
-	r := ring.New[int](3)
+	r := ring.New(make([]int, 0, 3)...)
 
 	r.Push(1)
 	r.Push(2)
 
 	r.Pop()
 
-	next := r.Enumerator()
-	x, ok := next()
-	assert.True(t, ok)
-	assert.Equal(t, 2, x)
-	_, ok = next()
-	assert.False(t, ok)
+	next := linq.FromArray[int](r).Enumerator()
+	assertSome(t, 2, next())
+	assertNo(t, next())
 
 	r.Push(3)
 	r.Pop()
 	r.Push(4)
 
-	next = r.Enumerator()
-	x, ok = next()
-	assert.True(t, ok)
-	assert.Equal(t, 3, x)
-	x, ok = next()
-	assert.True(t, ok)
-	assert.Equal(t, 4, x)
-	_, ok = next()
-	assert.False(t, ok)
+	next = linq.FromArray[int](r).Enumerator()
+	assertSome(t, 3, next())
+	assertSome(t, 4, next())
+	assertNo(t, next())
+}
+
+func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
+	t.Helper()
+
+	v, valid := m.Get()
+	return assert.False(t, valid, v)
+}
+
+func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
+	t.Helper()
+
+	v, valid := m.Get()
+	return assert.True(t, valid) && assert.Equal(t, expected, v)
 }

@@ -74,12 +74,3 @@ func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) 
 	var m linq.Maybe[T]
 	return assert.NotPanics(t, func() { m = next() }) && assertNo(t, m)
 }
-
-func chanof[T any](t ...T) linq.Query[T] {
-	c := make(chan T, len(t))
-	for _, t := range t {
-		c <- t
-	}
-	close(c)
-	return linq.FromChannel(c)
-}
