@@ -58,10 +58,3 @@ func (m Maybe[T]) Valid() bool {
 func ElseNaN[R num.RealNumber](r Maybe[R]) R {
 	return r.Else(R(num.NaN))
 }
-
-func MaybeMap[T, U any](m Maybe[T], f func(T) U) Maybe[U] {
-	if m.valid {
-		return Some(f(m.t))
-	}
-	return No[U]()
-}
