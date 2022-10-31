@@ -20,7 +20,7 @@ import (
 	"github.com/linqgo/linq"
 )
 
-func TestWindow(t *testing.T) {
+func TestSlide(t *testing.T) {
 	data := [][][]int{
 		{nil, {1}},
 		{nil, {2}},
@@ -51,7 +51,7 @@ func TestWindow(t *testing.T) {
 		slide(false))
 }
 
-func TestWindowAll(t *testing.T) {
+func TestSlideAll(t *testing.T) {
 	t.Parallel()
 
 	s := linq.SlideAll(chanof(1, 2, 3)).ToSlice()
@@ -61,7 +61,7 @@ func TestWindowAll(t *testing.T) {
 	}
 }
 
-func TestWindowFixed(t *testing.T) {
+func TestSlideFixed(t *testing.T) {
 	t.Parallel()
 
 	s := linq.SlideFixed(chanof(1, 2, 3, 4, 5), 2, true).ToSlice()

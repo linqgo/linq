@@ -97,6 +97,7 @@ available as methods.
         <li><code>GroupBy[Select][Slices]</code></li>
         <li><code>GroupJoin</code></li>
         <li><code>SelectMany</code></li>
+        <li><code>Slide[All,Fixed,Time]⁺,Delta</code></li>
     </ul>
     <h4>Set and relational operations</h4>
     <ul>
@@ -115,7 +116,7 @@ available as methods.
         <li><code>Identity⁺</code></li>
         <li><code>Key⁺,Value⁺</code></li>
         <li><code>{Longer,Shorter}{Slice,Map}⁺</code></li>
-        <li><code>Maybe⁺,Some⁺,No⁺</code></li>
+        <li><code>Maybe[FlatMap]⁺,Some⁺,No⁺</code></li>
         <li><code>Not⁺</code></li>
         <li><code>Pointer⁺,Deref⁺</code></li>
         <li><code>SwapArgs⁺</code></li>

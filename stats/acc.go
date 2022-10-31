@@ -24,7 +24,7 @@ import (
 )
 
 // AccMean accumulates the arithmetic mean of the input values within a sliding
-// window. Use the Window... functions to construct a suitable input window.
+// window. Use the Slide... functions to construct a suitable input window.
 func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		sum := R(0)
@@ -40,7 +40,7 @@ func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 }
 
 // // AccMean accumulates the arithmetic mean of the input values within
-// // a sliding window. Use the Window... functions to construct a suitable input
+// // a sliding window. Use the Slide... functions to construct a suitable input
 // // window.
 // func AccMeanWt[W, R num.RealNumber](
 // 	q linq.Query[linq.KV[linq.KV[W, R], linq.Query[linq.KV[W, R]]]],
@@ -62,7 +62,7 @@ func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 // }
 
 // AccGeometricMean accumulates the geometric mean of the input values within a
-// sliding window. Use the Window... functions to construct a suitable input
+// sliding window. Use the Slide... functions to construct a suitable input
 // window.
 func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
@@ -79,7 +79,7 @@ func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[
 }
 
 // AccHarmonicMean accumulates the harmonic mean of the input values within a
-// sliding window. Use the Window... functions to construct a suitable input
+// sliding window. Use the Slide... functions to construct a suitable input
 // window.
 func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
 	return linq.PipeOneToOne(q, func() func(r linq.Delta[F]) F {
@@ -96,7 +96,7 @@ func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Quer
 }
 
 // AccProduct accumulates the product of the input values within a sliding
-// window. Use the Window... functions to construct a suitable input window.
+// window. Use the Slide... functions to construct a suitable input window.
 func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		product := R(1)
@@ -108,7 +108,7 @@ func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 }
 
 // AccSum accumulates the sum of the input values within a sliding window. Use
-// the Window... functions to construct a suitable input window.
+// the Slide... functions to construct a suitable input window.
 func AccSum[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		sum := R(0)
