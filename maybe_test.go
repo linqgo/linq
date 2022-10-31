@@ -41,3 +41,47 @@ func TestMaybeElseNaN(t *testing.T) {
 
 	assert.True(t, math.IsNaN(linq.ElseNaN(linq.No[float64]())))
 }
+
+func TestMaybeMap(t *testing.T) {
+	t.Parallel()
+
+	type mofunc func(i int) linq.Maybe[int]
+
+	f := func(i int) linq.Maybe[int] { return linq.NewMaybe(i+14, i >= 0) }
+	g := func(i int) linq.Maybe[int] { return linq.Some(-i) }
+
+	assertSome(t, 56, linq.MaybeFlatMap(linq.Some(42), f))
+	assertNo(t, linq.MaybeFlatMap(linq.No[int](), f))
+	assertNo(t, linq.MaybeFlatMap(linq.Some(-42), f))
+
+	// Left-identity: (unit(x) >>= f) = f(x)
+	for _, x := range []int{5, -5} {
+		for _, unit := range []mofunc{f, g} {
+			assert.Equal(t, unit(x), linq.MaybeFlatMap(linq.Some(x), unit), x)
+		}
+	}
+
+	mm := []linq.Maybe[int]{linq.No[int](), linq.Some(5), linq.Some(-5)}
+
+	// Right-identity: (ma >>= unit) = ma
+	for _, m := range mm {
+		assert.Equal(t, m, linq.MaybeFlatMap(m, linq.Some[int]), m)
+	}
+
+	// Associativity: (ma >>= λx → (f(x) >>= g)) = ((ma >>= f) >>= g)
+	for _, m := range mm {
+		for i, f := range []mofunc{f, g, linq.Some[int]} {
+			for j, g := range []mofunc{f, g, linq.Some[int]} {
+				assert.Equal(t,
+					linq.MaybeFlatMap(linq.MaybeFlatMap(m, f), g),
+					linq.MaybeFlatMap(m,
+						func(x int) linq.Maybe[int] {
+							return linq.MaybeFlatMap(f(x), g)
+						},
+					),
+					m, i, j,
+				)
+			}
+		}
+	}
+}
