@@ -25,14 +25,15 @@ import (
 
 // AccMean accumulates the arithmetic mean of the input values within a sliding
 // window. Use the Window... functions to construct a suitable input window.
-func AccMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.KV[R, linq.Query[R]]) R {
+func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
+	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		sum := R(0)
 		n := 0
-		return func(r linq.KV[R, linq.Query[R]]) R {
-			death, toll := aggregateN(r.Value, 0, add[R])
-			sum += r.Key - death
-			n += 1 - toll
+		return func(r linq.Delta[R]) R {
+			outs, nOuts := aggregateN(r.Outs, 0, add[R])
+			ins, nIns := aggregateN(r.Ins, 0, add[R])
+			sum += ins - outs
+			n += nIns - nOuts
 			return sum / R(n)
 		}
 	})
@@ -63,14 +64,15 @@ func AccMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Que
 // AccGeometricMean accumulates the geometric mean of the input values within a
 // sliding window. Use the Window... functions to construct a suitable input
 // window.
-func AccGeometricMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.KV[R, linq.Query[R]]) R {
+func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
+	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		product := R(1)
 		n := 0
-		return func(r linq.KV[R, linq.Query[R]]) R {
-			death, toll := aggregateN(r.Value, 1, mul[R])
-			product *= r.Key / death
-			n += 1 - toll
+		return func(r linq.Delta[R]) R {
+			outs, nOuts := aggregateN(r.Outs, 1, mul[R])
+			ins, nIns := aggregateN(r.Ins, 1, mul[R])
+			product *= ins / outs
+			n += nIns - nOuts
 			return R(math.Pow(float64(product), 1/float64(n)))
 		}
 	})
@@ -79,14 +81,15 @@ func AccGeometricMean[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]])
 // AccHarmonicMean accumulates the harmonic mean of the input values within a
 // sliding window. Use the Window... functions to construct a suitable input
 // window.
-func AccHarmonicMean[F constraints.Float](q linq.Query[linq.KV[F, linq.Query[F]]]) linq.Query[F] {
-	return linq.PipeOneToOne(q, func() func(r linq.KV[F, linq.Query[F]]) F {
+func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
+	return linq.PipeOneToOne(q, func() func(r linq.Delta[F]) F {
 		recipSum := F(0)
 		n := 0
-		return func(r linq.KV[F, linq.Query[F]]) F {
-			death, toll := aggregateN(r.Value, 0, recipAdd[F])
-			recipSum += 1/r.Key - death
-			n += 1 - toll
+		return func(r linq.Delta[F]) F {
+			outs, nOuts := aggregateN(r.Outs, 0, recipAdd[F])
+			ins, nIns := aggregateN(r.Ins, 0, recipAdd[F])
+			recipSum += ins - outs
+			n += nIns - nOuts
 			return F(n) / F(recipSum)
 		}
 	})
@@ -94,11 +97,11 @@ func AccHarmonicMean[F constraints.Float](q linq.Query[linq.KV[F, linq.Query[F]]
 
 // AccProduct accumulates the product of the input values within a sliding
 // window. Use the Window... functions to construct a suitable input window.
-func AccProduct[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.KV[R, linq.Query[R]]) R {
+func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
+	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		product := R(1)
-		return func(r linq.KV[R, linq.Query[R]]) R {
-			product *= r.Key / Product(r.Value)
+		return func(r linq.Delta[R]) R {
+			product *= Product(r.Ins) / Product(r.Outs)
 			return product
 		}
 	})
@@ -106,11 +109,11 @@ func AccProduct[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.
 
 // AccSum accumulates the sum of the input values within a sliding window. Use
 // the Window... functions to construct a suitable input window.
-func AccSum[R num.RealNumber](q linq.Query[linq.KV[R, linq.Query[R]]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.KV[R, linq.Query[R]]) R {
+func AccSum[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
+	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 		sum := R(0)
-		return func(r linq.KV[R, linq.Query[R]]) R {
-			sum += r.Key - Sum(r.Value)
+		return func(r linq.Delta[R]) R {
+			sum += Sum(r.Ins) - Sum(r.Outs)
 			return sum
 		}
 	})

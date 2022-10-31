@@ -16,40 +16,20 @@ package ring
 
 type Enumerator[T any] func() (T, bool)
 
-func No[T any]() (T, bool) {
-	var zero T
-	return zero, false
-}
-
 type Ring[T any] struct {
 	buffer     []T
 	head, size int
 }
 
-func New[T any](cap int) Ring[T] {
-	return Ring[T]{
-		buffer: make([]T, cap),
+func New[T any](buf ...T) *Ring[T] {
+	return &Ring[T]{
+		buffer: buf,
+		size:   len(buf),
 	}
 }
 
 func (r *Ring[T]) Cap() int {
 	return len(r.buffer)
-}
-
-func (r *Ring[T]) Enumerator() func() (T, bool) {
-	if r.size == 0 {
-		return No[T]
-	}
-	tail := r.tail()
-	if r.head < tail {
-		// No wrap-around
-		return sliceEnumerator(r.buffer[r.head:tail])
-	}
-	// Wrap-around
-	return concatEnumerators(
-		sliceEnumerator(r.buffer[r.head:]),
-		sliceEnumerator(r.buffer[:tail]),
-	)
 }
 
 func (r *Ring[T]) Empty() bool {
@@ -61,6 +41,14 @@ func (r *Ring[T]) Head() T {
 		panic("buffer empty")
 	}
 	return r.buffer[r.head]
+}
+
+func (r *Ring[T]) Get(i int) T {
+	return r.buffer[(r.head+i)%len(r.buffer)]
+}
+
+func (r *Ring[T]) Len() int {
+	return r.size
 }
 
 func (r *Ring[T]) Push(t T) {
@@ -94,32 +82,4 @@ func (r *Ring[T]) full() bool {
 
 func (r *Ring[T]) tail() int {
 	return (r.head + r.size) % r.Cap()
-}
-
-func sliceEnumerator[T any](s []T) func() (T, bool) {
-	i := 0
-	return func() (T, bool) {
-		if i == len(s) {
-			var zero T
-			return zero, false
-		}
-		t := s[i]
-		i++
-		return t, true
-	}
-}
-
-func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
-	next := No[T]
-	return func() (T, bool) {
-		for {
-			if t, ok := next(); ok {
-				return t, true
-			}
-			if len(nexts) == 0 {
-				return No[T]()
-			}
-			next, nexts = nexts[0], nexts[1:]
-		}
-	}
 }

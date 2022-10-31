@@ -24,12 +24,13 @@ import (
 func TestAccMean(t *testing.T) {
 	t.Parallel()
 
+	odds := linq.Iota3(1, 11, 2)
+
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
-		stats.AccMean(stats.WindowAll(linq.Repeat(2.0, 5))), 1.001)
-	assertQueryEqual(t, []int{1, 2, 3, 4, 5},
-		stats.AccMean(stats.WindowAll(linq.Iota3(1, 11, 2))))
-	assertQueryEqual(t, []int{1, 2, 4, 6, 8},
-		stats.AccMean(stats.WindowFixed(linq.Iota3(1, 11, 2), 2)))
+		stats.AccMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, stats.AccMean(linq.SlideAll(odds)))
+	assertQueryEqual(t, []int{2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2, false)))
+	assertQueryEqual(t, []int{1, 2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2, true)))
 }
 
 // func TestAccMeanWt(t *testing.T) {
@@ -40,32 +41,29 @@ func TestAccGeometricMean(t *testing.T) {
 	t.Parallel()
 
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
-		stats.AccGeometricMean(stats.WindowAll(linq.Repeat(2.0, 5))), 1.001)
+		stats.AccGeometricMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryInEpsilon(t, []float64{1.0, 1.7321, 2.4662, 3.2011, 3.9363},
-		stats.AccGeometricMean(stats.WindowAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
+		stats.AccGeometricMean(linq.SlideAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
 }
 
 func TestAccHarmonicMean(t *testing.T) {
 	t.Parallel()
 
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
-		stats.AccHarmonicMean(stats.WindowAll(linq.Repeat(2.0, 5))), 1.001)
+		stats.AccHarmonicMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryInEpsilon(t, []float64{1.0, 1.5, 1.9565, 2.3864, 2.7975},
-		stats.AccHarmonicMean(stats.WindowAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
+		stats.AccHarmonicMean(linq.SlideAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
 }
 
 func TestAccProduct(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t, []int{2, 4, 8, 16, 32},
-		stats.AccProduct(stats.WindowAll(linq.Repeat(2, 5))))
-	assertQueryEqual(t, []int{1, 2, 6, 24, 120, 720},
-		stats.AccProduct(stats.WindowAll(linq.Iota2(1, 7))))
+	assertQueryEqual(t, []int{2, 4, 8, 16, 32}, stats.AccProduct(linq.SlideAll(linq.Repeat(2, 5))))
+	assertQueryEqual(t, []int{1, 2, 6, 24, 120, 720}, stats.AccProduct(linq.SlideAll(linq.Iota2(1, 7))))
 }
 
 func TestAccSum(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t, []int{1, 4, 9, 16, 25},
-		stats.AccSum(stats.WindowAll(linq.Iota3(1, 11, 2))))
+	assertQueryEqual(t, []int{1, 4, 9, 16, 25}, stats.AccSum(linq.SlideAll(linq.Iota3(1, 11, 2))))
 }

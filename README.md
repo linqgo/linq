@@ -5,6 +5,6 @@ Linq for Go is a data manipulation library inspired by
 
 Visit the
 [Functional Catalog](https://github.com/linqgo/linq/blob/main/doc/catalog.md)
-on the Wiki for a handy function summary.
+for a handy categorised function list.
 
 Full documentation may be found at <https://pkg.go.dev/github.com/linqgo/linq>

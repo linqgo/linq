@@ -23,8 +23,8 @@ import (
 	"github.com/linqgo/linq/internal/num"
 )
 
-// Mean returns the arithmetic mean of the numbers in q or ok = false
-// if q is empty.
+// Mean returns the arithmetic mean of the numbers in q or ok = false if q is
+// empty.
 //
 // This function is equivalent to "github.com/linqgo/linq".Average, which is
 // retained for parity with .Net's Enumerable class.
