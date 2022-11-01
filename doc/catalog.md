@@ -39,7 +39,7 @@ available as methods.
     </ul>
     <h4>Aggregation</h4>
     <ul>
-        <li><code>Ⓜ️Aggregate[Seed]</code></li>
+        <li><code>Ⓜ️Aggregate[Seed<strong>¹</strong>]</code></li>
         <li><code>Ⓜ️Count[Limit[True]<strong>⁺</strong>],Ⓜ️FastCount<strong>⁺</strong></code></li>
         <li><code>Average,Sum</code></li>
     </ul>
@@ -68,7 +68,8 @@ available as methods.
     <h4>Transform</h4>
     <ul>
         <li><code>Index[From]<strong>⁺</strong></code></li>
-        <li><code>Ⓜ️Select</code></li>
+        <li><code>Pairwise<strong>⁺</strong></code></li>
+        <li><code>Ⓜ️<strong>¹</strong>Select</code></li>
         <li><code>Select[Keys<strong>⁺</strong>,Many,Values<strong>⁺</strong>]</code></li>
         <li><code>Unzip[KV]<strong>⁺</strong></code></li>
         <li><code>Zip[KV<strong>⁺</strong>]</code></li>
@@ -116,7 +117,7 @@ available as methods.
         <li><code>Identity<strong>⁺</strong></code></li>
         <li><code>Key<strong>⁺</strong>,Value<strong>⁺</strong></code></li>
         <li><code>{Longer,Shorter}{Slice,Map}<strong>⁺</strong></code></li>
-        <li><code>Maybe[Ⓜ️FlatMap]<strong>⁺</strong>,Some<strong>⁺</strong>,No<strong>⁺</strong></code></li>
+        <li><code>Maybe[Ⓜ️<strong>¹</strong>FlatMap]<strong>⁺</strong>,Some<strong>⁺</strong>,No<strong>⁺</strong></code></li>
         <li><code>Not<strong>⁺</strong></code></li>
         <li><code>Pointer<strong>⁺</strong>,Deref<strong>⁺</strong></code></li>
         <li><code>SwapArgs<strong>⁺</strong></code></li>
@@ -129,6 +130,9 @@ available as methods.
     </ul>
 </td>
 </tr></tbody></table>
+
+Notes:<br/>
+<strong>¹</strong> The method is more restrictive than the function due to limitations with Go generics.<br/>
 
 ## github.com/linqgo/linq/stats
 
