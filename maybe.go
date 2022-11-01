@@ -40,6 +40,10 @@ func (m Maybe[T]) Else(alt T) T {
 	return alt
 }
 
+func (m Maybe[T]) FlatMap(f func(T) Maybe[T]) Maybe[T] {
+	return MaybeFlatMap(m, f)
+}
+
 func (m Maybe[T]) Get() (T, bool) {
 	return m.t, m.valid
 }

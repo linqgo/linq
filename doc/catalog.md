@@ -10,7 +10,7 @@ available as methods.
 - `[...]` - optional
 - `{...}` - non-optional (used for syntactic grouping)
 - `Ⓜ️` - implemented both as a free function and as a method of `Query[T]`
-- `⁺` - new capability, not ported from .Net
+- <code><strong>⁺</strong></code> - new capability, not ported from .Net
 - `term1,term2...` - one of term1, term2…
 
 ## github.com/linqgo/linq
@@ -29,27 +29,27 @@ available as methods.
         <li><code>NewQuery</code></li>
         <li><code>None</code></li>
         <li><code>Pipe</code></li>
-        <li><code>Repeat[Forever⁺]</code></li>
+        <li><code>Repeat[Forever<strong>⁺</strong>]</code></li>
     </ul>
     <h4>Convert to Go types</h4>
     <ul>
-        <li><code>[Must]ToMap[KV⁺]</code></li>
+        <li><code>[Must]ToMap[KV<strong>⁺</strong>]</code></li>
         <li><code>Ⓜ️ToSlice</code></li>
-        <li><code>ToString⁺</code></li>
+        <li><code>ToString<strong>⁺</strong></code></li>
     </ul>
     <h4>Aggregation</h4>
     <ul>
         <li><code>Ⓜ️Aggregate[Seed]</code></li>
-        <li><code>Ⓜ️Count[Limit[True]⁺],Ⓜ️FastCount⁺</code></li>
+        <li><code>Ⓜ️Count[Limit[True]<strong>⁺</strong>],Ⓜ️FastCount<strong>⁺</strong></code></li>
         <li><code>Average,Sum</code></li>
     </ul>
     <h4>Element selection</h4>
     <ul>
         <li><code>Ⓜ️[Fast]ElementAt</code></li>
-        <li><code>Ⓜ️First[Comp⁺]</code></li>
+        <li><code>Ⓜ️First[Comp<strong>⁺</strong>]</code></li>
         <li><code>Ⓜ️Last</code></li>
         <li><code>{Max,Min}[By]</code></li>
-        <li><code>Ⓜ️Single⁺</code></li>
+        <li><code>Ⓜ️Single<strong>⁺</strong></code></li>
     </ul>
     <h4>Predicate</h4>
     <ul>
@@ -57,8 +57,8 @@ available as methods.
         <li><code>Ⓜ️Any</code></li>
         <li><code>Contains</code></li>
         <li><code>Ⓜ️Empty</code></li>
-        <li><code>SequenceEqual[Ⓜ️Eq⁺],Sequence{Greater,Less}[Ⓜ️Comp]⁺</code></li>
-        <li><code>Ⓜ️[Fast]{Longer,Shorter}⁺</code></li>
+        <li><code>SequenceEqual[Ⓜ️Eq<strong>⁺</strong>],Sequence{Greater,Less}[Ⓜ️Comp]<strong>⁺</strong></code></li>
+        <li><code>Ⓜ️[Fast]{Longer,Shorter}<strong>⁺</strong></code></li>
     </ul>
     <h4>Compose</h4>
     <ul>
@@ -67,20 +67,20 @@ available as methods.
     </ul>
     <h4>Transform</h4>
     <ul>
-        <li><code>Index[From]⁺</code></li>
+        <li><code>Index[From]<strong>⁺</strong></code></li>
         <li><code>Ⓜ️Select</code></li>
-        <li><code>Select[Keys⁺,Many,Values⁺]</code></li>
-        <li><code>Unzip[KV]⁺</code></li>
-        <li><code>Zip[KV⁺]</code></li>
+        <li><code>Select[Keys<strong>⁺</strong>,Many,Values<strong>⁺</strong>]</code></li>
+        <li><code>Unzip[KV]<strong>⁺</strong></code></li>
+        <li><code>Zip[KV<strong>⁺</strong>]</code></li>
     </ul>
 </td>
 <td>
     <h4>Filter</h4>
     <ul>
         <li><code>Distinct[By]</code></li>
-        <li><code>Ⓜ️Every[From]⁺</code></li>
+        <li><code>Ⓜ️Every[From]<strong>⁺</strong></code></li>
         <li><code>OfType</code></li>
-        <li><code>Ⓜ️Sample[Seed]⁺</code></li>
+        <li><code>Ⓜ️Sample[Seed]<strong>⁺</strong></code></li>
         <li><code>Ⓜ️Skip[Last,While]</code></li>
         <li><code>Ⓜ️Take[Last,While]</code></li>
         <li><code>Ⓜ️Where</code></li>
@@ -93,38 +93,38 @@ available as methods.
     <h4>Group and ungroup</h4>
     <ul>
         <li><code>Chunk[Slices]</code></li>
-        <li><code>Flatten[Slices]⁺</code></li>
+        <li><code>Flatten[Slices]<strong>⁺</strong></code></li>
         <li><code>GroupBy[Select][Slices]</code></li>
         <li><code>GroupJoin</code></li>
         <li><code>SelectMany</code></li>
-        <li><code>Slide[All,Fixed,Time]⁺,Delta</code></li>
+        <li><code>Slide[All,Fixed,Time]<strong>⁺</strong>,Delta<strong>⁺</strong></code></li>
     </ul>
     <h4>Set and relational operations</h4>
     <ul>
         <li><code>Except[By]</code></li>
         <li><code>Join</code></li>
         <li><code>Intersect[By]</code></li>
-        <li><code>PowerSet⁺</code></li>
+        <li><code>PowerSet<strong>⁺</strong></code></li>
         <li><code>Union</code></li>
     </ul>
     <h4>Miscellaneous helpers</h4>
     <ul>
-        <li><code>Array⁺,Getter⁺</code></li>
-        <li><code>Drain⁺</code></li>
-        <li><code>[Not]Equal⁺,Less⁺,Greater⁺</code></li>
-        <li><code>False⁺,True⁺,Zero⁺</code></li>
-        <li><code>Identity⁺</code></li>
-        <li><code>Key⁺,Value⁺</code></li>
-        <li><code>{Longer,Shorter}{Slice,Map}⁺</code></li>
-        <li><code>Maybe[FlatMap]⁺,Some⁺,No⁺</code></li>
-        <li><code>Not⁺</code></li>
-        <li><code>Pointer⁺,Deref⁺</code></li>
-        <li><code>SwapArgs⁺</code></li>
+        <li><code>Array<strong>⁺</strong>,Getter<strong>⁺</strong></code></li>
+        <li><code>Drain<strong>⁺</strong></code></li>
+        <li><code>[Not]Equal<strong>⁺</strong>,Less<strong>⁺</strong>,Greater<strong>⁺</strong></code></li>
+        <li><code>False<strong>⁺</strong>,True<strong>⁺</strong>,Zero<strong>⁺</strong></code></li>
+        <li><code>Identity<strong>⁺</strong></code></li>
+        <li><code>Key<strong>⁺</strong>,Value<strong>⁺</strong></code></li>
+        <li><code>{Longer,Shorter}{Slice,Map}<strong>⁺</strong></code></li>
+        <li><code>Maybe[Ⓜ️FlatMap]<strong>⁺</strong>,Some<strong>⁺</strong>,No<strong>⁺</strong></code></li>
+        <li><code>Not<strong>⁺</strong></code></li>
+        <li><code>Pointer<strong>⁺</strong>,Deref<strong>⁺</strong></code></li>
+        <li><code>SwapArgs<strong>⁺</strong></code></li>
     </ul>
     <h4>Miscellaneous</h4>
     <ul>
         <li><code>Ⓜ️DefaultIfEmpty</code></li>
-        <li><code>Ⓜ️Memoize⁺</code></li>
+        <li><code>Ⓜ️Memoize<strong>⁺</strong></code></li>
         <li><code>NewKV</code></li>
     </ul>
 </td>
@@ -136,11 +136,11 @@ available as methods.
 <td>
     <h4>Math aggregation</h4>
     <ul>
-        <li><code>[Acc⁺]Mean</code></li>
-        <li><code>[Acc]GeometricMean⁺</code></li>
-        <li><code>[Acc]HarmonicMean⁺</code></li>
-        <li><code>[Acc]Product⁺</code></li>
-        <li><code>[Acc⁺]Sum</code></li>
+        <li><code>[Acc<strong>⁺</strong>]Mean</code></li>
+        <li><code>[Acc]GeometricMean<strong>⁺</strong></code></li>
+        <li><code>[Acc]HarmonicMean<strong>⁺</strong></code></li>
+        <li><code>[Acc]Product<strong>⁺</strong></code></li>
+        <li><code>[Acc<strong>⁺</strong>]Sum</code></li>
     </ul>
 </td>
 </tr></tbody></table>

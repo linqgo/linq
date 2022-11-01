@@ -42,7 +42,7 @@ func TestMaybeElseNaN(t *testing.T) {
 	assert.True(t, math.IsNaN(linq.ElseNaN(linq.No[float64]())))
 }
 
-func TestMaybeMap(t *testing.T) {
+func TestMaybeFlatMap(t *testing.T) {
 	t.Parallel()
 
 	type mofunc func(i int) linq.Maybe[int]
@@ -50,14 +50,14 @@ func TestMaybeMap(t *testing.T) {
 	f := func(i int) linq.Maybe[int] { return linq.NewMaybe(i+14, i >= 0) }
 	g := func(i int) linq.Maybe[int] { return linq.Some(-i) }
 
-	assertSome(t, 56, linq.MaybeFlatMap(linq.Some(42), f))
-	assertNo(t, linq.MaybeFlatMap(linq.No[int](), f))
-	assertNo(t, linq.MaybeFlatMap(linq.Some(-42), f))
+	assertSome(t, 56, linq.Some(42).FlatMap(f))
+	assertNo(t, linq.No[int]().FlatMap(f))
+	assertNo(t, linq.Some(-42).FlatMap(f))
 
 	// Left-identity: (unit(x) >>= f) = f(x)
 	for _, x := range []int{5, -5} {
 		for _, unit := range []mofunc{f, g} {
-			assert.Equal(t, unit(x), linq.MaybeFlatMap(linq.Some(x), unit), x)
+			assert.Equal(t, unit(x), linq.Some(x).FlatMap(unit), x)
 		}
 	}
 
@@ -65,7 +65,7 @@ func TestMaybeMap(t *testing.T) {
 
 	// Right-identity: (ma >>= unit) = ma
 	for _, m := range mm {
-		assert.Equal(t, m, linq.MaybeFlatMap(m, linq.Some[int]), m)
+		assert.Equal(t, m, m.FlatMap(linq.Some[int]), m)
 	}
 
 	// Associativity: (ma >>= λx → (f(x) >>= g)) = ((ma >>= f) >>= g)
@@ -73,12 +73,8 @@ func TestMaybeMap(t *testing.T) {
 		for i, f := range []mofunc{f, g, linq.Some[int]} {
 			for j, g := range []mofunc{f, g, linq.Some[int]} {
 				assert.Equal(t,
-					linq.MaybeFlatMap(linq.MaybeFlatMap(m, f), g),
-					linq.MaybeFlatMap(m,
-						func(x int) linq.Maybe[int] {
-							return linq.MaybeFlatMap(f(x), g)
-						},
-					),
+					m.FlatMap(f).FlatMap(g),
+					m.FlatMap(func(x int) linq.Maybe[int] { return f(x).FlatMap(g) }),
 					m, i, j,
 				)
 			}
