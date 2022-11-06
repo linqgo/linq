@@ -8,11 +8,11 @@ import (
 	"github.com/linqgo/linq"
 )
 
-func TestScan(t *testing.T) {
+func TestScanner(t *testing.T) {
 	t.Parallel()
 
 	i := 0
-	scan := linq.From(1, 2, 3, 4, 5).Scan()
+	scan := linq.From(1, 2, 3, 4, 5).Scanner()
 	var v int
 	for scan(&v) {
 		i++

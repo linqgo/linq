@@ -120,7 +120,7 @@ available as methods.
         <li><code>Maybe[Ⓜ️<strong>¹</strong>FlatMap]<strong>⁺</strong>,Some<strong>⁺</strong>,No<strong>⁺</strong></code></li>
         <li><code>Not<strong>⁺</strong></code></li>
         <li><code>Pointer<strong>⁺</strong>,Deref<strong>⁺</strong></code></li>
-        <li><code>Scan<strong>⁺</strong></code></li>
+        <li><code>Scanner<strong>⁺</strong></code></li>
         <li><code>SwapArgs<strong>⁺</strong></code></li>
     </ul>
     <h4>Miscellaneous</h4>

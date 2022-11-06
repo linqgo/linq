@@ -47,7 +47,7 @@ func TestRuneReaderRune(t *testing.T) {
 	assertNo(t, q.FastCount())
 }
 
-func TestScanner(t *testing.T) {
+func TestFromScanner(t *testing.T) {
 	t.Parallel()
 
 	s := bufio.NewScanner(bytes.NewBuffer([]byte("hello\nworld\n")))
