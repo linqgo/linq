@@ -40,8 +40,9 @@ available as methods.
     <h4>Aggregation</h4>
     <ul>
         <li><code>Ⓜ️Aggregate[Seed<strong>¹</strong>]</code></li>
-        <li><code>Ⓜ️Count[Limit[True]<strong>⁺</strong>],Ⓜ️FastCount<strong>⁺</strong></code></li>
         <li><code>Average,Sum</code></li>
+        <li><code>Ⓜ️Count[Limit[True]<strong>⁺</strong>],Ⓜ️FastCount<strong>⁺</strong></code></li>
+        <li><code>Strings{Join,CommaAnd}<strong>⁺</strong></code></li>
     </ul>
     <h4>Element selection</h4>
     <ul>

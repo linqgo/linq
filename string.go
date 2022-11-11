@@ -34,3 +34,62 @@ func FromString(s string) Query[rune] {
 func ToString(q Query[rune]) string {
 	return string(q.ToSlice())
 }
+
+// StringsJoin joins strings with a separator.
+func StringsJoin[S ~string](q Query[S], sep S) S {
+	var sb strings.Builder
+	scan := q.Scanner()
+	var s S
+
+	if c, ok := q.FastCount().Get(); ok {
+		if c == 0 {
+			return ""
+		}
+		scan(&s)
+		if c == 1 {
+			return s
+		}
+		sb.Grow((c-1)*len(sep) + Sum(Select(q, func(s S) int { return len(s) })))
+	} else if !scan(&s) {
+		return ""
+	}
+
+	sb.WriteString(string(s))
+	for scan(&s) {
+		sb.WriteString(string(sep))
+		sb.WriteString(string(s))
+	}
+	return S(sb.String())
+}
+
+func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
+	var sb strings.Builder
+	scan := q.Scanner()
+	var s S
+
+	if c, ok := q.FastCount().Get(); ok {
+		if c == 0 {
+			return ""
+		}
+		scan(&s)
+		if c == 1 {
+			return s
+		}
+		sb.Grow((c-1)*len(comma) + Sum(Select(q, func(s S) int { return len(s) })))
+	} else if !scan(&s) {
+		return ""
+	}
+
+	sb.WriteString(string(s))
+	if scan(&s) {
+		var next S
+		for scan(&next) {
+			sb.WriteString(string(comma))
+			sb.WriteString(string(s))
+			s = next
+		}
+		sb.WriteString(string(and))
+		sb.WriteString(string(s))
+	}
+	return S(sb.String())
+}
