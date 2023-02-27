@@ -30,7 +30,7 @@
 //	linq.From(1, 2, 3, 4, 5).Select(func(i int) int { return i * i })
 //
 //	// OK
-//	linq.Select(linq.From(1, 2, 3, 4, 5)(func(i int) int { return i * i })
+//	linq.Select(linq.From(1, 2, 3, 4, 5), (func(i int) int { return i * i }))
 //
 // Unfortunately, there are no clean work-arounds. You may wish to use a
 // dot-import to ease the pain a little:
@@ -39,7 +39,7 @@
 //
 //	...
 //
-//	Select(From(1, 2, 3, 4, 5)(func(i int) int { return i * i })
+//	Select(From(1, 2, 3, 4, 5), (func(i int) int { return i * i }))
 //
 // In case your preferred style is to always use global functions, all Query
 // methods are also available as global functions. An added benefit is that free
