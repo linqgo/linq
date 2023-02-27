@@ -20,7 +20,7 @@ func Except[T comparable](a, b Query[T]) Query[T] {
 }
 
 // ExceptBy returns all elements of a except those whose key is found in b.
-func ExceptBy[T, K comparable](
+func ExceptBy[T any, K comparable](
 	a Query[T],
 	b Query[K],
 	key func(t T) K,
