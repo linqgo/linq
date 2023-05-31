@@ -60,6 +60,14 @@ func OrderByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Quer
 	})
 }
 
+func OrderByKey[K constraints.Ordered, V any](q Query[KV[K, V]]) Query[KV[K, V]] {
+	return OrderBy(q, Key[KV[K, V]])
+}
+
+func OrderByKeyDesc[K constraints.Ordered, V any](q Query[KV[K, V]]) Query[KV[K, V]] {
+	return OrderByDesc(q, Key[KV[K, V]])
+}
+
 func OrderComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	return orderByLesser(q, lessesToLesser(lesses...))
 }
@@ -88,6 +96,26 @@ func ThenBy[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] 
 	}))
 }
 
+func ThenByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] {
+	lesser := q.lesser()
+	if lesser == nil {
+		panic(thenByNoOrderBy)
+	}
+	return orderByLesser(q, chainLessers(lesser, func(data []T) func(i, j int) bool {
+		return func(i, j int) bool {
+			return key(data[i]) > key(data[j])
+		}
+	}))
+}
+
+func ThenByKey[K constraints.Ordered, V any](q Query[KV[K, V]]) Query[KV[K, V]] {
+	return ThenBy(q, Key[KV[K, V]])
+}
+
+func ThenByKeyDesc[K constraints.Ordered, V any](q Query[KV[K, V]]) Query[KV[K, V]] {
+	return ThenByDesc(q, Key[KV[K, V]])
+}
+
 func ThenComp[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 	lesser := q.lesser()
 	if lesser == nil {
@@ -102,18 +130,6 @@ func ThenCompDesc[T any](q Query[T], lesses ...func(a, b T) bool) Query[T] {
 		panic(thenByNoOrderBy)
 	}
 	return orderByLesser(q, chainLessers(lesser, lessesToLesserDesc(lesses...)))
-}
-
-func ThenByDesc[T any, K constraints.Ordered](q Query[T], key func(t T) K) Query[T] {
-	lesser := q.lesser()
-	if lesser == nil {
-		panic(thenByNoOrderBy)
-	}
-	return orderByLesser(q, chainLessers(lesser, func(data []T) func(i, j int) bool {
-		return func(i, j int) bool {
-			return key(data[i]) > key(data[j])
-		}
-	}))
 }
 
 var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy"

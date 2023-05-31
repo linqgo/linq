@@ -92,6 +92,26 @@ func TestOrderByDesc(t *testing.T) {
 	assertNo(t, linq.OrderByDesc(oneshot(), linq.Identity[int]).FastCount())
 }
 
+func TestOrderByKey(t *testing.T) {
+	t.Parallel()
+
+	data := linq.FromMap(map[int]int{0: 10, 1: 9, 2: 8, 3: 7, 4: 6, 5: 5})
+
+	assertQueryEqual(t,
+		[]linq.KV[int, int]{{0, 10}, {1, 9}, {2, 8}, {3, 7}, {4, 6}, {5, 5}},
+		linq.OrderByKey(data))
+}
+
+func TestOrderByKeyDesc(t *testing.T) {
+	t.Parallel()
+
+	data := linq.FromMap(map[int]int{0: 10, 1: 9, 2: 8, 3: 7, 4: 6, 5: 5})
+
+	assertQueryEqual(t,
+		[]linq.KV[int, int]{{5, 5}, {4, 6}, {3, 7}, {2, 8}, {1, 9}, {0, 10}},
+		linq.OrderByKeyDesc(data))
+}
+
 func TestThen(t *testing.T) {
 	t.Parallel()
 
@@ -195,6 +215,26 @@ func TestThenByDesc(t *testing.T) {
 
 	assertSome(t, 7, f(linq.Iota2(1, 8)).FastCount())
 	assertNo(t, f(oneshot()).FastCount())
+}
+
+func TestThenByKey(t *testing.T) {
+	t.Parallel()
+
+	data := linq.FromMap(map[int]int{1: 0, 2: 0, 6: 1, 5: 1, 3: 2, 4: 2})
+
+	assertQueryEqual(t,
+		[]linq.KV[int, int]{{1, 0}, {2, 0}, {5, 1}, {6, 1}, {3, 2}, {4, 2}},
+		linq.ThenByKey(linq.OrderBy(data, linq.Value[linq.KV[int, int]])))
+}
+
+func TestThenByKeyDesc(t *testing.T) {
+	t.Parallel()
+
+	data := linq.FromMap(map[int]int{1: 0, 2: 0, 6: 1, 5: 1, 3: 2, 4: 2})
+
+	assertQueryEqual(t,
+		[]linq.KV[int, int]{{2, 0}, {1, 0}, {6, 1}, {5, 1}, {4, 2}, {3, 2}},
+		linq.ThenByKeyDesc(linq.OrderBy(data, linq.Value[linq.KV[int, int]])))
 }
 
 func TestOrderComp(t *testing.T) {
