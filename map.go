@@ -15,7 +15,7 @@
 package linq
 
 // FromMap returns a query with KVs sourced from m.
-func FromMap[K comparable, V any](m map[K]V) Query[KV[K, V]] {
+func FromMap[K comparable, V any, M ~map[K]V](m M) Query[KV[K, V]] {
 	if len(m) == 0 {
 		return None[KV[K, V]]()
 	}

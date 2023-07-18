@@ -34,6 +34,18 @@ func TestFromMap(t *testing.T) {
 	assertOneShot(t, false, linq.FromMap(map[int]int{1: 2, 2: 3}))
 }
 
+func TestNewMapType(t *testing.T) {
+	t.Parallel()
+
+	type MyMap map[int]int
+
+	assertQueryEqual(t, []linq.KV[int, int]{}, linq.FromMap(MyMap{}))
+	assertQueryElementsMatch(t,
+		[]linq.KV[int, int]{{1, 1}, {2, 3}},
+		linq.FromMap(MyMap{1: 1, 2: 3}),
+	)
+}
+
 func TestMustToMapKV(t *testing.T) {
 	t.Parallel()
 

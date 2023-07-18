@@ -38,7 +38,7 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 
 // SelectMany projects each element of q to a subquery and flattens the
 // subqueries into a single query.
-func SelectMany[T, U any](q Query[T], project func(t T) Query[U]) Query[U] {
+func SelectMany[T, U any](q Query[T], project func(T) Query[U]) Query[U] {
 	return Pipe(q, func(next Enumerator[T]) Enumerator[U] {
 		var t *T
 		var tNext Enumerator[U]

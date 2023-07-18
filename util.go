@@ -52,7 +52,7 @@ func LongerSlice[T any](a, b []T) bool {
 }
 
 // LongerMap returns len(a) > len(b).
-func LongerMap[K comparable, V any](a, b map[K]V) bool {
+func LongerMap[K1, K2 comparable, V1, V2 any, M1 ~map[K1]V1, M2 ~map[K2]V2](a M1, b M2) bool {
 	return len(a) > len(b)
 }
 
@@ -79,7 +79,7 @@ func ShorterSlice[T any](a, b []T) bool {
 }
 
 // ShorterMap returns len(a) < len(b).
-func ShorterMap[K comparable, V any](a, b map[K]V) bool {
+func ShorterMap[K1, K2 comparable, V1, V2 any, M1 ~map[K1]V1, M2 ~map[K2]V2](a M1, b M2) bool {
 	return len(a) < len(b)
 }
 
