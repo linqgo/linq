@@ -33,34 +33,32 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 			return No[U]()
 		}
 	}
-	return PipeOneToOne(q, func() func(t T) U { return sel }, FastGetOption(get))
+	return Pipe(q,
+		func(yield func(U) bool) {
+			for t := range q.Range() {
+				if !yield(sel(t)) {
+					return
+				}
+			}
+		},
+		FastGetOption(get),
+		FastCountOption[U](q.fastCount()),
+	)
 }
 
 // SelectMany projects each element of q to a subquery and flattens the
 // subqueries into a single query.
 func SelectMany[T, U any](q Query[T], project func(T) Query[U]) Query[U] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[U] {
-		var t *T
-		var tNext Enumerator[U]
-		return func() Maybe[U] {
-			var u U
-			ok := false
-			for !ok {
-				if t == nil {
-					var v T
-					t = &v
-					if *t, ok = next().Get(); !ok {
-						return No[U]()
+	return Pipe(q,
+		func(yield func(U) bool) {
+			for t := range q.Range() {
+				for u := range project(t).Range() {
+					if !yield(u) {
+						return
 					}
-					tNext = project(*t).Enumerator()
-				}
-
-				u, ok = tNext().Get()
-				if !ok {
-					t = nil
 				}
 			}
-			return NewMaybe(u, ok)
-		}
-	}, FastCountIfEmptyOption[U](q.fastCount()))
+		},
+		FastCountIfEmptyOption[U](q.fastCount()),
+	)
 }

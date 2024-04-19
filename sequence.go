@@ -65,10 +65,8 @@ func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
 	}
 
 	var aok, bok bool
-	next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-	for ab, ok := next().Get(); ok; ab, ok = next().Get() {
-		x, y := ab.KV()
-		if !eq(x, y) {
+	for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
+		if !eq(a, b) {
 			return false
 		}
 	}
@@ -121,13 +119,11 @@ func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
 // strings.
 func SequenceLessComp[T any](a, b Query[T], less func(a, b T) bool) bool {
 	var aok, bok bool
-	next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-	for ab, ok := next().Get(); ok; ab, ok = next().Get() {
-		x, y := ab.KV()
-		if less(x, y) {
+	for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
+		if less(a, b) {
 			return true
 		}
-		if less(y, x) {
+		if less(b, a) {
 			return false
 		}
 	}

@@ -31,10 +31,10 @@ func ExceptBy[T any, K comparable](
 	if b.fastCount() == 0 {
 		return a
 	}
-	return Pipe(b,
-		func(next Enumerator[K]) Enumerator[T] {
-			s := setFrom(next)
-			return a.Where(func(t T) bool { return !s.Has(key(t)) }).Enumerator()
+	return Pipe(a,
+		func(yield func(T) bool) {
+			s := setFrom(b.Range())
+			shunt(a.Where(func(t T) bool { return !s.Has(key(t)) }).Range(), yield)
 		},
 		OneShotOption[T](a.OneShot() || b.OneShot()),
 	)

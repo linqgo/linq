@@ -27,19 +27,21 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 			return No[Query[T]]()
 		}
 	}
-	return Pipe(q,
-		func(next Enumerator[T]) Enumerator[Query[T]] {
-			return func() Maybe[Query[T]] {
-				chunk := make([]T, 0, size)
-				for i := 0; i < size; i++ {
-					t, ok := next().Get()
-					if !ok {
-						next = No[T]
-						return NewMaybe(From(chunk...), len(chunk) > 0)
+	return Pipe(
+		q,
+		func(yield func(Query[T]) bool) {
+			chunk := make([]T, 0, size)
+			for t := range q.Range() {
+				if len(chunk) == size {
+					if !yield(From(chunk...)) {
+						return
 					}
-					chunk = append(chunk, t)
+					chunk = make([]T, 0, size)
 				}
-				return Some(From(chunk...))
+				chunk = append(chunk, t)
+			}
+			if len(chunk) > 0 {
+				yield(From(chunk...))
 			}
 		},
 		ComputedFastCountOption[Query[T]](q.fastCount(), func(count int) int {

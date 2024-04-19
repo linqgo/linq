@@ -27,8 +27,8 @@ func Join[A, B, R any, K comparable](
 	if a.fastCount() == 0 || b.fastCount() == 0 {
 		return None[R]()
 	}
-	return NewQuery(
-		func() Enumerator[R] {
+	return FromSeq(
+		func(yield func(R) bool) {
 			lupA := newLookupBuilder(a, selKeyA)
 			lupB := newLookupBuilder(b, selKeyB)
 
@@ -43,18 +43,20 @@ func Join[A, B, R any, K comparable](
 				switch {
 				case !okA:
 					lup := lupA.Lookup()
-					return SelectMany(lupB.Requery(), func(b B) Query[R] {
+					shunt(SelectMany(lupB.Requery(), func(b B) Query[R] {
 						return Select(From(lup[selKeyB(b)]...), func(a A) R {
 							return selResult(a, b)
 						})
-					}).Enumerator()
+					}).Range(), yield)
+					return
 				case !okB:
 					lup := lupB.Lookup()
-					return SelectMany(lupA.Requery(), func(a A) Query[R] {
+					shunt(SelectMany(lupA.Requery(), func(a A) Query[R] {
 						return Select(From(lup[selKeyA(a)]...), func(b B) R {
 							return selResult(a, b)
 						})
-					}).Enumerator()
+					}).Range(), yield)
+					return
 				}
 			}
 		},

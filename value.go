@@ -14,6 +14,8 @@
 
 package linq
 
+import "iter"
+
 func valueEnumerator[T any](t T) Enumerator[T] {
 	ok := true
 	return func() Maybe[T] {
@@ -35,16 +37,24 @@ func sliceEnumerator[T any](s []T) Enumerator[T] {
 	}
 }
 
+func sliceSeq[T any](s []T) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		for _, t := range s {
+			if !yield(t) {
+				return
+			}
+		}
+	}
+}
+
 // From returns a query containing the specified parameters.
 func From[T any](t ...T) Query[T] {
 	if len(t) == 0 {
 		return None[T]()
 	}
 
-	return NewQuery(
-		func() Enumerator[T] {
-			return sliceEnumerator(t)
-		},
+	return FromSeq(
+		sliceSeq(t),
 		FastCountOption[T](len(t)),
 		FastGetOption(LenGetGetter(len(t), func(i int) T { return t[i] })),
 	)

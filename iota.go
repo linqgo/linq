@@ -18,13 +18,12 @@ import "github.com/linqgo/linq/internal/num"
 
 // Iota returns a query with all integers from 0 up.
 func Iota[I num.RealNumber]() Query[I] {
-	return NewQuery(
-		func() Enumerator[I] {
-			var i I
-			i--
-			return func() Maybe[I] {
-				i++
-				return Some(i)
+	return FromSeq(
+		func(yield func(I) bool) {
+			for i := I(0); ; i++ {
+				if !yield(i) {
+					return
+				}
 			}
 		},
 		FastGetOption(func(i int) Maybe[I] { return Some(I(i)) }),
@@ -46,12 +45,12 @@ func Iota3[I num.RealNumber](start, stop, step I) Query[I] {
 	switch {
 	case step > 0:
 		n := int((stop-start-1)/step + 1)
-		return NewQuery(
-			func() Enumerator[I] {
-				i := start - step
-				return func() Maybe[I] {
-					i += step
-					return NewMaybe(i, i < stop)
+		return FromSeq(
+			func(yield func(I) bool) {
+				for i := start; i < stop; i += step {
+					if !yield(i) {
+						return
+					}
 				}
 			},
 			FastCountOption[I](n),
@@ -61,12 +60,12 @@ func Iota3[I num.RealNumber](start, stop, step I) Query[I] {
 		)
 	case step < 0:
 		n := int((start-stop-1)/-step + 1)
-		return NewQuery(
-			func() Enumerator[I] {
-				i := start - step
-				return func() Maybe[I] {
-					i += step
-					return NewMaybe(i, i > stop)
+		return FromSeq(
+			func(yield func(I) bool) {
+				for i := start; i > stop; i += step {
+					if !yield(i) {
+						return
+					}
 				}
 			},
 			FastCountOption[I](n),

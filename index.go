@@ -28,14 +28,15 @@ func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
 			return No[KV[int, T]]()
 		}
 	}
-	return PipeOneToOne(q,
-		func() func(t T) KV[int, T] {
-			i := start - 1
-			return func(t T) KV[int, T] {
-				i++
-				return NewKV(i, t)
+	return Pipe(q,
+		func(yield func(KV[int, T]) bool) {
+			for i, t := range q.IRange() {
+				if !yield(NewKV(start+i, t)) {
+					return
+				}
 			}
 		},
 		FastGetOption(get),
+		FastCountOption[KV[int, T]](q.fastCount()),
 	)
 }

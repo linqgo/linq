@@ -39,19 +39,17 @@ func LastComp[T any](q Query[T], precedes func(a, b T) bool) Maybe[T] {
 }
 
 func firstBy[T, K any](q Query[T], key func(T) K, precedes func(a, b K) bool) Maybe[T] {
-	next := q.Enumerator()
-	firstValue, ok := next().Get()
-	if !ok {
-		return No[T]()
-	}
-	firstKey := key(firstValue)
-	for u, ok := next().Get(); ok; u, ok = next().Get() {
-		k := key(u)
-		if precedes(k, firstKey) {
-			firstValue, firstKey = u, k
+	var firstValue T
+	var firstKey K
+	ok := false
+	for i, t := range q.IRange() {
+		k := key(t)
+		if i == 0 || precedes(k, firstKey) {
+			firstValue, firstKey = t, k
 		}
+		ok = true
 	}
-	return Some(firstValue)
+	return NewMaybe(firstValue, ok)
 }
 
 func lastBy[T, K any](q Query[T], key func(T) K, precedes func(a, b K) bool) Maybe[T] {

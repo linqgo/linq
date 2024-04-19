@@ -14,20 +14,30 @@
 
 package linq
 
+import "iter"
+
 type QueryOption[T any] func(q *queryExtra[T], count *int)
 
 // Query represents a query that can be enumerated. This is the main Linq
 // object, with many methods defined against it. Most Linq functions take and
 // return instances of this type.
 type Query[T any] struct {
-	enumerator func() Enumerator[T]
-	count      int
-	extra      *queryExtra[T]
+	seq   iter.Seq[T]
+	count int
+	extra *queryExtra[T]
 }
 
 // NewQuery returns a new query based on a function that returns enumerators.
-func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T] {
-	q := Query[T]{enumerator: i, count: -1}
+func NewQuery[T any](e Enumerable[T], options ...QueryOption[T]) Query[T] {
+	return newQuery(e.Seq(), options...)
+}
+
+func FromSeq[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
+	return newQuery(seq, options...)
+}
+
+func newQuery[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
+	q := Query[T]{seq: seq, count: -1}
 
 	for _, option := range options {
 		if option != nil {
@@ -48,7 +58,7 @@ func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T]
 
 // Enumerator returns an enumerator for q.
 func (q Query[T]) Enumerator() Enumerator[T] {
-	return q.enumerator()
+	return newEnumerable(q.seq)()
 }
 
 func (q Query[T]) OneShot() bool {

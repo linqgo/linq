@@ -14,6 +14,8 @@
 
 package linq
 
+import "iter"
+
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
 func (q Query[T]) Aggregate(agg func(a, b T) T) Maybe[T] {
@@ -32,9 +34,16 @@ func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
 func Aggregate[T any](q Query[T], agg func(a, b T) T) Maybe[T] {
-	next := q.Enumerator()
-	if seed, ok := next().Get(); ok {
-		agg, _ := aggregateNEnum(next, seed, agg)
+	next, stop := iter.Pull(q.Range())
+	defer stop()
+	if seed, ok := next(); ok {
+		agg, _ := aggregateNEnum(func(yield func(T) bool) {
+			for t := range nextToSeq(next) {
+				if !yield(t) {
+					return
+				}
+			}
+		}, seed, agg)
 		return Some(agg)
 	}
 	return No[T]()
@@ -52,12 +61,12 @@ func aggregate[T, A any](q Query[T], acc A, agg func(a A, t T) A) A {
 }
 
 func aggregateN[T, A any](q Query[T], acc A, agg func(a A, t T) A) (A, int) {
-	return aggregateNEnum(q.Enumerator(), acc, agg)
+	return aggregateNEnum(q.Range(), acc, agg)
 }
 
-func aggregateNEnum[T, A any](next Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
+func aggregateNEnum[T, A any](seq iter.Seq[T], acc A, agg func(a A, t T) A) (A, int) {
 	n := 0
-	for e, ok := next().Get(); ok; e, ok = next().Get() {
+	for e := range seq {
 		acc = agg(acc, e)
 		n++
 	}

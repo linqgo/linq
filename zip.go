@@ -14,6 +14,8 @@
 
 package linq
 
+import "iter"
+
 // Zip zips the elements pairwise from a and b into a single query, using the
 // zip function to produce output elements.
 func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
@@ -22,15 +24,13 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 		ac = bc
 	}
 
-	return NewQuery(
-		func() Enumerator[R] {
+	return FromSeq(
+		func(yield func(R) bool) {
 			var aok, bok bool
-			next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-			return func() Maybe[R] {
-				if ab, ok := next().Get(); ok {
-					return Some(zip(ab.KV()))
+			for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
+				if !yield(zip(a, b)) {
+					return
 				}
-				return No[R]()
 			}
 		},
 		OneShotOption[R](a.OneShot() || b.OneShot()),
@@ -72,23 +72,32 @@ func UnzipKV[K, V any](q Query[KV[K, V]]) (Query[K], Query[V]) {
 	return Unzip(q, func(kv KV[K, V]) (K, V) { return kv.Key, kv.Value })
 }
 
-func zipEnumerator[A, B any](
-	a Enumerator[A],
-	b Enumerator[B],
+func zipSeq[A, B any](
+	a iter.Seq[A],
+	b iter.Seq[B],
 	aok, bok *bool,
-) func() Maybe[KV[A, B]] {
-	return func() Maybe[KV[A, B]] {
-		x, xok := a().Get()
-		y, yok := b().Get()
-		if !xok {
+) iter.Seq2[A, B] {
+	return func(yield func(a A, b B) bool) {
+		xn, xs := iter.Pull(a)
+		defer xs()
+		yn, ys := iter.Pull(b)
+		defer ys()
+
+		for {
+			x, xok := xn()
+			y, yok := yn()
+			if !xok {
+				*aok, *bok = xok, yok
+				return
+			}
+			if !yok {
+				*aok, *bok = xok, yok
+				return
+			}
 			*aok, *bok = xok, yok
-			return No[KV[A, B]]()
+			if !yield(x, y) {
+				return
+			}
 		}
-		if !yok {
-			*aok, *bok = xok, yok
-			return No[KV[A, B]]()
-		}
-		*aok, *bok = xok, yok
-		return Some(NewKV(x, y))
 	}
 }

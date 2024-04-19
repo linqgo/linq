@@ -54,14 +54,16 @@ func GroupBySelectSlices[T, U any, K comparable](
 	q Query[T],
 	sel func(t T) KV[K, U],
 ) Query[KV[K, []U]] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[KV[K, []U]] {
-		m := map[K][]U{}
-		for t, ok := next().Get(); ok; t, ok = next().Get() {
-			kv := sel(t)
-			m[kv.Key] = append(m[kv.Key], kv.Value)
-		}
-		return FromMap(m).Enumerator()
-	}, FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
+	return Pipe(q,
+		func(yield func(KV[K, []U]) bool) {
+			m := map[K][]U{}
+			for t := range q.Range() {
+				k, v := sel(t).KV()
+				m[k] = append(m[k], v)
+			}
+			shunt(FromMap(m).Range(), yield)
+		},
+		FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
 }
 
 func keyIdentity[T any, K comparable](key func(t T) K) func(t T) KV[K, T] {

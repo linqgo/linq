@@ -38,8 +38,7 @@ func All[T any](q Query[T], pred func(t T) bool) bool {
 
 // Any returns true if pred returns true for at least one element in q.
 func Any[T any](q Query[T], pred func(t T) bool) bool {
-	next := q.Enumerator()
-	for t, ok := next().Get(); ok; t, ok = next().Get() {
+	for t := range q.Range() {
 		if pred(t) {
 			return true
 		}
@@ -49,6 +48,9 @@ func Any[T any](q Query[T], pred func(t T) bool) bool {
 
 // Empty returns true if q has no elements.
 func Empty[T any](q Query[T]) bool {
-	t := q.Enumerator()()
-	return !t.Valid()
+	for t := range q.Range() {
+		_ = t
+		return false
+	}
+	return true
 }

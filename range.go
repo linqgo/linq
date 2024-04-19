@@ -12,18 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build go1.22
+
 package linq
 
-// ToSlice returns a slice containing the elements of q.
-func (q Query[T]) ToSlice() []T {
-	return ToSlice(q)
+import "iter"
+
+func (q Query[T]) Range() iter.Seq[T] {
+	return q.seq
 }
 
-// ToSlice returns a slice containing the elements of q.
-func ToSlice[T any](q Query[T]) []T {
-	var ret []T
-	for t := range q.Range() {
-		ret = append(ret, t)
+func (q Query[T]) IRange() iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
+		i := 0
+		for t := range q.Range() {
+			if !yield(i, t) {
+				return
+			}
+			i++
+		}
 	}
-	return ret
+}
+
+func shunt[T any](seq iter.Seq[T], yield func(T) bool) {
+	for t := range seq {
+		if !yield(t) {
+			return
+		}
+	}
+}
+
+func nextToSeq[T any](next func() (T, bool)) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for {
+			if t, ok := next(); !ok || !yield(t) {
+				return
+			}
+		}
+	}
 }

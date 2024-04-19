@@ -61,7 +61,7 @@ func Shorter[A, B any](a Query[A], b Query[B]) bool {
 	}
 
 	var aok, bok bool
-	Drain(zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok))
+	DrainSeq2(zipSeq(a.Range(), b.Range(), &aok, &bok))
 	return !aok && bok
 }
 

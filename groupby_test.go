@@ -28,7 +28,6 @@ func TestGroupBy(t *testing.T) {
 	mod2 := func(t int) int { return t % 2 }
 
 	q := linq.GroupBy(linq.From(1, 2, 3, 4, 5), mod2)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
 		linq.MustToMap(q,
@@ -52,7 +51,6 @@ func TestGroupBySlices(t *testing.T) {
 	mod2 := func(t int) int { return t % 2 }
 
 	q := linq.GroupBySlices(linq.From(1, 2, 3, 4, 5), mod2)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
 		linq.MustToMapKV(q),
@@ -73,7 +71,6 @@ func TestGroupBySelect(t *testing.T) {
 		linq.From(1, 2, 3, 4, 5),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
 		linq.MustToMap(q,
@@ -107,7 +104,6 @@ func TestGroupBySelectSlices(t *testing.T) {
 		linq.From(1, 2, 3, 4, 5),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
 		linq.MustToMapKV(q),

@@ -14,6 +14,8 @@
 
 package linq
 
+import "log"
+
 // Skip returns a query all elements of q except the first n.
 func (q Query[T]) Skip(skip int) Query[T] {
 	return Skip(q, skip)
@@ -55,13 +57,12 @@ func Skip[T any](q Query[T], skip int) Query[T] {
 		get = func(i int) Maybe[T] { return qget(skip + i) }
 	}
 	return Pipe(q,
-		func(next Enumerator[T]) Enumerator[T] {
-			for i := 0; i < skip; i++ {
-				if t := next(); !t.Valid() {
-					return No[T]
+		func(yield func(T) bool) {
+			for i, t := range q.IRange() {
+				if i >= skip && !yield(t) {
+					return
 				}
 			}
-			return next
 		},
 		FastCountOption[T](count),
 		FastGetOption(get),
@@ -77,22 +78,28 @@ func SkipLast[T any](q Query[T], skip int) Query[T] {
 	if count >= 0 {
 		return Take(q, q.count-skip)
 	}
-	return Pipe(q,
-		func(next Enumerator[T]) Enumerator[T] {
-			return newBuffer(next, skip).Next
-		},
-		FastCountOption[T](count),
-	)
+	return Pipe(q, func(yield func(T) bool) {
+		buf := make([]T, skip)
+		for i, t := range q.IRange() {
+			p := &buf[i%skip]
+			log.Print(i, *p)
+			if i >= skip && !yield(*p) {
+				return
+			}
+			*p = t
+		}
+	}, FastCountOption[T](count))
 }
 
 // SkipWhile returns a query that skips elements of q while pred returns true.
 func SkipWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		for t, ok := next().Get(); ok; t, ok = next().Get() {
-			if !pred(t) {
-				return concatEnumerators(valueEnumerator(t), next)
+	return Pipe(q, func(yield func(T) bool) {
+		active := false
+		for t := range q.Range() {
+			active = active || !pred(t)
+			if active && !yield(t) {
+				return
 			}
 		}
-		return No[T]
 	}, FastCountIfEmptyOption[T](q.fastCount()))
 }

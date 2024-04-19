@@ -14,22 +14,18 @@
 
 package linq
 
+import "iter"
+
 // FromMap returns a query with KVs sourced from m.
 func FromMap[K comparable, V any, M ~map[K]V](m M) Query[KV[K, V]] {
 	if len(m) == 0 {
 		return None[KV[K, V]]()
 	}
-	return NewQuery(func() Enumerator[KV[K, V]] {
-		keys := make([]K, 0, len(m))
-		for k := range m {
-			keys = append(keys, k)
-		}
-		ki := From(keys...).Enumerator()
-		return func() Maybe[KV[K, V]] {
-			if key, ok := ki().Get(); ok {
-				return Some(NewKV(key, m[key]))
+	return FromSeq(func(yield func(KV[K, V]) bool) {
+		for k, v := range m {
+			if !yield(NewKV(k, v)) {
+				return
 			}
-			return No[KV[K, V]]()
 		}
 	}, FastCountOption[KV[K, V]](len(m)))
 }
@@ -67,14 +63,13 @@ func SelectValues[K, V any](q Query[KV[K, V]]) Query[V] {
 // ToMap converts a query to a map, with sel providing key/value pairs. If any
 // keys are duplicated, ToMap will return an error.
 func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U, error) {
-	next := q.Enumerator()
 	ret := map[K]U{}
-	for t, ok := next().Get(); ok; t, ok = next().Get() {
-		kv := sel(t)
-		if _, ok := ret[kv.Key]; ok {
-			return nil, errorf("duplicate key %v", kv.Key)
+	for t := range q.Range() {
+		k, v := sel(t).KV()
+		if _, ok := ret[k]; ok {
+			return nil, errorf("duplicate key %v", k)
 		}
-		ret[kv.Key] = kv.Value
+		ret[k] = v
 	}
 	return ret, nil
 }
@@ -83,4 +78,18 @@ func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U,
 // will return an error.
 func ToMapKV[K comparable, V any](q Query[KV[K, V]]) (map[K]V, error) {
 	return ToMap(q, Identity[KV[K, V]])
+}
+
+func Range2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
+	return func(yield func(k K, v V) bool) {
+		for t := range q.Range() {
+			if !yield(sel(t)) {
+				return
+			}
+		}
+	}
+}
+
+func RangeKV[K, V any](q Query[KV[K, V]]) iter.Seq2[K, V] {
+	return Range2(q, func(kv KV[K, V]) (K, V) { return kv.KV() })
 }

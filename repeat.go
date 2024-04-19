@@ -22,15 +22,12 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 		return None[T]()
 	}
 	n := int(count)
-	return NewQuery(
-		func() Enumerator[T] {
-			var i I = 0
-			return func() Maybe[T] {
-				if i < count {
-					i++
-					return Some(value)
+	return FromSeq(
+		func(yield func(t T) bool) {
+			for range n {
+				if !yield(value) {
+					return
 				}
-				return No[T]()
 			}
 		},
 		FastCountOption[T](int(count)),

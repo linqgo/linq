@@ -31,18 +31,17 @@ func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
 		return q
 	}
 
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		s := set[U]{}
-		return func() Maybe[T] {
-			var t T
-			var ok bool
-			for t, ok = next().Get(); ok; t, ok = next().Get() {
+	return Pipe(q,
+		func(yield func(T) bool) {
+			s := set[U]{}
+			for t := range q.Range() {
 				if u := sel(t); !s.Has(u) {
 					s.Add(u)
-					return Some(t)
+					if !yield(t) {
+						return
+					}
 				}
 			}
-			return No[T]()
-		}
-	}, fastCountOption)
+		},
+		fastCountOption)
 }

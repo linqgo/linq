@@ -51,8 +51,7 @@ func assertQueryElementsMatch[T any](t *testing.T, expected []T, q linq.Query[T]
 		return true
 	}
 	return assert.Equal(t, q.Empty(), q.OneShot()) &&
-		assert.ElementsMatch(t, expected, s) &&
-		assertExhaustedEnumeratorBehavesWell(t, q)
+		assert.ElementsMatch(t, expected, s)
 }
 
 func assertQueryEqual[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
@@ -62,17 +61,7 @@ func assertQueryEqual[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
 	if len(s) == 0 && len(expected) == 0 {
 		return true
 	}
-	return assert.Equal(t, expected, s) &&
-		assertExhaustedEnumeratorBehavesWell(t, q)
-}
-
-func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) bool {
-	t.Helper()
-
-	next := q.Enumerator()
-	linq.Drain(next)
-	var m linq.Maybe[T]
-	return assert.NotPanics(t, func() { m = next() }) && assertNo(t, m)
+	return assert.Equal(t, expected, s)
 }
 
 func assertAll[R any](

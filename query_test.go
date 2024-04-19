@@ -12,18 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq
+//go:build go1.22
 
-// ToSlice returns a slice containing the elements of q.
-func (q Query[T]) ToSlice() []T {
-	return ToSlice(q)
-}
+package linq_test
 
-// ToSlice returns a slice containing the elements of q.
-func ToSlice[T any](q Query[T]) []T {
-	var ret []T
-	for t := range q.Range() {
-		ret = append(ret, t)
+import (
+	"testing"
+
+	"github.com/linqgo/linq"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestQueryRange(t *testing.T) {
+	t.Parallel()
+
+	q := linq.Iota[int]()
+	for i, x := range q.IRange() {
+		if i == 10 {
+			break
+		}
+		assert.Equal(t, i, x)
 	}
-	return ret
 }

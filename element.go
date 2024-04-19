@@ -36,20 +36,19 @@ func (q Query[T]) Last() Maybe[T] {
 }
 
 // ElementAt returns the element at position i or !ok if there is no element i.
-func ElementAt[T any](q Query[T], i int) Maybe[T] {
-	if i < 0 {
+func ElementAt[T any](q Query[T], at int) Maybe[T] {
+	if at < 0 {
 		return No[T]()
 	}
-	if t := FastElementAt(q, i); t.Valid() {
+	if t := FastElementAt(q, at); t.Valid() {
 		return t
 	}
-	next := q.Enumerator()
-	for ; i > 0; i-- {
-		if t := next(); !t.Valid() {
-			return No[T]()
+	for i, t := range q.IRange() {
+		if i == at {
+			return Some(t)
 		}
 	}
-	return next()
+	return No[T]()
 }
 
 // FastElementAt returns the element at position i or !ok if there is no element
@@ -79,7 +78,10 @@ func FastLast[T any](q Query[T]) Maybe[T] {
 
 // First returns the first element or !ok if q is empty.
 func First[T any](q Query[T]) Maybe[T] {
-	return q.Enumerator()()
+	for t := range q.Range() {
+		return Some(t)
+	}
+	return No[T]()
 }
 
 // Last returns the last element or !ok if q is empty.
@@ -87,17 +89,10 @@ func Last[T any](q Query[T]) Maybe[T] {
 	if t := FastLast(q); t.Valid() {
 		return t
 	}
-	next := q.Enumerator()
-	e, ok := next().Get()
-	if !ok {
-		return No[T]()
+	var t T
+	ok := false
+	for t = range q.Range() {
+		ok = true
 	}
-	for {
-		if e2, ok := next().Get(); ok {
-			e = e2
-		} else {
-			break
-		}
-	}
-	return Some(e)
+	return NewMaybe(t, ok)
 }

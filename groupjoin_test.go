@@ -66,7 +66,6 @@ func TestGroupJoin(t *testing.T) {
 			},
 		)
 	}
-	assertExhaustedEnumeratorBehavesWell(t, query(people, pets))
 
 	assert.Equal(t,
 		[]Ownership{

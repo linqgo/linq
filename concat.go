@@ -55,26 +55,13 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 	}
 	queries = queries[:nonempty]
 
-	return NewQuery(func() Enumerator[T] {
-		enumerators := make([]Enumerator[T], 0, len(queries))
+	return FromSeq(func(yield func(T) bool) {
 		for _, q := range queries {
-			enumerators = append(enumerators, q.Enumerator())
+			for t := range q.Range() {
+				if !yield(t) {
+					return
+				}
+			}
 		}
-		return concatEnumerators(enumerators...)
 	}, OneShotOption[T](oneshot), FastCountOption[T](count))
-}
-
-func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
-	next := No[T]
-	return func() Maybe[T] {
-		for {
-			if t := next(); t.Valid() {
-				return t
-			}
-			if len(nexts) == 0 {
-				return No[T]()
-			}
-			next, nexts = nexts[0], nexts[1:]
-		}
-	}
 }

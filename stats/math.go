@@ -51,26 +51,17 @@ func HarmonicMean[F constraints.Float](q linq.Query[F]) linq.Maybe[F] {
 }
 
 // Product returns the product of the numbers in q or 1 if q is empty.
-func Product[R num.Number](q linq.Query[R]) R {
-	return aggregate(q, 1, mul[R])
-}
+func Product[R num.Number](q linq.Query[R]) R { return aggregate(q, 1, mul[R]) }
 
 // Sum returns the sum of the num.Numbers in q or 0 if q is empty.
 //
 // This function is equivalent to "github.com/linqgo/linq".Sum, which is
 // retained for parity with .Net's Enumerable class.
-func Sum[R num.Number](q linq.Query[R]) R {
-	return linq.Sum(q)
-}
+func Sum[R num.Number](q linq.Query[R]) R { return linq.Sum(q) }
 
-func add[N num.Number](a, b N) N {
-	return a + b
-}
-
-func mul[N num.Number](a, b N) N {
-	return a * b
-}
-
-func recipAdd[R constraints.Float](a, b R) R {
-	return a + 1/b
-}
+func add[N num.Number](a, b N) N             { return a + b }
+func sub[N num.Number](a, b N) N             { return a - b }
+func mul[N num.Number](a, b N) N             { return a * b }
+func div[N num.Number](a, b N) N             { return a / b }
+func recipAdd[R constraints.Float](a, b R) R { return a + 1/b }
+func recipSub[R constraints.Float](a, b R) R { return a - 1/b }

@@ -21,14 +21,11 @@ func (q Query[T]) Where(pred func(t T) bool) Query[T] {
 
 // Where returns a query with elements from q for which pred returns true.
 func Where[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		return func() Maybe[T] {
-			for t, ok := next().Get(); ok; t, ok = next().Get() {
-				if pred(t) {
-					return Some(t)
-				}
+	return Pipe(q, func(yield func(t T) bool) {
+		for t := range q.Range() {
+			if pred(t) && !yield(t) {
+				return
 			}
-			return No[T]()
 		}
 	}, FastCountIfEmptyOption[T](q.fastCount()))
 }

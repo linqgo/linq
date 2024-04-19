@@ -14,7 +14,36 @@
 
 package linq
 
+import (
+	"iter"
+	"runtime"
+)
+
 // Enumerator is a function type that enumerates values. To produce a value, it
 // returns the value and true. When there are no more values to produce, it
 // returns an indeterminate value and false.
 type Enumerator[T any] func() Maybe[T]
+
+type Enumerable[T any] func() Enumerator[T]
+
+func newEnumerable[T any](seq iter.Seq[T]) Enumerable[T] {
+	return func() Enumerator[T] {
+		next, stop := iter.Pull(seq)
+		type nexter struct{ next func() (T, bool) }
+		n := &nexter{next}
+		runtime.SetFinalizer(n, func(*nexter) { stop() })
+		return func() Maybe[T] { return NewMaybe(n.next()) }
+	}
+}
+
+func (e Enumerable[T]) Seq() iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		next := e()
+		for {
+			t, has := next().Get()
+			if !has || !yield(t) {
+				return
+			}
+		}
+	}
+}

@@ -15,7 +15,7 @@
 package stats
 
 import (
-	"math"
+	"iter"
 
 	"golang.org/x/exp/constraints"
 
@@ -26,15 +26,11 @@ import (
 // AccMean accumulates the arithmetic mean of the input values within a sliding
 // window. Use the Slide... functions to construct a suitable input window.
 func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
-		sum := R(0)
-		n := 0
-		return func(r linq.Delta[R]) R {
-			outs, nOuts := aggregateN(r.Outs, 0, add[R])
-			ins, nIns := aggregateN(r.Ins, 0, add[R])
-			sum += ins - outs
-			n += nIns - nOuts
-			return sum / R(n)
+	return linq.Pipe(q, func(yield func(R) bool) {
+		for i, r := range accMeasure(q, 0, add[R], sub[R]) {
+			if !yield(r / R(i)) {
+				return
+			}
 		}
 	})
 }
@@ -65,15 +61,11 @@ func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 // sliding window. Use the Slide... functions to construct a suitable input
 // window.
 func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
-		product := R(1)
-		n := 0
-		return func(r linq.Delta[R]) R {
-			outs, nOuts := aggregateN(r.Outs, 1, mul[R])
-			ins, nIns := aggregateN(r.Ins, 1, mul[R])
-			product *= ins / outs
-			n += nIns - nOuts
-			return R(math.Pow(float64(product), 1/float64(n)))
+	return linq.Pipe(q, func(yield func(R) bool) {
+		for i, r := range accMeasure(q, 1, mul[R], div[R]) {
+			if !yield(r / R(i)) {
+				return
+			}
 		}
 	})
 }
@@ -82,39 +74,53 @@ func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[
 // sliding window. Use the Slide... functions to construct a suitable input
 // window.
 func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
-	return linq.PipeOneToOne(q, func() func(r linq.Delta[F]) F {
-		recipSum := F(0)
-		n := 0
-		return func(r linq.Delta[F]) F {
-			outs, nOuts := aggregateN(r.Outs, 0, recipAdd[F])
-			ins, nIns := aggregateN(r.Ins, 0, recipAdd[F])
-			recipSum += ins - outs
-			n += nIns - nOuts
-			return F(n) / F(recipSum)
+	return linq.Pipe(q, func(yield func(F) bool) {
+		for i, r := range accMeasure(q, 0, recipAdd[F], recipSub[F]) {
+			if !yield(F(i) / r) {
+				return
+			}
 		}
 	})
+	// return linq.PipeOneToOne(q, func() func(r linq.Delta[F]) F {
+	// 	recipSum := F(0)
+	// 	n := 0
+	// 	return func(r linq.Delta[F]) F {
+	// 		outs, nOuts := aggregateN(r.Outs, 0, recipAdd[F])
+	// 		ins, nIns := aggregateN(r.Ins, 0, recipAdd[F])
+	// 		recipSum += ins - outs
+	// 		n += nIns - nOuts
+	// 		return F(n) / F(recipSum)
+	// 	}
+	// })
 }
 
 // AccProduct accumulates the product of the input values within a sliding
 // window. Use the Slide... functions to construct a suitable input window.
 func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
-		product := R(1)
-		return func(r linq.Delta[R]) R {
-			product *= Product(r.Ins) / Product(r.Outs)
-			return product
+	return linq.Pipe(q, func(yield func(R) bool) {
+		for _, r := range accMeasure(q, 1, mul[R], div[R]) {
+			if !yield(r) {
+				return
+			}
 		}
 	})
+	// return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
+	// 	product := R(1)
+	// 	return func(r linq.Delta[R]) R {
+	// 		product *= Product(r.Ins) / Product(r.Outs)
+	// 		return product
+	// 	}
+	// })
 }
 
 // AccSum accumulates the sum of the input values within a sliding window. Use
 // the Slide... functions to construct a suitable input window.
 func AccSum[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
-	return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
-		sum := R(0)
-		return func(r linq.Delta[R]) R {
-			sum += Sum(r.Ins) - Sum(r.Outs)
-			return sum
+	return linq.Pipe(q, func(yield func(R) bool) {
+		for _, r := range accMeasure(q, 0, add[R], sub[R]) {
+			if !yield(r) {
+				return
+			}
 		}
 	})
 }
@@ -124,3 +130,24 @@ func AccSum[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 // 	wb, tb := b.KV()
 // 	return linq.NewKV(wa+wb, R(wa)*ta+R(wb)*tb)
 // }
+
+func accMeasure[R num.RealNumber](
+	q linq.Query[linq.Delta[R]],
+	ident R,
+	agg func(R, R) R,
+	inv func(R, R) R,
+) iter.Seq2[int, R] {
+	return func(yield func(int, R) bool) {
+		n := 0
+		measure := ident
+		for r := range q.Range() {
+			ins, nIns := aggregateN(r.Ins, ident, agg)
+			outs, nOuts := aggregateN(r.Outs, ident, agg)
+			measure = agg(measure, inv(ins, outs))
+			n += nIns - nOuts
+			if !yield(n, measure) {
+				return
+			}
+		}
+	}
+}

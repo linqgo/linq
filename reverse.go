@@ -14,6 +14,8 @@
 
 package linq
 
+import "slices"
+
 // Reverse returns a query with the elements of q in reverse.
 func (q Query[T]) Reverse() Query[T] {
 	return Reverse(q)
@@ -30,16 +32,14 @@ func Reverse[T any](q Query[T]) Query[T] {
 			}))
 		}
 	}
-	return NewQuery(
-		func() Enumerator[T] {
-			data := q.ToSlice()
-			return func() Maybe[T] {
-				var e T
-				last := len(data) - 1
-				if last >= 0 {
-					e, data = data[last], data[:last]
+	return FromSeq(
+		func(yield func(t T) bool) {
+			s := q.ToSlice()
+			slices.Reverse(s)
+			for _, t := range s {
+				if !yield(t) {
+					return
 				}
-				return NewMaybe(e, last >= 0)
 			}
 		},
 		OneShotOption[T](q.OneShot()),

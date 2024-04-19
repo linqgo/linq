@@ -15,17 +15,13 @@
 package linq
 
 func Pairwise[T any](q Query[T]) Query[KV[T, T]] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[KV[T, T]] {
-		if a, ok := next().Get(); ok {
-			return func() Maybe[KV[T, T]] {
-				if b, ok := next().Get(); ok {
-					kv := NewKV(a, b)
-					a = b
-					return Some(kv)
-				}
-				return No[KV[T, T]]()
+	return Pipe(q, func(yield func(KV[T, T]) bool) {
+		var a T
+		for i, b := range q.IRange() {
+			if i > 0 && !yield(NewKV(a, b)) {
+				return
 			}
+			a = b
 		}
-		return No[KV[T, T]]
 	})
 }

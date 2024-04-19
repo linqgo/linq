@@ -30,7 +30,7 @@ func IntersectBy[T, K comparable](
 	}
 	return NewQuery(
 		func() Enumerator[T] {
-			s := setFrom(b.Enumerator())
+			s := setFrom(b.Range())
 			return a.Where(func(t T) bool { return s.Has(key(t)) }).Enumerator()
 		},
 		OneShotOption[T](a.OneShot() || b.OneShot()),

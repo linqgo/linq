@@ -43,7 +43,7 @@ import (
 // has slid forward more than one step. How this might happen can be seen when
 // considering how a maximal window is advanced. The first step is to remove
 // stale elements from the tail until it is possible to add new elements to the
-// head. This could require the removal of more than element. Once enough
+// head. This could require the removal of more than one element. Once enough
 // elements are removed, the window must be grown until it is maximal again, and
 // this could in turn require more than one addition. The example below
 // illustrates one such scenario. The second delta represents the window sliding

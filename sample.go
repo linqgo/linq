@@ -49,16 +49,15 @@ func Sample[T any](q Query[T], p float64) Query[T] {
 // SampleSeed with the same seed will return a query that samples values
 // at the same intervals.
 func SampleSeed[T any](q Query[T], p float64, seed int64) Query[T] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
+	return Pipe(q, func(yield func(T) bool) {
 		src := rand.NewSource(seed)
 		rnd := rand.New(src)
-		return func() Maybe[T] {
-			for t := next(); t.Valid(); t = next() {
-				if rnd.Float64() < p {
-					return t
+		for t := range q.Range() {
+			if rnd.Float64() < p {
+				if !yield(t) {
+					return
 				}
 			}
-			return No[T]()
 		}
 	})
 }

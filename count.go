@@ -52,7 +52,7 @@ func Count[T any](q Query[T]) int {
 	if c, ok := q.FastCount().Get(); ok {
 		return c
 	}
-	return Drain(q.Enumerator())
+	return DrainSeq(q.Range())
 }
 
 // CountLimit returns a limited count, c, such that min(limit, Count(q)) <= c <=
@@ -79,7 +79,7 @@ func CountLimitTrue[T any](q Query[T], limit int) (int, bool) {
 		return c, true
 	}
 
-	if n := Drain(Take(q, limit+1).Enumerator()); n <= limit {
+	if n := DrainSeq(Take(q, limit+1).Range()); n <= limit {
 		return n, true
 	}
 	return limit, false

@@ -31,35 +31,31 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 		count = 1 << c
 	}
 
-	return Pipe(q, func(next Enumerator[T]) Enumerator[Query[T]] {
+	return Pipe(q, func(yield func(Query[T]) bool) {
 		var cache []T
-		var mask uint64 = 0
-		mask--
-		return func() Maybe[Query[T]] {
-			mask++
-			if mask > 0 && mask&(mask-1) == 0 {
-				// New bit
-				t, ok := next().Get()
-				if !ok {
-					mask--
-					return No[Query[T]]()
+		mask := uint64(0)
+		if !yield(None[T]()) {
+			return
+		}
+		for i, t := range q.IRange() {
+			cache = append(cache, t)
+			hi := 1 << i
+			for mask := range hi {
+				if !yield(powerSubSet(cache, uint64(hi+mask))) {
+					return
 				}
-				cache = append(cache, t)
 			}
-			return Some(powerSubSet(cache, mask))
+			mask++
 		}
 	}, FastCountOption[Query[T]](count))
 }
 
 func powerSubSet[T any](cache []T, mask uint64) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		return func() Maybe[T] {
-			if mask == 0 {
-				return No[T]()
+	return FromSeq(func(yield func(T) bool) {
+		for ; mask != 0; mask &= mask - 1 {
+			if !yield(cache[bits.TrailingZeros64(mask)]) {
+				return
 			}
-			i := bits.TrailingZeros64(mask)
-			mask &= mask - 1
-			return Some(cache[i])
 		}
 	}, FastCountOption[T](bits.OnesCount64(mask)))
 }

@@ -33,17 +33,12 @@ func Every[T any](q Query[T], n int) Query[T] {
 // Every returns a query that contains every nth element from q, starting at the
 // start-th element.
 func EveryFrom[T any](q Query[T], start, n int) Query[T] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		skip := start
-		return func() Maybe[T] {
-			for t := next(); t.Valid(); t = next() {
-				if skip == 0 {
-					skip = n - 1
-					return t
-				}
-				skip--
+	return Pipe(q, func(yield func(T) bool) {
+		for i, t := range q.IRange() {
+			if start <= i && (i-start)%n == 0 && !yield(t) {
+				return
 			}
-			return No[T]()
+			i++
 		}
 	}, ComputedFastCountOption[T](q.fastCount(), func(count int) int {
 		return (count-start-1)/n + 1
