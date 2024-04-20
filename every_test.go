@@ -31,15 +31,15 @@ func TestEvery(t *testing.T) {
 	assertOneShot(t, false, linq.Iota2(1, 6).EveryFrom(10, 3))
 	assertOneShot(t, true, oneshot().EveryFrom(10, 3))
 
-	assertHave(t, 3, linq.Iota2(1, 6).Every(2).FastCount)
-	assertHave(t, 3, linq.Iota2(1, 7).Every(2).FastCount)
-	assertHave(t, 4, linq.Iota2(1, 8).Every(2).FastCount)
+	assertSome(t, 3, linq.Iota2(1, 6).Every(2).FastCount)
+	assertSome(t, 3, linq.Iota2(1, 7).Every(2).FastCount)
+	assertSome(t, 4, linq.Iota2(1, 8).Every(2).FastCount)
 
-	assertHave(t, 4, linq.Iota1(20).EveryFrom(10, 3).FastCount)
-	assertHave(t, 4, linq.Iota1(21).EveryFrom(10, 3).FastCount)
-	assertHave(t, 4, linq.Iota1(22).EveryFrom(10, 3).FastCount)
-	assertHave(t, 5, linq.Iota1(23).EveryFrom(10, 3).FastCount)
+	assertSome(t, 4, linq.Iota1(20).EveryFrom(10, 3).FastCount)
+	assertSome(t, 4, linq.Iota1(21).EveryFrom(10, 3).FastCount)
+	assertSome(t, 4, linq.Iota1(22).EveryFrom(10, 3).FastCount)
+	assertSome(t, 5, linq.Iota1(23).EveryFrom(10, 3).FastCount)
 
-	assertLack(t, oneshot().Every(2).FastCount)
-	assertLack(t, oneshot().EveryFrom(10, 3).FastCount)
+	assertNo(t, oneshot().Every(2).FastCount)
+	assertNo(t, oneshot().EveryFrom(10, 3).FastCount)
 }

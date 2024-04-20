@@ -97,10 +97,10 @@ func TestGroupJoin(t *testing.T) {
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet))))
 
-	assertHave(t, 3, query(people, pets).FastCount)
-	assertLack(t, query(linq.FromChannel(make(chan Person)), pets).FastCount)
-	assertHave(t, 3, query(people, linq.FromChannel(make(chan Pet))).FastCount)
-	assertLack(t, query(
+	assertSome(t, 3, query(people, pets).FastCount)
+	assertNo(t, query(linq.FromChannel(make(chan Person)), pets).FastCount)
+	assertSome(t, 3, query(people, linq.FromChannel(make(chan Pet))).FastCount)
+	assertNo(t, query(
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet)),
 	).FastCount)

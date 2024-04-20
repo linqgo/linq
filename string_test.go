@@ -40,7 +40,7 @@ func TestString(t *testing.T) {
 
 	assertOneShot(t, false, linq.FromString("abc"))
 
-	assertHave(t, 3, linq.FromString("abc").FastCount)
+	assertSome(t, 3, linq.FromString("abc").FastCount)
 }
 
 func TestStringsJoin(t *testing.T) {

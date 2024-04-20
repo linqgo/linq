@@ -23,30 +23,30 @@ import (
 func TestElementAt(t *testing.T) {
 	t.Parallel()
 
-	assertLack(t, maybe(linq.From[int]().ElementAt(0)))
-	assertLack(t, maybe(linq.Iota2(1, 6).ElementAt(42)))
-	assertHave(t, 3, maybe(linq.Iota2(1, 6).ElementAt(2)))
+	assertNo(t, maybe(linq.From[int]().ElementAt(0)))
+	assertNo(t, maybe(linq.Iota2(1, 6).ElementAt(42)))
+	assertSome(t, 3, maybe(linq.Iota2(1, 6).ElementAt(2)))
 }
 
 func TestFastElementAt(t *testing.T) {
 	t.Parallel()
 
-	assertHave(t, 4, maybe(linq.Iota2(1, 6).FastElementAt(3)))
-	assertLack(t, maybe(linq.Iota2(1, 6).FastElementAt(6)))
-	assertLack(t, maybe(linq.Iota2(1, 6).FastElementAt(-1)))
+	assertSome(t, 4, maybe(linq.Iota2(1, 6).FastElementAt(3)))
+	assertNo(t, maybe(linq.Iota2(1, 6).FastElementAt(6)))
+	assertNo(t, maybe(linq.Iota2(1, 6).FastElementAt(-1)))
 }
 
 func TestFirst(t *testing.T) {
 	t.Parallel()
 
-	assertLack(t, linq.Iota1(0).First)
-	assertHave(t, 1, linq.Iota2(1, 6).First)
+	assertNo(t, linq.Iota1(0).First)
+	assertSome(t, 1, linq.Iota2(1, 6).First)
 }
 
 func TestLast(t *testing.T) {
 	t.Parallel()
 
-	assertLack(t, linq.Iota1(0).Last)
-	assertHave(t, 5, linq.Iota2(1, 6).Last)
-	assertHave(t, 3, chanof(1, 2, 3).Last)
+	assertNo(t, linq.Iota1(0).Last)
+	assertSome(t, 5, linq.Iota2(1, 6).Last)
+	assertSome(t, 3, chanof(1, 2, 3).Last)
 }

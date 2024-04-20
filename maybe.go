@@ -14,63 +14,7 @@
 
 package linq
 
-import "github.com/linqgo/linq/internal/num"
-
-type Maybe[T any] struct {
-	t     T
-	valid bool
-}
-
-func NewMaybe[T any](t T, valid bool) Maybe[T] {
-	return Maybe[T]{t: t, valid: valid}
-}
-
-func No[T any]() Maybe[T] {
-	return Maybe[T]{}
-}
-
 func no[T any]() (T, bool) {
 	var zero T
 	return zero, false
-}
-
-func Some[T any](t T) Maybe[T] {
-	return Maybe[T]{t: t, valid: true}
-}
-
-func (m Maybe[T]) Else(alt T) T {
-	if m.valid {
-		return m.t
-	}
-	return alt
-}
-
-func (m Maybe[T]) FlatMap(f func(T) Maybe[T]) Maybe[T] {
-	return MaybeFlatMap(m, f)
-}
-
-func (m Maybe[T]) Get() (T, bool) {
-	return m.t, m.valid
-}
-
-func (m Maybe[T]) Must() T {
-	if m.valid {
-		return m.t
-	}
-	panic(NoValueError)
-}
-
-func (m Maybe[T]) Valid() bool {
-	return m.valid
-}
-
-func ElseNaN[R num.RealNumber](r Maybe[R]) R {
-	return r.Else(R(num.NaN))
-}
-
-func MaybeFlatMap[T, U any](m Maybe[T], f func(T) Maybe[U]) Maybe[U] {
-	if m.valid {
-		return f(m.t)
-	}
-	return No[U]()
 }

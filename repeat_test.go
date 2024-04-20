@@ -31,7 +31,7 @@ func TestRepeat(t *testing.T) {
 
 	assertOneShot(t, false, linq.Repeat(1, 5))
 
-	assertHave(t, 5, linq.Repeat(1, 5).FastCount)
+	assertSome(t, 5, linq.Repeat(1, 5).FastCount)
 }
 
 func TestRepeatForever(t *testing.T) {
@@ -41,25 +41,25 @@ func TestRepeatForever(t *testing.T) {
 
 	assertOneShot(t, false, linq.RepeatForever(42))
 
-	assertLack(t, linq.RepeatForever(42).FastCount)
+	assertNo(t, linq.RepeatForever(42).FastCount)
 }
 
 func TestRepeatElementAt(t *testing.T) {
 	t.Parallel()
 
 	q := linq.Repeat(42, 10)
-	assertHave(t, 42, maybe(q.FastElementAt(0)))
-	assertHave(t, 42, maybe(q.FastElementAt(5)))
-	assertHave(t, 42, maybe(q.FastElementAt(9)))
-	assertLack(t, maybe(q.FastElementAt(10)))
-	assertLack(t, maybe(q.FastElementAt(-1)))
+	assertSome(t, 42, maybe(q.FastElementAt(0)))
+	assertSome(t, 42, maybe(q.FastElementAt(5)))
+	assertSome(t, 42, maybe(q.FastElementAt(9)))
+	assertNo(t, maybe(q.FastElementAt(10)))
+	assertNo(t, maybe(q.FastElementAt(-1)))
 }
 
 func TestRepeatForeverElementAt(t *testing.T) {
 	t.Parallel()
 
 	q := linq.RepeatForever(42)
-	assertHave(t, 42, maybe(q.FastElementAt(0)))
-	assertHave(t, 42, maybe(q.FastElementAt(999)))
-	assertLack(t, maybe(q.FastElementAt(-1)))
+	assertSome(t, 42, maybe(q.FastElementAt(0)))
+	assertSome(t, 42, maybe(q.FastElementAt(999)))
+	assertNo(t, maybe(q.FastElementAt(-1)))
 }

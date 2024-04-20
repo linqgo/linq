@@ -33,9 +33,9 @@ func TestChunk(t *testing.T) {
 	assertOneShot(t, false, linq.ChunkSlices(data, 2))
 	assertOneShot(t, true, linq.ChunkSlices(oneshot(), 2))
 
-	assertHave(t, 3, linq.ChunkSlices(data, 2).FastCount)
-	assertHave(t, 2, linq.ChunkSlices(data.Skip(1), 2).FastCount)
-	assertLack(t, linq.ChunkSlices(slowcount, 2).FastCount)
+	assertSome(t, 3, linq.ChunkSlices(data, 2).FastCount)
+	assertSome(t, 2, linq.ChunkSlices(data.Skip(1), 2).FastCount)
+	assertNo(t, linq.ChunkSlices(slowcount, 2).FastCount)
 }
 
 func TestChunkElementAt(t *testing.T) {
@@ -45,6 +45,6 @@ func TestChunkElementAt(t *testing.T) {
 	assertHaveQuery(t, []int{0, 1, 2}, maybe(data.FastElementAt(0)))
 	assertHaveQuery(t, []int{30, 31, 32}, maybe(data.FastElementAt(10)))
 	assertHaveQuery(t, []int{99}, maybe(data.FastElementAt(33)))
-	assertLack(t, maybe(data.FastElementAt(34)))
-	assertLack(t, maybe(data.FastElementAt(-1)))
+	assertNo(t, maybe(data.FastElementAt(34)))
+	assertNo(t, maybe(data.FastElementAt(-1)))
 }

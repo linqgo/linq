@@ -26,29 +26,20 @@ func maybe[T any](t T, ok bool) func() (T, bool) {
 	return func() (T, bool) { return t, ok }
 }
 
-// TODO: Remove?
-func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
-	t.Helper()
-
-	v, valid := m.Get()
-	return assert.False(t, valid, v)
+func must[T any](t T, ok bool) T {
+	if !ok {
+		panic("no value")
+	}
+	return t
 }
 
-// TODO: Remove?
-func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
-	t.Helper()
-
-	v, valid := m.Get()
-	return assert.True(t, valid) && assert.Equal(t, expected, v)
-}
-
-func assertHave[T any](t *testing.T, expected T, next func() (T, bool)) bool {
+func assertSome[T any](t *testing.T, expected T, next func() (T, bool)) bool {
 	t.Helper()
 	v, ok := next()
 	return assert.True(t, ok) && assert.Equal(t, expected, v)
 }
 
-func assertLack[T any](t *testing.T, next func() (T, bool)) bool {
+func assertNo[T any](t *testing.T, next func() (T, bool)) bool {
 	t.Helper()
 	v, ok := next()
 	return assert.False(t, ok, v)

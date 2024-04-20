@@ -48,7 +48,7 @@ func SequenceEqual[T comparable](a, b Query[T]) bool {
 // equals the corresponding element from b. Two elements are equal if eq(aElem,
 // bElem) returns true.
 func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
-	if lenDiff, ok := fastLenDiff(a, b).Get(); ok && lenDiff != 0 {
+	if lenDiff, ok := fastLenDiff(a, b); ok && lenDiff != 0 {
 		return false
 	}
 

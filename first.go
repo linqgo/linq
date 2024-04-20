@@ -16,29 +16,29 @@ package linq
 
 // FirstCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func (q Query[T]) FirstCmp(cmp func(a, b T) int) Maybe[T] {
+func (q Query[T]) FirstCmp(cmp func(a, b T) int) (T, bool) {
 	return FirstCmp(q, cmp)
 }
 
 // LastCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func (q Query[T]) LastCmp(cmp func(a, b T) int) Maybe[T] {
+func (q Query[T]) LastCmp(cmp func(a, b T) int) (T, bool) {
 	return LastCmp(q, cmp)
 }
 
 // FirstCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func FirstCmp[T any](q Query[T], cmp func(a, b T) int) Maybe[T] {
+func FirstCmp[T any](q Query[T], cmp func(a, b T) int) (T, bool) {
 	return firstBy(q, Identity[T], cmp)
 }
 
 // LastCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func LastCmp[T any](q Query[T], cmp func(a, b T) int) Maybe[T] {
+func LastCmp[T any](q Query[T], cmp func(a, b T) int) (T, bool) {
 	return lastBy(q, Identity[T], cmp)
 }
 
-func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) Maybe[T] {
+func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
 	var firstValue T
 	var firstKey K
 	ok := false
@@ -49,9 +49,9 @@ func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) Maybe[T]
 		}
 		ok = true
 	}
-	return NewMaybe(firstValue, ok)
+	return firstValue, ok
 }
 
-func lastBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) Maybe[T] {
+func lastBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
 	return firstBy(q, key, SwapArgs(cmp))
 }

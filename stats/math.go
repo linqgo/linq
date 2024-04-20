@@ -28,26 +28,28 @@ import (
 //
 // This function is equivalent to "github.com/linqgo/linq".Average, which is
 // retained for parity with .Net's Enumerable class.
-func Mean[R num.RealNumber](q linq.Query[R]) linq.Maybe[R] {
+func Mean[R num.RealNumber](q linq.Query[R]) (R, bool) {
 	return linq.Average(q)
 }
 
 // GeometricMean returns the geometric mean of the numbers in q or ok=false if q
 // is empty.
-func GeometricMean[R num.RealNumber](q linq.Query[R]) linq.Maybe[R] {
+func GeometricMean[R num.RealNumber](q linq.Query[R]) (R, bool) {
 	if product, n := aggregateN(q, 0, mul[R]); n > 0 {
-		return linq.Some(R(math.Pow(float64(product), float64(n))))
+		return R(math.Pow(float64(product), float64(n))), true
 	}
-	return linq.No[R]()
+	var zero R
+	return zero, false
 }
 
 // HarmonicMean returns the harmonic mean of the numbers in q or ok = false if q
 // is empty.
-func HarmonicMean[F constraints.Float](q linq.Query[F]) linq.Maybe[F] {
+func HarmonicMean[F constraints.Float](q linq.Query[F]) (F, bool) {
 	if recipSum, n := aggregateN(q, 0, recipAdd[F]); n > 0 {
-		return linq.Some(F(n) / F(recipSum))
+		return F(n) / F(recipSum), true
 	}
-	return linq.No[F]()
+	var zero F
+	return zero, false
 }
 
 // Product returns the product of the numbers in q or 1 if q is empty.

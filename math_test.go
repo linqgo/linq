@@ -26,8 +26,8 @@ func TestAverage(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, linq.Average(data))
-		assertNo(t, linq.Average(emptyNums))
+		assertSome(t, 5.5, maybe(linq.Average(data)))
+		assertNo(t, maybe(linq.Average(emptyNums)))
 	}
 }
 

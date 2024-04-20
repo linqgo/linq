@@ -17,7 +17,7 @@ package linq
 import "golang.org/x/exp/constraints"
 
 // Max returns the highest number in q or ok=false if q is empty.
-func Max[R constraints.Ordered](q Query[R]) Maybe[R] {
+func Max[R constraints.Ordered](q Query[R]) (R, bool) {
 	return Aggregate(q, max[R])
 }
 
@@ -27,7 +27,7 @@ func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Query[T] {
 }
 
 // Min returns the highest number in q or ok=false if q is empty.
-func Min[R constraints.Ordered](q Query[R]) Maybe[R] {
+func Min[R constraints.Ordered](q Query[R]) (R, bool) {
 	return Aggregate(q, min[R])
 }
 

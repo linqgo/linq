@@ -29,8 +29,8 @@ func TestMax(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 10.0, linq.Max(data))
-		assertNo(t, linq.Max(emptyNums))
+		assertSome(t, 10.0, maybe(linq.Max(data)))
+		assertNo(t, maybe(linq.Max(emptyNums)))
 	}
 }
 
@@ -45,18 +45,18 @@ func TestMaxBy(t *testing.T) {
 	name := func(kv Person) string { return kv.Key }
 	age := func(kv Person) int { return kv.Value }
 
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MaxBy(peeps, name).Single())
-	assertNo(t, linq.MaxBy(noone, name).Single())
-	assertSome(t, linq.NewKV("John", 42), linq.MaxBy(peeps, age).Single())
-	assertNo(t, linq.MaxBy(noone, age).Single())
+	assertSome(t, linq.NewKV("Sanjiv", 22), maybe(linq.MaxBy(peeps, name).Single()))
+	assertNo(t, maybe(linq.MaxBy(noone, name).Single()))
+	assertSome(t, linq.NewKV("John", 42), maybe(linq.MaxBy(peeps, age).Single()))
+	assertNo(t, maybe(linq.MaxBy(noone, age).Single()))
 }
 
 func TestMin(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 1.0, linq.Min(data))
-		assertNo(t, linq.Min(emptyNums))
+		assertSome(t, 1.0, maybe(linq.Min(data)))
+		assertNo(t, maybe(linq.Min(emptyNums)))
 	}
 }
 
@@ -71,8 +71,8 @@ func TestMinBy(t *testing.T) {
 	name := linq.Key[Person]
 	age := linq.Value[Person]
 
-	assertSome(t, linq.NewKV("Andrea", 35), linq.MinBy(peeps, name).Single())
-	assertNo(t, linq.MinBy(noone, name).Single())
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MinBy(peeps, age).Single())
-	assertNo(t, linq.MinBy(noone, age).Single())
+	assertSome(t, linq.NewKV("Andrea", 35), maybe(linq.MinBy(peeps, name).Single()))
+	assertNo(t, maybe(linq.MinBy(noone, name).Single()))
+	assertSome(t, linq.NewKV("Sanjiv", 22), maybe(linq.MinBy(peeps, age).Single()))
+	assertNo(t, maybe(linq.MinBy(noone, age).Single()))
 }

@@ -23,11 +23,11 @@ import (
 //
 // This function is equivalent to "github.com/linqgo/linq/stats".Mean.
 // It is retained here for parity with .Net's Enumerable class.
-func Average[R num.RealNumber](q Query[R]) Maybe[R] {
+func Average[R num.RealNumber](q Query[R]) (R, bool) {
 	if sum, n := aggregateN(q, 0, add[R]); n > 0 {
-		return Some(sum / R(n))
+		return sum / R(n), true
 	}
-	return No[R]()
+	return no[R]()
 }
 
 // Sum returns the sum of the num.Numbers in q or 0 if q is empty.

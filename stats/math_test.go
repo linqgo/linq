@@ -32,8 +32,8 @@ func TestAverage(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, stats.Mean(data))
-		assertNo(t, stats.Mean(emptyNums))
+		assertSome(t, 5.5, maybe(stats.Mean(data)))
+		assertNo(t, maybe(stats.Mean(emptyNums)))
 	}
 }
 
@@ -41,8 +41,8 @@ func TestGeometricMean(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSomeInEpsilon(t, 4.529, stats.GeometricMean(data), 1.001)
-		assertNo(t, stats.GeometricMean(emptyNums))
+		assertSomeInEpsilon(t, 4.529, maybe(stats.GeometricMean(data)), 1.001)
+		assertNo(t, maybe(stats.GeometricMean(emptyNums)))
 	}
 }
 
@@ -50,8 +50,8 @@ func TestHarmonicMean(t *testing.T) {
 	t.Parallel()
 
 	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSomeInEpsilon(t, 3.414, stats.HarmonicMean(data), 1.001)
-		assertNo(t, stats.HarmonicMean(emptyNums))
+		assertSomeInEpsilon(t, 3.414, maybe(stats.HarmonicMean(data)), 1.001)
+		assertNo(t, maybe(stats.HarmonicMean(emptyNums)))
 	}
 }
 

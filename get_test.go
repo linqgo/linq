@@ -31,10 +31,10 @@ func TestFromGetter(t *testing.T) {
 	})
 
 	assertQueryEqual(t, []int{0, 1, 4, 9, 16}, g)
-	assertHave(t, 0, maybe(g.FastElementAt(0)))
-	assertHave(t, 16, maybe(g.FastElementAt(4)))
-	assertLack(t, maybe(g.FastElementAt(5)))
-	assertLack(t, maybe(g.FastElementAt(-1)))
+	assertSome(t, 0, maybe(g.FastElementAt(0)))
+	assertSome(t, 16, maybe(g.FastElementAt(4)))
+	assertNo(t, maybe(g.FastElementAt(5)))
+	assertNo(t, maybe(g.FastElementAt(-1)))
 }
 
 func TestToGetter(t *testing.T) {
@@ -42,8 +42,8 @@ func TestToGetter(t *testing.T) {
 
 	g := linq.Iota1(10).Select(func(i int) int { return i * i }).ToGetter()
 
-	assertHave(t, 0, maybe(g(0)))
-	assertHave(t, 36, maybe(g(6)))
-	assertLack(t, maybe(g(10)))
-	assertLack(t, maybe(g(-1)))
+	assertSome(t, 0, maybe(g(0)))
+	assertSome(t, 36, maybe(g(6)))
+	assertNo(t, maybe(g(10)))
+	assertNo(t, maybe(g(-1)))
 }

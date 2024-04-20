@@ -23,24 +23,28 @@ import (
 	"github.com/linqgo/linq/internal/num"
 )
 
-func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
+func maybe[T any](t T, ok bool) func() (T, bool) {
+	return func() (T, bool) { return t, ok }
+}
+
+func assertNo[T any](t *testing.T, m func() (T, bool)) bool {
 	t.Helper()
 
-	v, valid := m.Get()
+	v, valid := m()
 	return assert.False(t, valid, v)
 }
 
-func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
+func assertSome[T any](t *testing.T, expected T, m func() (T, bool)) bool {
 	t.Helper()
 
-	v, valid := m.Get()
+	v, valid := m()
 	return assert.True(t, valid) && assert.Equal(t, expected, v)
 }
 
-func assertSomeInEpsilon[T any](t *testing.T, expected T, m linq.Maybe[T], ε float64) bool {
+func assertSomeInEpsilon[T any](t *testing.T, expected T, m func() (T, bool), ε float64) bool {
 	t.Helper()
 
-	v, valid := m.Get()
+	v, valid := m()
 	return assert.True(t, valid) && assert.InEpsilon(t, expected, v, ε)
 }
 

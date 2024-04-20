@@ -31,8 +31,8 @@ func TestSelect(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Select(square))
 
-	assertHave(t, 5, q.FastCount)
-	assertLack(t, oneshot().Select(square).FastCount)
+	assertSome(t, 5, q.FastCount)
+	assertNo(t, oneshot().Select(square).FastCount)
 }
 
 func primeFactors(n int) linq.Query[int] {
@@ -60,6 +60,6 @@ func TestSelectMany(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.SelectMany(oneshot(), primeFactors))
 
-	assertLack(t, q.FastCount)
-	assertLack(t, linq.SelectMany(oneshot(), primeFactors).FastCount)
+	assertNo(t, q.FastCount)
+	assertNo(t, linq.SelectMany(oneshot(), primeFactors).FastCount)
 }

@@ -28,8 +28,8 @@ func add(a, b int) int { return a + b }
 func TestAggregate(t *testing.T) {
 	t.Parallel()
 
-	assertNo(t, linq.Iota1(0).Aggregate(add))
-	assertSome(t, 15, linq.Iota2(1, 6).Aggregate(add))
+	assertNo(t, maybe(linq.Iota1(0).Aggregate(add)))
+	assertSome(t, 15, maybe(linq.Iota2(1, 6).Aggregate(add)))
 }
 
 func TestAggregateSeed(t *testing.T) {

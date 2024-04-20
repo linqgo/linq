@@ -23,7 +23,7 @@ import (
 func TestSingle(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 42, linq.From(42).Single())
-	assertNo(t, linq.From[int]().Single())
-	assertNo(t, linq.From(42, 56).Single())
+	assertSome(t, 42, maybe(linq.From(42).Single()))
+	assertNo(t, maybe(linq.From[int]().Single()))
+	assertNo(t, maybe(linq.From(42, 56).Single()))
 }

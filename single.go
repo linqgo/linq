@@ -14,17 +14,17 @@
 
 package linq
 
-func (q Query[T]) Single() Maybe[T] {
+func (q Query[T]) Single() (T, bool) {
 	return Single(q)
 }
 
-func Single[T any](q Query[T]) Maybe[T] {
+func Single[T any](q Query[T]) (T, bool) {
 	i := -1
 	var t T
 	for i, t = range q.IRange() {
 		if i == 1 {
-			return No[T]()
+			return no[T]()
 		}
 	}
-	return NewMaybe(t, i == 0)
+	return t, i == 0
 }
