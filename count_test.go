@@ -65,6 +65,6 @@ func ct[T any](t T, isTrue bool) countTrue[T] {
 func TestFastCount(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 5, linq.Iota1(5).FastCount())
-	assertNo(t, linq.Iota[int]().FastCount())
+	assertHave(t, 5, linq.Iota1(5).FastCount)
+	assertLack(t, linq.Iota[int]().FastCount)
 }

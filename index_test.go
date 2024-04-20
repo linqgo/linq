@@ -39,18 +39,18 @@ func TestIndex(t *testing.T) {
 	assertOneShot(t, false, linq.IndexFrom(data, 10))
 	assertOneShot(t, true, linq.IndexFrom(oneshot(), 10))
 
-	assertSome(t, 3, linq.Index(data).FastCount())
-	assertNo(t, linq.Index(oneshot()).FastCount())
+	assertHave(t, 3, linq.Index(data).FastCount)
+	assertLack(t, linq.Index(oneshot()).FastCount)
 
-	assertSome(t, 3, linq.IndexFrom(data, 10).FastCount())
-	assertNo(t, linq.IndexFrom(oneshot(), 10).FastCount())
+	assertHave(t, 3, linq.IndexFrom(data, 10).FastCount)
+	assertLack(t, linq.IndexFrom(oneshot(), 10).FastCount)
 }
 
 func TestIndexElementAt(t *testing.T) {
 	t.Parallel()
 
 	data := linq.IndexFrom(linq.From("foo", "bar", "baz"), 42)
-	assertSome(t, linq.NewKV(43, "bar"), data.FastElementAt(1))
-	assertNo(t, data.FastElementAt(3))
-	assertNo(t, data.FastElementAt(-1))
+	assertHave(t, linq.NewKV(43, "bar"), maybe(data.FastElementAt(1)))
+	assertLack(t, maybe(data.FastElementAt(3)))
+	assertLack(t, maybe(data.FastElementAt(-1)))
 }

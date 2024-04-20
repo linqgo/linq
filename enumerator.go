@@ -28,11 +28,8 @@ type Enumerable[T any] func() Enumerator[T]
 
 func newEnumerable[T any](seq iter.Seq[T]) Enumerable[T] {
 	return func() Enumerator[T] {
-		next, stop := iter.Pull(seq)
-		type nexter struct{ next func() (T, bool) }
-		n := &nexter{next}
-		runtime.SetFinalizer(n, func(*nexter) { stop() })
-		return func() Maybe[T] { return NewMaybe(n.next()) }
+		next := pull(seq)
+		return func() Maybe[T] { return NewMaybe(next()) }
 	}
 }
 
@@ -46,4 +43,10 @@ func (e Enumerable[T]) Seq() iter.Seq[T] {
 			}
 		}
 	}
+}
+
+func pull[T any](seq iter.Seq[T]) func() (T, bool) {
+	next, stop := iter.Pull(seq)
+	runtime.SetFinalizer(&next, func(*func() (T, bool)) { stop() })
+	return next
 }

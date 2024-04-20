@@ -29,16 +29,7 @@ type Query[T any] struct {
 	extra *queryExtra[T]
 }
 
-// NewQuery returns a new query based on a function that returns enumerators.
-func NewQuery[T any](e Enumerable[T], options ...QueryOption[T]) Query[T] {
-	return newQuery(e.Seq(), options...)
-}
-
 func FromSeq[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
-	return newQuery(seq, options...)
-}
-
-func newQuery[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
 	q := Query[T]{seq: seq, count: -1}
 
 	for _, option := range options {
@@ -174,8 +165,4 @@ type queryExtra[T any] struct {
 	cmp     CmpFn[T]
 	get     Getter[T]
 	oneShot bool
-}
-
-func newQueryFromEnumerator[T any](e Enumerator[T]) Query[T] {
-	return NewQuery(func() Enumerator[T] { return e })
 }

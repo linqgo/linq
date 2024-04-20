@@ -45,10 +45,10 @@ func TestMaxBy(t *testing.T) {
 	name := func(kv Person) string { return kv.Key }
 	age := func(kv Person) int { return kv.Value }
 
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MaxBy(peeps, name))
-	assertNo(t, linq.MaxBy(noone, name))
-	assertSome(t, linq.NewKV("John", 42), linq.MaxBy(peeps, age))
-	assertNo(t, linq.MaxBy(noone, age))
+	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MaxBy(peeps, name).Single())
+	assertNo(t, linq.MaxBy(noone, name).Single())
+	assertSome(t, linq.NewKV("John", 42), linq.MaxBy(peeps, age).Single())
+	assertNo(t, linq.MaxBy(noone, age).Single())
 }
 
 func TestMin(t *testing.T) {
@@ -71,8 +71,8 @@ func TestMinBy(t *testing.T) {
 	name := linq.Key[Person]
 	age := linq.Value[Person]
 
-	assertSome(t, linq.NewKV("Andrea", 35), linq.MinBy(peeps, name))
-	assertNo(t, linq.MinBy(noone, name))
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MinBy(peeps, age))
-	assertNo(t, linq.MinBy(noone, age))
+	assertSome(t, linq.NewKV("Andrea", 35), linq.MinBy(peeps, name).Single())
+	assertNo(t, linq.MinBy(noone, name).Single())
+	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MinBy(peeps, age).Single())
+	assertNo(t, linq.MinBy(noone, age).Single())
 }

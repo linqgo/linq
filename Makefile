@@ -17,7 +17,7 @@ all: test lint
 
 .PHONY: test
 test:
-	go test -cover ./...
+	go test -cover -timeout 30s ./...
 
 .PHONY: coverage
 coverage:

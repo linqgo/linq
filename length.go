@@ -68,7 +68,7 @@ func Shorter[A, B any](a Query[A], b Query[B]) bool {
 }
 
 func fastLenDiff[A, B any](a Query[A], b Query[B]) Maybe[int] {
-	alen, alenok := a.FastCount().Get()
-	blen, blenok := b.FastCount().Get()
+	alen, alenok := a.FastCount()
+	blen, blenok := b.FastCount()
 	return NewMaybe(alen-blen, alenok && blenok)
 }

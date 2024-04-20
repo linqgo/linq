@@ -17,6 +17,8 @@ package linq_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/linqgo/linq"
 )
 
@@ -25,30 +27,25 @@ func TestSlide(t *testing.T) {
 		{nil, {1}},
 		{nil, {2}},
 		{nil, {3}},
-		{{1, 2}, {5, 5}},
-		{{3}, {6, 7}},
+		{{1, 2}, {5}},
+		{nil, {5}},
+		{{3}, {6}},
+		{nil, {7}},
 		{{5, 5}, {8}},
 	}
-	slide := func(slideIn bool) linq.Query[[][]int] {
+	slide := func() linq.Query[[][]int] {
 		return linq.Select(
 			linq.Slide(
 				linq.From(1, 2, 3, 5, 5, 6, 7, 8),
-				slideIn,
 				func(tail, head int) bool { return tail < head-2 },
 			),
 			func(d linq.Delta[int]) [][]int {
-				return [][]int{
-					d.Outs.ToSlice(),
-					d.Ins.ToSlice(),
-				}
+				return [][]int{d.Outs.ToSlice(), {d.In}}
 			},
 		)
 	}
 
-	assertQueryEqual(t, data, slide(true))
-	assertQueryEqual(t,
-		append([][][]int{{nil, {1, 2, 3}}}, data[3:]...),
-		slide(false))
+	assertQueryEqual(t, data, slide())
 }
 
 func TestSlideAll(t *testing.T) {
@@ -56,7 +53,7 @@ func TestSlideAll(t *testing.T) {
 
 	s := linq.SlideAll(chanof(1, 2, 3)).ToSlice()
 	for i, kv := range s {
-		assertQueryEqual(t, []int{i + 1}, kv.Ins)
+		assert.Equal(t, i+1, kv.In)
 		assertQueryEqual(t, []int{}, kv.Outs)
 	}
 }
@@ -64,16 +61,16 @@ func TestSlideAll(t *testing.T) {
 func TestSlideFixed(t *testing.T) {
 	t.Parallel()
 
-	s := linq.SlideFixed(chanof(1, 2, 3, 4, 5), 2, true).ToSlice()
+	s := linq.SlideFixed(chanof(1, 2, 3, 4, 5), 2).ToSlice()
 	for i, kv := range s {
-		t.Log(i, kv.Ins.ToSlice(), kv.Outs.ToSlice())
+		t.Log(i, kv.In, kv.Outs.ToSlice())
 	}
 	for i, kv := range s[:2] {
-		assertQueryEqual(t, []int{i + 1}, kv.Ins)
+		assert.Equal(t, i+1, kv.In)
 		assertQueryEqual(t, []int{}, kv.Outs)
 	}
 	for i, kv := range s[2:] {
-		assertQueryEqual(t, []int{i + 3}, kv.Ins)
+		assert.Equal(t, i+3, kv.In)
 		assertQueryEqual(t, []int{i + 1}, kv.Outs)
 	}
 }

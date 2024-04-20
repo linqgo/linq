@@ -29,6 +29,11 @@ func No[T any]() Maybe[T] {
 	return Maybe[T]{}
 }
 
+func no[T any]() (T, bool) {
+	var zero T
+	return zero, false
+}
+
 func Some[T any](t T) Maybe[T] {
 	return Maybe[T]{t: t, valid: true}
 }

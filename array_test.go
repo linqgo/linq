@@ -53,11 +53,11 @@ func TestArrayFromLenGet(t *testing.T) {
 func TestArrayLenAndGet(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 5, testArray5.FastCount())
-	assertSome(t, 4, testArray5.FastElementAt(2))
-	assertNo(t, testArray5.FastElementAt(5))
-	assertNo(t, testArray5.FastElementAt(99))
-	assertNo(t, testArray5.FastElementAt(-1))
+	assertHave(t, 5, testArray5.FastCount)
+	assertHave(t, 4, maybe(testArray5.FastElementAt(2)))
+	assertLack(t, maybe(testArray5.FastElementAt(5)))
+	assertLack(t, maybe(testArray5.FastElementAt(99)))
+	assertLack(t, maybe(testArray5.FastElementAt(-1)))
 }
 
 func TestToArray(t *testing.T) {

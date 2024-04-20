@@ -14,18 +14,20 @@
 
 package linq
 
-import "strings"
+import (
+	"strings"
+)
 
 // FromString returns a Query[rune] with the runes from s.
 func FromString(s string) Query[rune] {
 	if len(s) == 0 {
 		return None[rune]()
 	}
-	return NewQuery(func() Enumerator[rune] {
-		r := strings.NewReader(s)
-		return func() Maybe[rune] {
-			ch, _, err := r.ReadRune()
-			return NewMaybe(ch, err == nil)
+	return FromSeq(func(yield func(rune) bool) {
+		for _, r := range s {
+			if !yield(r) {
+				return
+			}
 		}
 	}, FastCountOption[rune](len(s)))
 }
@@ -41,7 +43,7 @@ func StringsJoin[S ~string](q Query[S], sep S) S {
 	scan := q.Scanner()
 	var s S
 
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		if c == 0 {
 			return ""
 		}
@@ -67,7 +69,7 @@ func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
 	scan := q.Scanner()
 	var s S
 
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		if c == 0 {
 			return ""
 		}

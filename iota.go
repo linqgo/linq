@@ -26,7 +26,7 @@ func Iota[I num.RealNumber]() Query[I] {
 				}
 			}
 		},
-		FastGetOption(func(i int) Maybe[I] { return Some(I(i)) }),
+		FastGetOption(func(i int) (I, bool) { return I(i), true }),
 	)
 }
 

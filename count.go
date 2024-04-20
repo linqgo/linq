@@ -31,13 +31,13 @@ func (q Query[T]) CountLimit(limit int) int {
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
-func (q Query[T]) FastCount() Maybe[int] {
+func (q Query[T]) FastCount() (int, bool) {
 	return FastCount(q)
 }
 
 // Count returns the number of elements in q.
 func Count[T any](q Query[T]) int {
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		return c
 	}
 	n := 0
@@ -57,7 +57,7 @@ func Count[T any](q Query[T]) int {
 //	n := CountLimit(N + 1)
 //	n, more := min(n, N), n > N
 func CountLimit[T any](q Query[T], limit int) int {
-	if c, ok := FastCount(q).Get(); ok {
+	if c, ok := FastCount(q); ok {
 		return min(limit, c)
 	}
 
@@ -74,7 +74,7 @@ func CountLimit[T any](q Query[T], limit int) int {
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
-func FastCount[T any](q Query[T]) Maybe[int] {
+func FastCount[T any](q Query[T]) (int, bool) {
 	count := q.fastCount()
-	return NewMaybe(count, count >= 0)
+	return count, count >= 0
 }

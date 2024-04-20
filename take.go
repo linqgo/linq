@@ -51,11 +51,11 @@ func Take[T any](q Query[T], take int) Query[T] {
 	}
 	var get Getter[T]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[T] {
-			if 0 <= i && i < take {
+		get = func(i int) (T, bool) {
+			if i < take {
 				return qget(i)
 			}
-			return No[T]()
+			return no[T]()
 		}
 	}
 	return Pipe(q,

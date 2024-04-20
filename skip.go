@@ -54,7 +54,7 @@ func Skip[T any](q Query[T], skip int) Query[T] {
 	}
 	var get Getter[T]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[T] { return qget(skip + i) }
+		get = func(i int) (T, bool) { return qget(skip + i) }
 	}
 	return Pipe(q,
 		func(yield func(T) bool) {

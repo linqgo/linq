@@ -15,6 +15,7 @@
 package linq_test
 
 import (
+	"math/bits"
 	"testing"
 
 	"github.com/linqgo/linq"
@@ -30,21 +31,22 @@ func TestSelect(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Select(square))
 
-	assertSome(t, 5, q.FastCount())
-	assertNo(t, oneshot().Select(square).FastCount())
+	assertHave(t, 5, q.FastCount)
+	assertLack(t, oneshot().Select(square).FastCount)
 }
 
 func primeFactors(n int) linq.Query[int] {
-	return linq.NewQuery(func() linq.Enumerator[int] {
-		i, s := 2, 1
-		return func() linq.Maybe[int] {
-			for ; i <= n; i, s = i+s, 2 {
-				if n%i == 0 {
-					n /= i
-					return linq.Some(i)
+	return linq.FromSeq(func(yield func(int) bool) {
+		sqrt := 1 << ((bits.Len(uint(n)) + 1) / 2)
+		for i, s := 2, 1; i <= sqrt; {
+			if n%i == 0 {
+				n /= i
+				if !yield(i) {
+					return
 				}
+			} else {
+				i, s = i+s, 2
 			}
-			return linq.No[int]()
 		}
 	})
 }
@@ -58,6 +60,6 @@ func TestSelectMany(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.SelectMany(oneshot(), primeFactors))
 
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.SelectMany(oneshot(), primeFactors).FastCount())
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.SelectMany(oneshot(), primeFactors).FastCount)
 }

@@ -40,9 +40,9 @@ func TestConcat(t *testing.T) {
 	assertOneShot(t, true, linq.Concat(oneshot(), linq.From(1, 2)))
 	assertOneShot(t, true, linq.Concat(linq.From(1, 2), oneshot()))
 
-	assertSome(t, 3, linq.Concat(linq.From(1, 2), linq.From(3)).FastCount())
-	assertSome(t, 3, linq.Concat(linq.From(1, 2), linq.None[int](), linq.From(3)).FastCount())
-	assertSome(t, 3, linq.Concat(linq.None[int](), linq.From(1, 2, 3), linq.None[int]()).FastCount())
-	assertNo(t, linq.Concat(slowcount, linq.From(1, 2)).FastCount())
-	assertNo(t, linq.Concat(linq.From(1, 2), slowcount).FastCount())
+	assertHave(t, 3, linq.Concat(linq.From(1, 2), linq.From(3)).FastCount)
+	assertHave(t, 3, linq.Concat(linq.From(1, 2), linq.None[int](), linq.From(3)).FastCount)
+	assertHave(t, 3, linq.Concat(linq.None[int](), linq.From(1, 2, 3), linq.None[int]()).FastCount)
+	assertLack(t, linq.Concat(slowcount, linq.From(1, 2)).FastCount)
+	assertLack(t, linq.Concat(linq.From(1, 2), slowcount).FastCount)
 }

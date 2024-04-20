@@ -36,9 +36,9 @@ func TestDistinct(t *testing.T) {
 	assertOneShot(t, false, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)))
 	assertOneShot(t, true, linq.Distinct(oneshot()))
 
-	assertSome(t, 0, linq.Distinct(linq.None[int]()).FastCount())
-	assertSome(t, 1, linq.Distinct(linq.From(1)).FastCount())
-	assertSome(t, 1, linq.Distinct(linq.Concat(linq.None[int](), linq.From(1), linq.None[int]())).FastCount())
-	assertNo(t, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)).FastCount())
-	assertNo(t, linq.Distinct(oneshot()).FastCount())
+	assertHave(t, 0, linq.Distinct(linq.None[int]()).FastCount)
+	assertHave(t, 1, linq.Distinct(linq.From(1)).FastCount)
+	assertHave(t, 1, linq.Distinct(linq.Concat(linq.None[int](), linq.From(1), linq.None[int]())).FastCount)
+	assertLack(t, linq.Distinct(linq.From(1, 2, 3, 2, 3, 4, 3, 4, 5)).FastCount)
+	assertLack(t, linq.Distinct(oneshot()).FastCount)
 }

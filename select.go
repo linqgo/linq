@@ -26,11 +26,11 @@ func (q Query[T]) Select(sel func(t T) T) Query[T] {
 func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 	var get Getter[U]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[U] {
-			if t, ok := qget(i).Get(); ok {
-				return Some(sel(t))
+		get = func(i int) (U, bool) {
+			if t, ok := qget(i); ok {
+				return sel(t), true
 			}
-			return No[U]()
+			return no[U]()
 		}
 	}
 	return Pipe(q,

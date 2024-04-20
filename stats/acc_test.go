@@ -29,8 +29,7 @@ func TestAccMean(t *testing.T) {
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
 		stats.AccMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, stats.AccMean(linq.SlideAll(odds)))
-	assertQueryEqual(t, []int{2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2, false)))
-	assertQueryEqual(t, []int{1, 2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2, true)))
+	assertQueryEqual(t, []int{1, 2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2)))
 }
 
 // func TestAccMeanWt(t *testing.T) {

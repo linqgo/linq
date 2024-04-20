@@ -15,6 +15,7 @@
 package ring_test
 
 import (
+	"iter"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -85,7 +86,9 @@ func TestRingEnumerator(t *testing.T) {
 	r.Pop()
 	r.Pop()
 
-	assertNo(t, linq.FromArray[int](r).Enumerator()())
+	next, stop := iter.Pull(linq.FromArray[int](r).Range())
+	defer stop()
+	assertNoNext(t, next)
 }
 
 func TestRingEnumeratorPartial(t *testing.T) {
@@ -98,30 +101,30 @@ func TestRingEnumeratorPartial(t *testing.T) {
 
 	r.Pop()
 
-	next := linq.FromArray[int](r).Enumerator()
-	assertSome(t, 2, next())
-	assertNo(t, next())
+	next, stop := iter.Pull(linq.FromArray[int](r).Range())
+	defer stop()
+	assertNext(t, 2, next)
+	assertNoNext(t, next)
 
 	r.Push(3)
 	r.Pop()
 	r.Push(4)
 
-	next = linq.FromArray[int](r).Enumerator()
-	assertSome(t, 3, next())
-	assertSome(t, 4, next())
-	assertNo(t, next())
+	next, stop = iter.Pull(linq.FromArray[int](r).Range())
+	defer stop()
+	assertNext(t, 3, next)
+	assertNext(t, 4, next)
+	assertNoNext(t, next)
 }
 
-func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
+func assertNext[T any](t *testing.T, expected T, next func() (T, bool)) bool {
 	t.Helper()
-
-	v, valid := m.Get()
-	return assert.False(t, valid, v)
+	v, ok := next()
+	return assert.True(t, ok) && assert.Equal(t, expected, v)
 }
 
-func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
+func assertNoNext[T any](t *testing.T, next func() (T, bool)) bool {
 	t.Helper()
-
-	v, valid := m.Get()
-	return assert.True(t, valid) && assert.Equal(t, expected, v)
+	v, ok := next()
+	return assert.False(t, ok, v)
 }

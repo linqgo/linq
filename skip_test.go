@@ -34,9 +34,9 @@ func TestSkip(t *testing.T) {
 	assertOneShot(t, true, oneshot().Skip(0))
 	assertOneShot(t, true, oneshot().Skip(2))
 
-	assertSome(t, 5, data.Skip(0).FastCount())
-	assertSome(t, 3, data.Skip(2).FastCount())
-	assertNo(t, oneshot().Skip(0).FastCount())
+	assertHave(t, 5, data.Skip(0).FastCount)
+	assertHave(t, 3, data.Skip(2).FastCount)
+	assertLack(t, oneshot().Skip(0).FastCount)
 }
 
 func TestSkipLast(t *testing.T) {
@@ -52,9 +52,9 @@ func TestSkipLast(t *testing.T) {
 	assertOneShot(t, false, data.SkipLast(0))
 	assertOneShot(t, true, oneshot().SkipLast(0))
 
-	assertSome(t, 5, data.SkipLast(0).FastCount())
-	assertSome(t, 2, data.SkipLast(3).FastCount())
-	assertNo(t, oneshot().SkipLast(0).FastCount())
+	assertHave(t, 5, data.SkipLast(0).FastCount)
+	assertHave(t, 2, data.SkipLast(3).FastCount)
+	assertLack(t, oneshot().SkipLast(0).FastCount)
 }
 
 func TestSkipWhile(t *testing.T) {
@@ -69,13 +69,13 @@ func TestSkipWhile(t *testing.T) {
 	assertOneShot(t, false, data.SkipWhile(linq.False[int]))
 	assertOneShot(t, true, oneshot().SkipWhile(linq.False[int]))
 
-	assertNo(t, data.SkipWhile(linq.False[int]).FastCount())
-	assertNo(t, oneshot().SkipWhile(linq.False[int]).FastCount())
+	assertLack(t, data.SkipWhile(linq.False[int]).FastCount)
+	assertLack(t, oneshot().SkipWhile(linq.False[int]).FastCount)
 }
 
 func TestSkipElementAt(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 5, linq.Skip(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(1))
-	assertNo(t, linq.Skip(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(3))
+	assertHave(t, 5, maybe(linq.Skip(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(1)))
+	assertLack(t, maybe(linq.Skip(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(3)))
 }

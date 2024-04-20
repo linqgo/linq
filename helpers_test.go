@@ -22,6 +22,11 @@ import (
 	"github.com/linqgo/linq"
 )
 
+func maybe[T any](t T, ok bool) func() (T, bool) {
+	return func() (T, bool) { return t, ok }
+}
+
+// TODO: Remove?
 func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
 	t.Helper()
 
@@ -29,6 +34,7 @@ func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
 	return assert.False(t, valid, v)
 }
 
+// TODO: Remove?
 func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
 	t.Helper()
 
@@ -36,10 +42,22 @@ func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
 	return assert.True(t, valid) && assert.Equal(t, expected, v)
 }
 
-func assertSomeQuery[T any](t *testing.T, expected []T, m linq.Maybe[linq.Query[T]]) bool {
+func assertHave[T any](t *testing.T, expected T, next func() (T, bool)) bool {
+	t.Helper()
+	v, ok := next()
+	return assert.True(t, ok) && assert.Equal(t, expected, v)
+}
+
+func assertLack[T any](t *testing.T, next func() (T, bool)) bool {
+	t.Helper()
+	v, ok := next()
+	return assert.False(t, ok, v)
+}
+
+func assertHaveQuery[T any](t *testing.T, expected []T, m func() (linq.Query[T], bool)) bool {
 	t.Helper()
 
-	v, valid := m.Get()
+	v, valid := m()
 	return assert.True(t, valid) && assertQueryEqual(t, expected, v)
 }
 

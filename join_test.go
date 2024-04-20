@@ -71,10 +71,10 @@ func TestJoin(t *testing.T) {
 	assertOneShot(t, true, join(linq.Iota2(0, 5), oneshot()))
 	assertOneShot(t, true, join(oneshot(), oneshot()))
 
-	assertSome(t, 0, join(linq.Iota2(0, 0), linq.Iota2(5, 10)).FastCount())
-	assertSome(t, 0, join(linq.Iota2(0, 5), linq.Iota2(5, 5)).FastCount())
-	assertNo(t, join(linq.Iota2(0, 5), linq.Iota2(5, 10)).FastCount())
-	assertNo(t, join(slowcount, linq.Iota2(5, 10)).FastCount())
-	assertNo(t, join(linq.Iota2(0, 5), slowcount).FastCount())
-	assertNo(t, join(slowcount, slowcount).FastCount())
+	assertHave(t, 0, join(linq.Iota2(0, 0), linq.Iota2(5, 10)).FastCount)
+	assertHave(t, 0, join(linq.Iota2(0, 5), linq.Iota2(5, 5)).FastCount)
+	assertLack(t, join(linq.Iota2(0, 5), linq.Iota2(5, 10)).FastCount)
+	assertLack(t, join(slowcount, linq.Iota2(5, 10)).FastCount)
+	assertLack(t, join(linq.Iota2(0, 5), slowcount).FastCount)
+	assertLack(t, join(slowcount, slowcount).FastCount)
 }

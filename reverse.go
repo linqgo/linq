@@ -28,7 +28,10 @@ func Reverse[T any](q Query[T]) Query[T] {
 		if qget := q.getter(); qget != nil {
 			last := q.count - 1
 			return FromArray(ArrayFromLenGet(q.count, func(i int) T {
-				return qget(last - i).Must()
+				if t, ok := qget(last - i); ok {
+					return t
+				}
+				panic("element not found")
 			}))
 		}
 	}

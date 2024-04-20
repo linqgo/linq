@@ -14,7 +14,7 @@
 
 package linq
 
-type Getter[T any] func(i int) Maybe[T]
+type Getter[T any] func(i int) (T, bool)
 
 // ArrayGetter returns a Getter for an Array.
 func ArrayGetter[T any](a Array[T]) Getter[T] {
@@ -23,24 +23,22 @@ func ArrayGetter[T any](a Array[T]) Getter[T] {
 
 // LenGetGetter returns a Getter for a len/get pair.
 func LenGetGetter[T any](n int, get func(i int) T) Getter[T] {
-	return func(i int) Maybe[T] {
+	return func(i int) (T, bool) {
 		if 0 <= i && i < n {
-			return Some(get(i))
+			return get(i), true
 		}
-		return No[T]()
+		return no[T]()
 	}
 }
 
 func FromGetter[T any](get Getter[T]) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
-			i := 0
-			return func() Maybe[T] {
-				t := get(i)
-				if t.Valid() {
-					i++
+	return FromSeq(
+		func(yield func(t T) bool) {
+			for i := 0; ; i++ {
+				t, ok := get(i)
+				if !ok || !yield(t) {
+					return
 				}
-				return t
 			}
 		},
 		FastGetOption(get),

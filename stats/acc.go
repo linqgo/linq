@@ -141,7 +141,7 @@ func accMeasure[R num.RealNumber](
 		n := 0
 		measure := ident
 		for r := range q.Range() {
-			ins, nIns := aggregateN(r.Ins, ident, agg)
+			ins, nIns := r.In, 1
 			outs, nOuts := aggregateN(r.Outs, ident, agg)
 			measure = agg(measure, inv(ins, outs))
 			n += nIns - nOuts

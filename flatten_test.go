@@ -29,9 +29,9 @@ func TestFlatten(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))))
 
-	assertSome(t, 0, linq.Flatten(linq.None[linq.Query[int]]()).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))).FastCount())
+	assertHave(t, 0, linq.Flatten(linq.None[linq.Query[int]]()).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))).FastCount)
 }
 
 func TestFlattenSlices(t *testing.T) {
@@ -43,7 +43,7 @@ func TestFlattenSlices(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.FlattenSlices(linq.FromChannel(make(chan []int))))
 
-	assertSome(t, 0, linq.FlattenSlices(linq.None[[]int]()).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.FlattenSlices(linq.FromChannel(make(chan []int))).FastCount())
+	assertHave(t, 0, linq.FlattenSlices(linq.None[[]int]()).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.FlattenSlices(linq.FromChannel(make(chan []int))).FastCount)
 }

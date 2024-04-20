@@ -27,7 +27,7 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 	// Slight problem: If FastCount(q) >= 64, then the actual count can't be
 	// represented with an int.
 	count := -1
-	if c, ok := FastCount(q).Get(); ok && count < positiveIntBits {
+	if c, ok := FastCount(q); ok && count < positiveIntBits {
 		count = 1 << c
 	}
 

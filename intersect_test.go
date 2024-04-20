@@ -37,11 +37,11 @@ func TestIntersect(t *testing.T) {
 	assertOneShot(t, true, linq.Intersect(f(1, 2, 3), oneshot()))
 	assertOneShot(t, true, linq.Intersect(oneshot(), oneshot()))
 
-	assertSome(t, 0, linq.Intersect(f(), f()).FastCount())
-	assertSome(t, 0, linq.Intersect(f(), slowcount).FastCount())
-	assertSome(t, 0, linq.Intersect(slowcount, f()).FastCount())
-	assertNo(t, linq.Intersect(f(1, 2, 3), f(3, 4, 5)).FastCount())
-	assertNo(t, linq.Intersect(oneshot(), f(3, 4, 5)).FastCount())
-	assertNo(t, linq.Intersect(f(1, 2, 3), oneshot()).FastCount())
-	assertNo(t, linq.Intersect(oneshot(), oneshot()).FastCount())
+	assertHave(t, 0, linq.Intersect(f(), f()).FastCount)
+	assertHave(t, 0, linq.Intersect(f(), slowcount).FastCount)
+	assertHave(t, 0, linq.Intersect(slowcount, f()).FastCount)
+	assertLack(t, linq.Intersect(f(1, 2, 3), f(3, 4, 5)).FastCount)
+	assertLack(t, linq.Intersect(oneshot(), f(3, 4, 5)).FastCount)
+	assertLack(t, linq.Intersect(f(1, 2, 3), oneshot()).FastCount)
+	assertLack(t, linq.Intersect(oneshot(), oneshot()).FastCount)
 }

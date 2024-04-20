@@ -19,12 +19,12 @@ package linq
 func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 	var get Getter[Query[T]]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[Query[T]] {
+		get = func(i int) (Query[T], bool) {
 			start := size * i
-			if _, ok := qget(start).Get(); ok {
-				return Some(q.Skip(start).Take(size))
+			if _, ok := qget(start); ok {
+				return q.Skip(start).Take(size), true
 			}
-			return No[Query[T]]()
+			return no[Query[T]]()
 		}
 	}
 	return Pipe(

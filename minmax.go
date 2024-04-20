@@ -21,9 +21,8 @@ func Max[R constraints.Ordered](q Query[R]) Maybe[R] {
 	return Aggregate(q, max[R])
 }
 
-// MaxBy returns the element in q with the highest key or ok = false if q is
-// empty.
-func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Maybe[T] {
+// MaxBy returns the element(s) in q with the highest key.
+func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Query[T] {
 	return bestBy(q, key, greater[R])
 }
 
@@ -34,24 +33,31 @@ func Min[R constraints.Ordered](q Query[R]) Maybe[R] {
 
 // MinBy returns the element in q with the highest key or ok = false if q is
 // empty.
-func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) Maybe[T] {
+func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) Query[T] {
 	return bestBy(q, key, less[K])
 }
 
-func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Maybe[T] {
-	next := q.Enumerator()
-	bestValue, ok := next().Get()
-	if !ok {
-		return No[T]()
-	}
-	bestKey := key(bestValue)
-	for u, ok := next().Get(); ok; u, ok = next().Get() {
-		k := key(u)
-		if better(k, bestKey) {
-			bestValue, bestKey = u, k
+func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Query[T] {
+	return FromSeq(func(yield func(T) bool) {
+		var acc []T
+		var best O
+		for i, t := range q.IRange() {
+			k := key(t)
+			switch {
+			case i == 0, better(k, best):
+				best = k
+				acc = acc[:0]
+			case better(best, k):
+				continue
+			}
+			acc = append(acc, t)
 		}
-	}
-	return Some(bestValue)
+		for _, t := range acc {
+			if !yield(t) {
+				return
+			}
+		}
+	})
 }
 
 func greater[O constraints.Ordered](a, b O) bool {

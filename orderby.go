@@ -50,11 +50,15 @@ var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy/ThenBy"
 
 // qo returns a query that orders q's elements according to cmp.
 func qo[T any](q Query[T], cmp CmpFn[T]) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
+	return FromSeq(
+		func(yield func(t T) bool) {
 			data := q.ToSlice()
 			slices.SortFunc(data, cmp)
-			return From(data...).Enumerator()
+			for _, t := range data {
+				if !yield(t) {
+					return
+				}
+			}
 		},
 		CmpersOption(cmp),
 		OneShotOption[T](q.OneShot()),

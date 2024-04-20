@@ -41,6 +41,6 @@ func TestPowerSet(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, powerset(oneshot()))
 
-	assertSome(t, 8, q.FastCount())
-	assertNo(t, powerset(oneshot()).FastCount())
+	assertHave(t, 8, q.FastCount)
+	assertLack(t, powerset(oneshot()).FastCount)
 }

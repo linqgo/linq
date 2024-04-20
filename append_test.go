@@ -29,6 +29,6 @@ func TestAppend(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Append(6).Append(7))
 
-	assertSome(t, 7, q.FastCount())
-	assertNo(t, slowcount.Append(6).Append(7).FastCount())
+	assertHave(t, 7, q.FastCount)
+	assertLack(t, slowcount.Append(6).Append(7).FastCount)
 }

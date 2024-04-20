@@ -24,17 +24,12 @@ func ArrayFromLenGet[T any](n int, get func(i int) T) Array[T] {
 }
 
 func FromArray[T any](a Array[T]) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
-			n := a.Len()
-			i := 0
-			return func() Maybe[T] {
-				if i == n {
-					return No[T]()
+	return FromSeq(
+		func(yield func(T) bool) {
+			for i, n := 0, a.Len(); i < n; i++ {
+				if !yield(a.Get(i)) {
+					return
 				}
-				t := a.Get(i)
-				i++
-				return Some(t)
 			}
 		},
 		FastCountOption[T](a.Len()),
@@ -74,5 +69,8 @@ func (a queryArray[T]) Len() int {
 }
 
 func (a queryArray[T]) Get(i int) T {
-	return a.q.ElementAt(i).Must()
+	if t, ok := a.q.ElementAt(i); ok {
+		return t
+	}
+	panic("element not found")
 }

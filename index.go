@@ -21,11 +21,11 @@ func Index[T any](q Query[T]) Query[KV[int, T]] {
 func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
 	var get Getter[KV[int, T]]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[KV[int, T]] {
-			if t, ok := qget(i).Get(); ok {
-				return Some(NewKV(start+i, t))
+		get = func(i int) (KV[int, T], bool) {
+			if t, ok := qget(i); ok {
+				return NewKV(start+i, t), true
 			}
-			return No[KV[int, T]]()
+			return no[KV[int, T]]()
 		}
 	}
 	return Pipe(q,

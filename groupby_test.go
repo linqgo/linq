@@ -40,9 +40,9 @@ func TestGroupBy(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.GroupBy(oneshot(), mod2))
 
-	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
+	assertHave(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.GroupBy(slowcount, mod2).FastCount)
 }
 
 func TestGroupBySlices(t *testing.T) {
@@ -59,9 +59,9 @@ func TestGroupBySlices(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.GroupBySlices(linq.FromChannel(make(chan int)), mod2))
 
-	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
+	assertHave(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.GroupBy(slowcount, mod2).FastCount)
 }
 
 func TestGroupBySelect(t *testing.T) {
@@ -86,15 +86,15 @@ func TestGroupBySelect(t *testing.T) {
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertSome(t, 0, linq.GroupBySelect(
+	assertHave(t, 0, linq.GroupBySelect(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBySelect(
+	).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.GroupBySelect(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
+	).FastCount)
 }
 
 func TestGroupBySelectSlices(t *testing.T) {
@@ -115,13 +115,13 @@ func TestGroupBySelectSlices(t *testing.T) {
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertSome(t, 0, linq.GroupBySelectSlices(
+	assertHave(t, 0, linq.GroupBySelectSlices(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBySelectSlices(
+	).FastCount)
+	assertLack(t, q.FastCount)
+	assertLack(t, linq.GroupBySelectSlices(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
+	).FastCount)
 }

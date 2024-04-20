@@ -15,6 +15,7 @@
 package linq_test
 
 import (
+	"iter"
 	"strconv"
 	"testing"
 
@@ -49,20 +50,22 @@ func TestMemoizeTwofer(t *testing.T) {
 	t.Parallel()
 
 	m := linq.FromChannel(fiveInts()).Memoize()
-	a := m.Enumerator()
-	b := m.Enumerator()
-	assertSome(t, 0, a())
-	assertSome(t, 0, b())
-	assertSome(t, 1, a())
-	assertSome(t, 2, a())
-	assertSome(t, 1, b())
-	assertSome(t, 2, b())
-	assertSome(t, 3, b())
-	assertSome(t, 3, a())
-	assertSome(t, 4, a())
-	assertSome(t, 4, b())
-	assertNo(t, a())
-	assertNo(t, b())
+	a, stopA := iter.Pull(m.Range())
+	defer stopA()
+	b, stopB := iter.Pull(m.Range())
+	defer stopB()
+	assertHave(t, 0, a)
+	assertHave(t, 0, b)
+	assertHave(t, 1, a)
+	assertHave(t, 2, a)
+	assertHave(t, 1, b)
+	assertHave(t, 2, b)
+	assertHave(t, 3, b)
+	assertHave(t, 3, a)
+	assertHave(t, 4, a)
+	assertHave(t, 4, b)
+	assertLack(t, a)
+	assertLack(t, b)
 }
 
 func TestMemoizeParallel(t *testing.T) {

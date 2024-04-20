@@ -31,22 +31,24 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 			}
 		},
 		FastCountOption[T](int(count)),
-		FastGetOption(func(i int) Maybe[T] {
-			return NewMaybe(value, 0 <= i && i < n)
+		FastGetOption(func(i int) (T, bool) {
+			return value, 0 <= i && i < n
 		}),
 	)
 }
 
 // RepeatForever returns a query with value repeated forever.
 func RepeatForever[T any](value T) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
-			return func() Maybe[T] {
-				return Some(value)
+	return FromSeq(
+		func(yield func(t T) bool) {
+			for {
+				if !yield(value) {
+					return
+				}
 			}
 		},
-		FastGetOption(func(i int) Maybe[T] {
-			return NewMaybe(value, 0 <= i)
+		FastGetOption(func(i int) (T, bool) {
+			return value, 0 <= i
 		}),
 	)
 }
