@@ -34,22 +34,6 @@ func TestFalse(t *testing.T) {
 	assert.False(t, linq.False(56))
 }
 
-func TestLess(t *testing.T) {
-	t.Parallel()
-
-	assert.False(t, linq.Less(10, 5))
-	assert.False(t, linq.Less(5, 5))
-	assert.True(t, linq.Less(5, 10))
-}
-
-func TestGreater(t *testing.T) {
-	t.Parallel()
-
-	assert.False(t, linq.Greater("10", "5"))
-	assert.False(t, linq.Greater("5", "5"))
-	assert.True(t, linq.Greater("5", "10"))
-}
-
 func TestLongerMap(t *testing.T) {
 	t.Parallel()
 

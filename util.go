@@ -14,12 +14,6 @@
 
 package linq
 
-import (
-	"iter"
-
-	"golang.org/x/exp/constraints"
-)
-
 // Identity returns t unmodified.
 func Identity[T any](t T) T {
 	return t
@@ -38,16 +32,6 @@ func Equal[T comparable](a, b T) bool {
 // False returns false, ignoring the input value.
 func False[T any](T) bool {
 	return false
-}
-
-// Greater returns a > b.
-func Greater[T constraints.Ordered](a, b T) bool {
-	return a > b
-}
-
-// Less returns a < b.
-func Less[T constraints.Ordered](a, b T) bool {
-	return a < b
 }
 
 // LongerSlice returns len(a) > len(b).
@@ -110,26 +94,6 @@ func Zero[U, T any](T) U {
 func Drain[T any](next Enumerator[T]) int {
 	n := 0
 	for t := next(); t.Valid(); t = next() {
-		n++
-	}
-	return n
-}
-
-// Drain consumes next and returns the number of elements consumed.
-func DrainSeq[T any](seq iter.Seq[T]) int {
-	n := 0
-	for t := range seq {
-		_ = t
-		n++
-	}
-	return n
-}
-
-// Drain consumes next and returns the number of elements consumed.
-func DrainSeq2[K, V any](seq iter.Seq2[K, V]) int {
-	n := 0
-	for k, v := range seq {
-		_, _ = k, v
 		n++
 	}
 	return n

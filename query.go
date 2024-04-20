@@ -14,7 +14,9 @@
 
 package linq
 
-import "iter"
+import (
+	"iter"
+)
 
 type QueryOption[T any] func(q *queryExtra[T], count *int)
 
@@ -65,11 +67,11 @@ func (q Query[T]) OneShot() bool {
 	return q.extra != nil && q.extra.oneShot
 }
 
-func (q Query[T]) lesser() lesserFunc[T] {
-	if q.extra != nil {
-		return q.extra.lesser
+func (q Query[T]) cmp() CmpFn[T] {
+	if q.extra != nil && q.extra.cmp != nil {
+		return q.extra.cmp
 	}
-	return nil
+	panic(Error("ThenBy not immediately preceded by OrderBy/ThenBy"))
 }
 
 func (q Query[T]) getter() Getter[T] {
@@ -162,19 +164,17 @@ func ComputedFastCountOption[T any](
 	return nil
 }
 
-func LesserOption[T any](lesser lesserFunc[T]) QueryOption[T] {
+func CmpersOption[T any](cmp CmpFn[T]) QueryOption[T] {
 	return func(e *queryExtra[T], _ *int) {
-		e.lesser = lesser
+		e.cmp = cmp
 	}
 }
 
 type queryExtra[T any] struct {
-	lesser  lesserFunc[T]
+	cmp     CmpFn[T]
 	get     Getter[T]
 	oneShot bool
 }
-
-type lesserFunc[T any] func([]T) func(i, j int) bool
 
 func newQueryFromEnumerator[T any](e Enumerator[T]) Query[T] {
 	return NewQuery(func() Enumerator[T] { return e })

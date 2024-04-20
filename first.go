@@ -14,37 +14,37 @@
 
 package linq
 
-// FirstComp returns the element in q that precedes every other element or ok =
+// FirstCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func (q Query[T]) FirstComp(precedes func(a, b T) bool) Maybe[T] {
-	return FirstComp(q, precedes)
+func (q Query[T]) FirstCmp(cmp func(a, b T) int) Maybe[T] {
+	return FirstCmp(q, cmp)
 }
 
-// LastComp returns the element in q that precedes every other element or ok =
+// LastCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func (q Query[T]) LastComp(precedes func(a, b T) bool) Maybe[T] {
-	return LastComp(q, precedes)
+func (q Query[T]) LastCmp(cmp func(a, b T) int) Maybe[T] {
+	return LastCmp(q, cmp)
 }
 
-// FirstComp returns the element in q that precedes every other element or ok =
+// FirstCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func FirstComp[T any](q Query[T], precedes func(a, b T) bool) Maybe[T] {
-	return firstBy(q, Identity[T], precedes)
+func FirstCmp[T any](q Query[T], cmp func(a, b T) int) Maybe[T] {
+	return firstBy(q, Identity[T], cmp)
 }
 
-// LastComp returns the element in q that precedes every other element or ok =
+// LastCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
-func LastComp[T any](q Query[T], precedes func(a, b T) bool) Maybe[T] {
-	return lastBy(q, Identity[T], precedes)
+func LastCmp[T any](q Query[T], cmp func(a, b T) int) Maybe[T] {
+	return lastBy(q, Identity[T], cmp)
 }
 
-func firstBy[T, K any](q Query[T], key func(T) K, precedes func(a, b K) bool) Maybe[T] {
+func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) Maybe[T] {
 	var firstValue T
 	var firstKey K
 	ok := false
 	for i, t := range q.IRange() {
 		k := key(t)
-		if i == 0 || precedes(k, firstKey) {
+		if i == 0 || cmp(k, firstKey) < 0 {
 			firstValue, firstKey = t, k
 		}
 		ok = true
@@ -52,6 +52,6 @@ func firstBy[T, K any](q Query[T], key func(T) K, precedes func(a, b K) bool) Ma
 	return NewMaybe(firstValue, ok)
 }
 
-func lastBy[T, K any](q Query[T], key func(T) K, precedes func(a, b K) bool) Maybe[T] {
-	return firstBy(q, key, SwapArgs(precedes))
+func lastBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) Maybe[T] {
+	return firstBy(q, key, SwapArgs(cmp))
 }

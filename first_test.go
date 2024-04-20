@@ -20,18 +20,20 @@ import (
 	"github.com/linqgo/linq"
 )
 
+func cmp(a, b int) int { return a - b }
+
 func TestFirstComp(t *testing.T) {
 	t.Parallel()
 
 	q := linq.From(2, 8, 5, 1)
-	assertSome(t, 8, q.FirstComp(linq.Greater[int]))
-	assertNo(t, linq.None[int]().FirstComp(linq.Greater[int]))
+	assertSome(t, 1, q.FirstCmp(cmp))
+	assertNo(t, linq.None[int]().FirstCmp(cmp))
 }
 
 func TestLastComp(t *testing.T) {
 	t.Parallel()
 
 	q := linq.From(2, 8, 5, 1)
-	assertSome(t, 8, q.LastComp(linq.Less[int]))
-	assertNo(t, linq.None[int]().LastComp(linq.Less[int]))
+	assertSome(t, 8, q.LastCmp(cmp))
+	assertNo(t, linq.None[int]().LastCmp(cmp))
 }

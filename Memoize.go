@@ -14,7 +14,11 @@
 
 package linq
 
-import "sync"
+import (
+	"iter"
+	"runtime"
+	"sync"
+)
 
 // Memoize caches the elements of q. It returns a query that contains the same
 // elements as q, but, in the process of enumerating it, remembers the sequence
@@ -27,70 +31,36 @@ func (q Query[T]) Memoize() Query[T] {
 // elements as q, but, in the process of enumerating it, remembers the sequence
 // of values seen and ensures that every enumeration yields the same sequence.
 func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
-	m := newMemoizer(q.Enumerator)
-	return NewQuery(m.enumerator)
-}
+	getter := sync.OnceValue(func() func(i int) (T, bool) {
+		var mux sync.Mutex
+		var cache []T
+		next, stop := iter.Pull(q.Range())
+		type Nexter struct{ next func() (T, bool) }
+		nexter := &Nexter{next: next}
+		runtime.SetFinalizer(nexter, func(*Nexter) { stop() })
 
-type memoizer[T any] struct {
-	enum  func() Enumerator[T]
-	next  Enumerator[T]
-	cache []T
-	mux   sync.Mutex
-	once  sync.Once
-	done  bool
-}
-
-func newMemoizer[T any](enum func() Enumerator[T]) *memoizer[T] {
-	return &memoizer[T]{enum: enum}
-}
-
-func (m *memoizer[T]) enumerator() Enumerator[T] {
-	m.once.Do(func() {
-		m.next = m.enum()
-	})
-	m.mux.Lock()
-	defer m.mux.Unlock()
-	m.next = m.enum()
-	i := 0
-	cache := m.cache
-	done := false
-
-	next := func() Maybe[T] {
-		t := cache[i]
-		i++
-		return Some(t)
-	}
-
-	return func() Maybe[T] {
-		if i < len(cache) {
-			return next()
-		}
-		if done {
-			return No[T]()
-		}
-
-		// TODO: Reduce locking footprint.
-		m.mux.Lock()
-		defer m.mux.Unlock()
-
-		cache = m.cache
-		done = m.done
-		if i < len(cache) {
-			return next()
-		}
-		if m.done {
-			return No[T]()
-		}
-
-		if i == len(m.cache) {
-			t, ok := m.next().Get()
-			if !ok {
-				m.done = true
-				return No[T]()
+		return func(i int) (T, bool) {
+			mux.Lock()
+			defer mux.Unlock()
+			if len(cache) < i+1 {
+				if e, ok := nexter.next(); ok {
+					cache = append(cache, e)
+				} else {
+					runtime.SetFinalizer(nexter, nil)
+					nexter.next = func() (T, bool) { var zero T; return zero, false }
+					return nexter.next()
+				}
 			}
-			m.cache = append(m.cache, t)
-			cache = m.cache
+			return cache[i], true
 		}
-		return next()
-	}
+	})
+
+	return FromSeq(func(yield func(T) bool) {
+		for i, get := 0, getter(); ; i++ {
+			e, ok := get(i)
+			if !ok || !yield(e) {
+				return
+			}
+		}
+	})
 }

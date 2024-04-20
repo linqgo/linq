@@ -241,23 +241,13 @@ func TestOrderComp(t *testing.T) {
 	t.Parallel()
 
 	data := linq.From(4, 5, 2, 3, 1)
-	nothing := linq.None[int]()
-
-	assertQueryEqual(t, []int{}, nothing.OrderComp())
 
 	assertQueryEqual(t,
 		[]int{1, 2, 3, 4, 5},
-		data.OrderComp(linq.Less[int]))
-
-	assertQueryEqual(t,
-		[]int{4, 4, 2, 2, 5, 5, 3, 3, 1, 1},
-		data.Concat(data.Reverse()).OrderComp(
-			func(a, b int) bool { return a%2 < b%2 },
-			func(a, b int) bool { return a > b },
-		))
+		data.OrderCmp(cmp))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return q.OrderComp(func(a, b int) bool { return a > b })
+		return q.OrderCmp(func(a, b int) int { return b - a })
 	}
 	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, f(data))
 
@@ -272,23 +262,13 @@ func TestOrderCompDesc(t *testing.T) {
 	t.Parallel()
 
 	data := linq.From(3, 5, 4, 2, 1)
-	nothing := linq.None[int]()
-
-	assertQueryEqual(t, []int{}, nothing.OrderCompDesc())
 
 	assertQueryEqual(t,
 		[]int{5, 4, 3, 2, 1},
-		data.OrderCompDesc(linq.Less[int]))
-
-	assertQueryEqual(t,
-		[]int{1, 1, 3, 3, 5, 5, 2, 2, 4, 4},
-		data.Concat(data.Reverse()).OrderCompDesc(
-			func(a, b int) bool { return a%2 < b%2 },
-			func(a, b int) bool { return a > b },
-		))
+		data.OrderCmpDesc(cmp))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
-		return q.OrderCompDesc(func(a, b int) bool { return a > b })
+		return q.OrderCmpDesc(func(a, b int) int { return b - a })
 	}
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, f(data))
 
@@ -307,20 +287,20 @@ func TestThenComp(t *testing.T) {
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Charlotte", 25}, {"Frank", 20}},
 		linq.OrderBy(data, func(kv linq.KV[string, int]) string { return kv.Key }).
-			ThenComp(func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
+			ThenCmp(func(a, b linq.KV[string, int]) int { return a.Value - b.Value }))
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Frank", 20}, {"Charlotte", 25}},
 		linq.OrderBy(data, func(kv linq.KV[string, int]) int { return kv.Value }).
-			ThenComp(func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
+			ThenCmp(func(a, b linq.KV[string, int]) int { return a.Value - b.Value }))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.OrderBy(q, func(i int) int { return i % 3 }).
-			ThenComp(linq.Less[int])
+			ThenCmp(cmp)
 	}
 	assertQueryEqual(t, []int{3, 6, 1, 4, 7, 2, 5}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.None[int]().ThenComp(linq.Less[int]) })
+	assert.Panics(t, func() { linq.None[int]().ThenCmp(cmp) })
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))
 	assertOneShot(t, true, f(oneshot()))
@@ -337,22 +317,22 @@ func TestThenCompDesc(t *testing.T) {
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Frank", 20}, {"Charlotte", 25}},
 		linq.OrderByDesc(data, func(kv linq.KV[string, int]) string { return kv.Key }).
-			ThenCompDesc(func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
+			ThenCmpDesc(func(a, b linq.KV[string, int]) int { return a.Value - b.Value }))
 
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"Charlotte", 25}, {"Frank", 20}},
 		linq.OrderByDesc(data, func(kv linq.KV[string, int]) int { return kv.Value }).
-			ThenCompDesc(func(a, b linq.KV[string, int]) bool { return a.Value < b.Value }))
+			ThenCmpDesc(func(a, b linq.KV[string, int]) int { return a.Value - b.Value }))
 
 	f := func(q linq.Query[int]) linq.Query[int] {
 		return linq.OrderByDesc(q, func(i int) int { return i % 3 }).
-			ThenCompDesc(linq.Less[int])
+			ThenCmpDesc(cmp)
 	}
 	assertQueryEqual(t, []int{5, 2, 7, 4, 1, 6, 3}, f(linq.Iota2(1, 8)))
 
-	assert.Panics(t, func() { linq.None[int]().ThenCompDesc(linq.Less[int]) })
+	assert.Panics(t, func() { linq.None[int]().ThenCmpDesc(cmp) })
 	assert.Panics(t, func() {
-		linq.From(1, 2, 3).Where(linq.False[int]).ThenCompDesc(linq.Less[int])
+		linq.From(1, 2, 3).Where(linq.False[int]).ThenCmpDesc(cmp)
 	})
 
 	assertOneShot(t, false, f(linq.Iota2(1, 8)))

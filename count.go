@@ -29,18 +29,6 @@ func (q Query[T]) CountLimit(limit int) int {
 	return CountLimit(q, limit)
 }
 
-// CountLimitTrue returns a limited count, c, such that min(limit, Count(q)) <=
-// c <= Count(q). This is useful for learning something about the size of the
-// input without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
-//
-// If the query has a FastCount(), the return value is the true count.
-//
-// The second return value is true if the returned count is the true count.
-func (q Query[T]) CountLimitTrue(limit int) (int, bool) {
-	return CountLimitTrue(q, limit)
-}
-
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
 func (q Query[T]) FastCount() Maybe[int] {
@@ -52,37 +40,36 @@ func Count[T any](q Query[T]) int {
 	if c, ok := q.FastCount().Get(); ok {
 		return c
 	}
-	return DrainSeq(q.Range())
+	n := 0
+	for t := range q.Range() {
+		_ = t
+		n++
+	}
+	return n
 }
 
-// CountLimit returns a limited count, c, such that min(limit, Count(q)) <= c <=
-// Count(q). This is useful for learning something about the size of the input
-// without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
+// CountLimit returns a limited count. This is useful for learning something
+// about the size of the input without having to consume all of it. One example
+// is determining whether pagination is required.
 //
-// If the query has a FastCount(), the return value is the true count.
+// To count up to N, but also learn if there are more than N elements:
+//
+//	n := CountLimit(N + 1)
+//	n, more := min(n, N), n > N
 func CountLimit[T any](q Query[T], limit int) int {
-	c, _ := CountLimitTrue(q, limit)
-	return c
-}
-
-// CountLimitTrue returns a limited count, c, such that min(limit, Count(q)) <=
-// c <= Count(q). This is useful for learning something about the size of the
-// input without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
-//
-// If the query has a FastCount(), the return value is the true count.
-//
-// The second return value is true if the returned count is the true count.
-func CountLimitTrue[T any](q Query[T], limit int) (int, bool) {
 	if c, ok := FastCount(q).Get(); ok {
-		return c, true
+		return min(limit, c)
 	}
 
-	if n := DrainSeq(Take(q, limit+1).Range()); n <= limit {
-		return n, true
+	n := 0
+	for t := range q.Range() {
+		if n == limit {
+			return n
+		}
+		_ = t
+		n++
 	}
-	return limit, false
+	return n
 }
 
 // FastCount returns the number of elements in q if it can be computed in O(1)

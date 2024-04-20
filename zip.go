@@ -26,8 +26,8 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 
 	return FromSeq(
 		func(yield func(R) bool) {
-			var aok, bok bool
-			for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
+			var end int
+			for a, b := range zipSeq(a.Range(), b.Range(), &end) {
 				if !yield(zip(a, b)) {
 					return
 				}
@@ -72,11 +72,7 @@ func UnzipKV[K, V any](q Query[KV[K, V]]) (Query[K], Query[V]) {
 	return Unzip(q, func(kv KV[K, V]) (K, V) { return kv.Key, kv.Value })
 }
 
-func zipSeq[A, B any](
-	a iter.Seq[A],
-	b iter.Seq[B],
-	aok, bok *bool,
-) iter.Seq2[A, B] {
+func zipSeq[A, B any](a iter.Seq[A], b iter.Seq[B], end *int) iter.Seq2[A, B] {
 	return func(yield func(a A, b B) bool) {
 		xn, xs := iter.Pull(a)
 		defer xs()
@@ -86,18 +82,20 @@ func zipSeq[A, B any](
 		for {
 			x, xok := xn()
 			y, yok := yn()
-			if !xok {
-				*aok, *bok = xok, yok
-				return
+			switch {
+			case xok && yok:
+				if !yield(x, y) {
+					return
+				}
+				continue
+			case xok:
+				*end = 1
+			case yok:
+				*end = -1
+			default:
+				*end = 0
 			}
-			if !yok {
-				*aok, *bok = xok, yok
-				return
-			}
-			*aok, *bok = xok, yok
-			if !yield(x, y) {
-				return
-			}
+			return
 		}
 	}
 }

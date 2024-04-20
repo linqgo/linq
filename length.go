@@ -60,9 +60,11 @@ func Shorter[A, B any](a Query[A], b Query[B]) bool {
 		return shorter
 	}
 
-	var aok, bok bool
-	DrainSeq2(zipSeq(a.Range(), b.Range(), &aok, &bok))
-	return !aok && bok
+	var end int
+	for k, v := range zipSeq(a.Range(), b.Range(), &end) {
+		_, _ = k, v
+	}
+	return end < 0
 }
 
 func fastLenDiff[A, B any](a Query[A], b Query[B]) Maybe[int] {

@@ -18,114 +18,90 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// SequenceEqualEq returns true if q and r contain the same number of elements
-// and each sequential element from a equals the corresponding sequential
-// element from b. The eq function is called to determine equality.
+// SequenceCmp returns SequenceCmp(q, r, cmp).
+func (q Query[T]) SequenceCmp(r Query[T], cmp CmpFn[T]) int {
+	return SequenceCmp(q, r, cmp)
+}
+
+// SequenceEqualEq calls SequenceEqualEq(q, r, eq).
 func (q Query[T]) SequenceEqualEq(r Query[T], eq func(a, b T) bool) bool {
 	return SequenceEqualEq(q, r, eq)
 }
 
-// SequenceGreaterComp compares elements pairwise from q and r in sequence order
-// and returns true if and only if one of the following occurs:
-//
-//  1. less(rElem, qElem) returns true. (Note the reversed parameters.)
-//  2. Query r runs out of elements before q.
-//
-// This is known as lexicographical sort and is equivalent to the < operator on
-// strings.
-func (q Query[T]) SequenceGreaterComp(r Query[T], less func(a, b T) bool) bool {
-	return SequenceGreaterComp(q, r, less)
+// SequenceGreaterCmp returns SequenceGreaterCmp(q, r, cmp).
+func (q Query[T]) SequenceGreaterCmp(r Query[T], cmp CmpFn[T]) bool {
+	return SequenceGreaterCmp(q, r, cmp)
 }
 
-// SequenceLessComp compares elements pairwise from q and r in sequence order
-// and returns true if and only if one of the following occurs:
-//
-//  1. less(qElem, rElem) returns true.
-//  2. Query q runs out of elements before r.
-//
-// This is known as lexicographical sort and is equivalent to the < operator on
-// strings.
-func (q Query[T]) SequenceLessComp(r Query[T], less func(a, b T) bool) bool {
-	return SequenceLessComp(q, r, less)
+// SequenceLessCmp returns q.SequenceCmp(r) < 0.
+func (q Query[T]) SequenceLessCmp(r Query[T], cmp CmpFn[T]) bool {
+	return q.SequenceCmp(r, cmp) < 0
 }
 
-// SequenceEqual returns true if a and b contain the same number of elements and
-// each sequential element from a equals the corresponding sequential element
-// from b.
+// SequenceEqual returns SequenceEqualEq(a, b, Equal[T]).
 func SequenceEqual[T comparable](a, b Query[T]) bool {
 	return SequenceEqualEq(a, b, Equal[T])
 }
 
-// SequenceEqualEq returns true if a and b contain the same number of elements
-// and each sequential element from a equals the corresponding sequential
-// element from b. The eq function is called to determine equality.
+// SequenceEqualEq returns true if two sequences are equal, that is, a and b
+// contain the same number of elements and every sequential element from a
+// equals the corresponding element from b. Two elements are equal if eq(aElem,
+// bElem) returns true.
 func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
 	if lenDiff, ok := fastLenDiff(a, b).Get(); ok && lenDiff != 0 {
 		return false
 	}
 
-	var aok, bok bool
-	for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
+	var end int
+	for a, b := range zipSeq(a.Range(), b.Range(), &end) {
 		if !eq(a, b) {
 			return false
 		}
 	}
-	return aok == bok
+	return end == 0
 }
 
-// SequenceGreater compares elements pairwise from a and b in sequence order and
-// returns true if and only if one of the following occurs:
+// SequenceCmp compares elements pairwise from a and b in sequence order and
+// returns when one of the following occurs:
 //
-//  1. Two elements differ and the element from a is greater than the one from b.
-//  2. Query b runs out of elements before a.
+//  1. if c = cmp(aElem, bElem) != 0, returns c
+//  2. If either query is exhausted, returns 0 if both are exausted, < 0 if exhausted(a), > 0 if exhausted(b).
 //
-// This is known as lexicographical sort and is equivalent to the > operator on
+// This is known as lexicographical order and is equivalent to the > operator on
 // strings.
+func SequenceCmp[T any](a, b Query[T], cmp CmpFn[T]) int {
+	var end int
+	for a, b := range zipSeq(a.Range(), b.Range(), &end) {
+		if c := cmp(a, b); c != 0 {
+			return c
+		}
+	}
+	return end
+}
+
+// SequenceGreater returns SequenceLess(b, a).
 func SequenceGreater[T constraints.Ordered](a, b Query[T]) bool {
 	return SequenceLess(b, a)
 }
 
-// SequenceGreaterComp compares elements pairwise from a and b in sequence order
-// and returns true if and only if one of the following occurs:
-//
-//  1. less(bElem, aElem) returns true. (Note the order of parameters.)
-//  2. Query b runs out of elements before a.
-//
-// This is known as lexicographical sort and is equivalent to the < operator on
-// strings.
-func SequenceGreaterComp[T any](a, b Query[T], less func(a, b T) bool) bool {
-	return SequenceLessComp(b, a, less)
+// SequenceGreaterCmp returns SequenceLessCmp(b, a, cmp).
+func SequenceGreaterCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
+	return SequenceLessCmp(b, a, cmp)
 }
 
-// SequenceLess compares elements pairwise from a and b in sequence order and
-// returns true if and only if one of the following occurs:
+// SequenceLess compares elements pairwise from a and b in sequence order
+// and returns true when one of the following occurs:
 //
-//  1. Two elements differ and the element from a is less than the one from b.
-//  2. Query a runs out of elements before b.
+//  1. If two elements differ, returns aElem < bElem.
+//  2. If either query is exhausted, returns !exhausted(b).
 //
-// This is known as lexicographical sort and is equivalent to the < operator on
+// This is known as lexicographical order and is analogous to the < operator on
 // strings.
 func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
-	return SequenceLessComp(a, b, Less[T])
+	return SequenceLessCmp(a, b, Cmp[T])
 }
 
-// SequenceLessComp compares elements pairwise from a and b in sequence order
-// and returns true if and only if one of the following occurs:
-//
-//  1. less(aElem, bElem) returns true.
-//  2. Query a runs out of elements before b.
-//
-// This is known as lexicographical sort and is equivalent to the < operator on
-// strings.
-func SequenceLessComp[T any](a, b Query[T], less func(a, b T) bool) bool {
-	var aok, bok bool
-	for a, b := range zipSeq(a.Range(), b.Range(), &aok, &bok) {
-		if less(a, b) {
-			return true
-		}
-		if less(b, a) {
-			return false
-		}
-	}
-	return !aok && bok
+// SequenceLessCmp returns SequenceCmp(a, b) < 0.
+func SequenceLessCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
+	return SequenceCmp(a, b, cmp) < 0
 }

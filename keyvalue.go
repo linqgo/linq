@@ -32,10 +32,10 @@ func (kv KV[K, V]) KV() (K, V) {
 	return kv.Key, kv.Value
 }
 
-func Key[KeyVal KV[K, V], K, V any](kv KV[K, V]) K {
-	return kv.Key
+func Key[KeyVal KV[K, V], K, V any](kv KeyVal) K {
+	return KV[K, V](kv).Key
 }
 
-func Value[KeyVal KV[K, V], K, V any](kv KV[K, V]) V {
-	return kv.Value
+func Value[KeyVal KV[K, V], K, V any](kv KeyVal) V {
+	return KV[K, V](kv).Value
 }
