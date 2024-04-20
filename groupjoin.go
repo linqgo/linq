@@ -24,12 +24,14 @@ func GroupJoin[Outer, Inner, Result any, Key comparable](
 	if outer.fastCount() == 0 {
 		return None[Result]()
 	}
-	return NewQuery(
-		func() Enumerator[Result] {
+	return FromSeq(
+		func(yield func(Result) bool) {
 			lup := buildLookup(inner, innerKey)
-			return Select(outer, func(o Outer) Result {
-				return result(o, From(lup[outerKey(o)]...))
-			}).Enumerator()
+			for o := range outer.Range() {
+				if !yield(result(o, From(lup[outerKey(o)]...))) {
+					return
+				}
+			}
 		},
 		OneShotOption[Result](outer.OneShot() || inner.OneShot()),
 		FastCountOption[Result](outer.fastCount()),
