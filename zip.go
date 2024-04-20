@@ -27,7 +27,7 @@ func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 	return FromSeq(
 		func(yield func(R) bool) {
 			var end int
-			for a, b := range zipSeq(a.Range(), b.Range(), &end) {
+			for a, b := range zipSeq(a.Seq(), b.Seq(), &end) {
 				if !yield(zip(a, b)) {
 					return
 				}

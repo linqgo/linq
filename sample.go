@@ -52,7 +52,7 @@ func SampleSeed[T any](q Query[T], p float64, seed int64) Query[T] {
 	return Pipe(q, func(yield func(T) bool) {
 		src := rand.NewSource(seed)
 		rnd := rand.New(src)
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			if rnd.Float64() < p {
 				if !yield(t) {
 					return

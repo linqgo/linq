@@ -41,7 +41,7 @@ func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func
 	return FromSeq(func(yield func(T) bool) {
 		var acc []T
 		var best O
-		for i, t := range q.IRange() {
+		for i, t := range q.ISeq() {
 			k := key(t)
 			switch {
 			case i == 0, better(k, best):

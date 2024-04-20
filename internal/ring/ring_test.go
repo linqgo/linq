@@ -86,7 +86,7 @@ func TestRingEnumerator(t *testing.T) {
 	r.Pop()
 	r.Pop()
 
-	next, stop := iter.Pull(linq.FromArray[int](r).Range())
+	next, stop := iter.Pull(linq.FromArray[int](r).Seq())
 	defer stop()
 	assertNoNext(t, next)
 }
@@ -101,7 +101,7 @@ func TestRingEnumeratorPartial(t *testing.T) {
 
 	r.Pop()
 
-	next, stop := iter.Pull(linq.FromArray[int](r).Range())
+	next, stop := iter.Pull(linq.FromArray[int](r).Seq())
 	defer stop()
 	assertNext(t, 2, next)
 	assertNoNext(t, next)
@@ -110,7 +110,7 @@ func TestRingEnumeratorPartial(t *testing.T) {
 	r.Pop()
 	r.Push(4)
 
-	next, stop = iter.Pull(linq.FromArray[int](r).Range())
+	next, stop = iter.Pull(linq.FromArray[int](r).Seq())
 	defer stop()
 	assertNext(t, 3, next)
 	assertNext(t, 4, next)

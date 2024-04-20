@@ -24,7 +24,7 @@ type lookupBuilder[T any, K comparable] struct {
 }
 
 func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBuilder[T, K] {
-	next, stop := iter.Pull(q.Range())
+	next, stop := iter.Pull(q.Seq())
 	return &lookupBuilder[T, K]{
 		next: next,
 		stop: stop,

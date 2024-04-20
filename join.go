@@ -49,7 +49,7 @@ func Join[A, B, R any, K comparable](
 						return Select(From(lup[selKeyB(b)]...), func(a A) R {
 							return selResult(a, b)
 						})
-					}).Range(), yield)
+					}).Seq(), yield)
 					return
 				case !okB:
 					lup := lupB.Lookup()
@@ -57,7 +57,7 @@ func Join[A, B, R any, K comparable](
 						return Select(From(lup[selKeyA(a)]...), func(b B) R {
 							return selResult(a, b)
 						})
-					}).Range(), yield)
+					}).Seq(), yield)
 					return
 				}
 			}

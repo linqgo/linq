@@ -89,3 +89,10 @@ func Zero[U, T any](T) U {
 	var u U
 	return u
 }
+
+func must[T any](t T, ok bool) T {
+	if !ok {
+		panic("no value")
+	}
+	return t
+}

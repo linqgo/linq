@@ -37,7 +37,7 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 		if !yield(None[T]()) {
 			return
 		}
-		for i, t := range q.IRange() {
+		for i, t := range q.ISeq() {
 			cache = append(cache, t)
 			hi := 1 << i
 			for mask := range hi {

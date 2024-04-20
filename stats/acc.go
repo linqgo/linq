@@ -140,7 +140,7 @@ func accMeasure[R num.RealNumber](
 	return func(yield func(int, R) bool) {
 		n := 0
 		measure := ident
-		for r := range q.Range() {
+		for r := range q.Seq() {
 			ins, nIns := r.In, 1
 			outs, nOuts := aggregateN(r.Outs, ident, agg)
 			measure = agg(measure, inv(ins, outs))

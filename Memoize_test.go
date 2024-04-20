@@ -54,10 +54,10 @@ func TestMemoizeTwofer(t *testing.T) {
 	m, stop := linq.FromChannel(fiveInts()).Memoize()
 	defer stop()
 
-	a, stopA := iter.Pull(m.Range())
+	a, stopA := iter.Pull(m.Seq())
 	defer stopA()
 
-	b, stopB := iter.Pull(m.Range())
+	b, stopB := iter.Pull(m.Seq())
 	defer stopB()
 
 	assertSome(t, 0, a)

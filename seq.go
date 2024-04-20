@@ -16,18 +16,29 @@ package linq
 
 import "iter"
 
-func (q Query[T]) Range() iter.Seq[T] {
+func (q Query[T]) Seq() iter.Seq[T] {
 	return q.seq
 }
 
-func (q Query[T]) IRange() iter.Seq2[int, T] {
+func (q Query[T]) ISeq() iter.Seq2[int, T] {
 	return func(yield func(int, T) bool) {
 		i := 0
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			if !yield(i, t) {
 				return
 			}
 			i++
+		}
+	}
+}
+
+func SeqKV[T KV[K, V], K, V any](q Query[T]) iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for t := range q.Seq() {
+			k, v := KV[K, V](t).KV()
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }

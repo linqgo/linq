@@ -22,7 +22,7 @@ func (q Query[T]) ToSlice() []T {
 // ToSlice returns a slice containing the elements of q.
 func ToSlice[T any](q Query[T]) []T {
 	var ret []T
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		ret = append(ret, t)
 	}
 	return ret

@@ -28,7 +28,7 @@ func TestQueryRange(t *testing.T) {
 	t.Parallel()
 
 	q := linq.Iota[int]()
-	for i, x := range q.IRange() {
+	for i, x := range q.ISeq() {
 		if i == 10 {
 			break
 		}

@@ -28,7 +28,7 @@ func DefaultIfEmpty[T any](q Query[T], alt T) Query[T] {
 	case -1:
 		return Pipe(q, func(yield func(T) bool) {
 			delivered := false
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if !yield(t) {
 					return
 				}

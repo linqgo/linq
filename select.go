@@ -35,7 +35,7 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 	}
 	return Pipe(q,
 		func(yield func(U) bool) {
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if !yield(sel(t)) {
 					return
 				}
@@ -51,8 +51,8 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 func SelectMany[T, U any](q Query[T], project func(T) Query[U]) Query[U] {
 	return Pipe(q,
 		func(yield func(U) bool) {
-			for t := range q.Range() {
-				for u := range project(t).Range() {
+			for t := range q.Seq() {
+				for u := range project(t).Seq() {
 					if !yield(u) {
 						return
 					}

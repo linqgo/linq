@@ -40,7 +40,7 @@ func PipeOneToOne[T, U any](
 	return Pipe(q,
 		func(yield func(U) bool) {
 			sel := selfunc()
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if !yield(sel(t)) {
 					return
 				}

@@ -44,7 +44,7 @@ func ElementAt[T any](q Query[T], at int) (T, bool) {
 	if t, ok := FastElementAt(q, at); ok {
 		return t, ok
 	}
-	for i, t := range q.IRange() {
+	for i, t := range q.ISeq() {
 		if i == at {
 			return t, true
 		}
@@ -81,7 +81,7 @@ func FastLast[T any](q Query[T]) (T, bool) {
 
 // First returns the first element or !ok if q is empty.
 func First[T any](q Query[T]) (T, bool) {
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		return t, true
 	}
 	return no[T]()
@@ -94,7 +94,7 @@ func Last[T any](q Query[T]) (T, bool) {
 	}
 	var t T
 	ok := false
-	for t = range q.Range() {
+	for t = range q.Seq() {
 		ok = true
 	}
 	return t, ok

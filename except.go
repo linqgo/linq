@@ -33,8 +33,8 @@ func ExceptBy[T any, K comparable](
 	}
 	return Pipe(a,
 		func(yield func(T) bool) {
-			s := setFrom(b.Range())
-			shunt(a.Where(func(t T) bool { return !s.Has(key(t)) }).Range(), yield)
+			s := setFrom(b.Seq())
+			shunt(a.Where(func(t T) bool { return !s.Has(key(t)) }).Seq(), yield)
 		},
 		OneShotOption[T](a.OneShot() || b.OneShot()),
 	)

@@ -53,7 +53,7 @@ func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
 	}
 
 	var end int
-	for a, b := range zipSeq(a.Range(), b.Range(), &end) {
+	for a, b := range zipSeq(a.Seq(), b.Seq(), &end) {
 		if !eq(a, b) {
 			return false
 		}
@@ -71,7 +71,7 @@ func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
 // strings.
 func SequenceCmp[T any](a, b Query[T], cmp CmpFn[T]) int {
 	var end int
-	for a, b := range zipSeq(a.Range(), b.Range(), &end) {
+	for a, b := range zipSeq(a.Seq(), b.Seq(), &end) {
 		if c := cmp(a, b); c != 0 {
 			return c
 		}

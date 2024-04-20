@@ -58,7 +58,7 @@ func Skip[T any](q Query[T], skip int) Query[T] {
 	}
 	return Pipe(q,
 		func(yield func(T) bool) {
-			for i, t := range q.IRange() {
+			for i, t := range q.ISeq() {
 				if i >= skip && !yield(t) {
 					return
 				}
@@ -80,7 +80,7 @@ func SkipLast[T any](q Query[T], skip int) Query[T] {
 	}
 	return Pipe(q, func(yield func(T) bool) {
 		buf := make([]T, skip)
-		for i, t := range q.IRange() {
+		for i, t := range q.ISeq() {
 			p := &buf[i%skip]
 			log.Print(i, *p)
 			if i >= skip && !yield(*p) {
@@ -95,7 +95,7 @@ func SkipLast[T any](q Query[T], skip int) Query[T] {
 func SkipWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
 	return Pipe(q, func(yield func(T) bool) {
 		active := false
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			active = active || !pred(t)
 			if active && !yield(t) {
 				return

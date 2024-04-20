@@ -60,7 +60,7 @@ func Take[T any](q Query[T], take int) Query[T] {
 	}
 	return Pipe(q,
 		func(yield func(T) bool) {
-			for i, t := range q.IRange() {
+			for i, t := range q.ISeq() {
 				if i >= take || !yield(t) {
 					return
 				}
@@ -81,7 +81,7 @@ func TakeLast[T any](q Query[T], take int) Query[T] {
 		func(yield func(T) bool) {
 			buf := make([]T, take)
 			i := 0
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				buf[i%take] = t
 				i++
 			}
@@ -107,7 +107,7 @@ func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
 	return Pipe(q,
 		func(yield func(T) bool) {
 			i := 0
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if !pred(t) || !yield(t) {
 					return
 				}

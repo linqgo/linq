@@ -38,7 +38,7 @@ func All[T any](q Query[T], pred func(t T) bool) bool {
 
 // Any returns true if pred returns true for at least one element in q.
 func Any[T any](q Query[T], pred func(t T) bool) bool {
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		if pred(t) {
 			return true
 		}
@@ -48,7 +48,7 @@ func Any[T any](q Query[T], pred func(t T) bool) bool {
 
 // Empty returns true if q has no elements.
 func Empty[T any](q Query[T]) bool {
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		_ = t
 		return false
 	}

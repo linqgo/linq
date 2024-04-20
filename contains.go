@@ -16,7 +16,7 @@ package linq
 
 // Contains returns true if and only if t is an element in q.
 func Contains[T comparable](q Query[T], t T) bool {
-	for e := range q.Range() {
+	for e := range q.Seq() {
 		if e == t {
 			return true
 		}

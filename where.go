@@ -22,7 +22,7 @@ func (q Query[T]) Where(pred func(t T) bool) Query[T] {
 // Where returns a query with elements from q for which pred returns true.
 func Where[T any](q Query[T], pred func(t T) bool) Query[T] {
 	return Pipe(q, func(yield func(t T) bool) {
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			if pred(t) && !yield(t) {
 				return
 			}

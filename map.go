@@ -64,7 +64,7 @@ func SelectValues[K, V any](q Query[KV[K, V]]) Query[V] {
 // keys are duplicated, ToMap will return an error.
 func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U, error) {
 	ret := map[K]U{}
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		k, v := sel(t).KV()
 		if _, ok := ret[k]; ok {
 			return nil, errorf("duplicate key %v", k)
@@ -82,7 +82,7 @@ func ToMapKV[K comparable, V any](q Query[KV[K, V]]) (map[K]V, error) {
 
 func Range2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
 	return func(yield func(k K, v V) bool) {
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			if !yield(sel(t)) {
 				return
 			}

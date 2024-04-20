@@ -31,7 +31,7 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 		q,
 		func(yield func(Query[T]) bool) {
 			chunk := make([]T, 0, size)
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if len(chunk) == size {
 					if !yield(From(chunk...)) {
 						return

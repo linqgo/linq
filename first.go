@@ -42,7 +42,7 @@ func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) (T, bool
 	var firstValue T
 	var firstKey K
 	ok := false
-	for i, t := range q.IRange() {
+	for i, t := range q.ISeq() {
 		k := key(t)
 		if i == 0 || cmp(k, firstKey) < 0 {
 			firstValue, firstKey = t, k

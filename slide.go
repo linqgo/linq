@@ -26,7 +26,7 @@ import (
 func Slide[T any](q Query[T], expired func(older, current T) bool) Query[Delta[T]] {
 	return FromSeq(func(yield func(Delta[T]) bool) {
 		window := ring.New[T]()
-		for t := range q.Range() {
+		for t := range q.Seq() {
 			// Empty all expired elements
 			out := make([]T, 0, 1)
 			window.Push(t)

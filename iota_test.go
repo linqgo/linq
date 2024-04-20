@@ -25,7 +25,7 @@ import (
 func TestIota(t *testing.T) {
 	t.Parallel()
 
-	for i, j := range linq.Iota[int]().IRange() {
+	for i, j := range linq.Iota[int]().ISeq() {
 		if i == 10 {
 			break
 		}

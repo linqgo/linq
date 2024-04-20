@@ -34,7 +34,7 @@ func Every[T any](q Query[T], n int) Query[T] {
 // start-th element.
 func EveryFrom[T any](q Query[T], start, n int) Query[T] {
 	return Pipe(q, func(yield func(T) bool) {
-		for i, t := range q.IRange() {
+		for i, t := range q.ISeq() {
 			if start <= i && (i-start)%n == 0 && !yield(t) {
 				return
 			}

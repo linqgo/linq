@@ -41,7 +41,7 @@ func Memoize[T any](q Query[T]) (_ Query[T], stop func()) { //nolint:revive
 	getter := sync.OnceValue(func() func(i int) (T, bool) {
 		var mux sync.Mutex
 		var cache []T
-		next, stop := iter.Pull(q.Range())
+		next, stop := iter.Pull(q.Seq())
 		stopPtr.Store(&stop)
 
 		return func(i int) (T, bool) {

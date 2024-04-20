@@ -41,7 +41,7 @@ func Count[T any](q Query[T]) int {
 		return c
 	}
 	n := 0
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		_ = t
 		n++
 	}
@@ -62,7 +62,7 @@ func CountLimit[T any](q Query[T], limit int) int {
 	}
 
 	n := 0
-	for t := range q.Range() {
+	for t := range q.Seq() {
 		if n == limit {
 			return n
 		}

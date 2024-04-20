@@ -61,7 +61,7 @@ func Shorter[A, B any](a Query[A], b Query[B]) bool {
 	}
 
 	var end int
-	for k, v := range zipSeq(a.Range(), b.Range(), &end) {
+	for k, v := range zipSeq(a.Seq(), b.Seq(), &end) {
 		_, _ = k, v
 	}
 	return end < 0

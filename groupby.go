@@ -57,11 +57,11 @@ func GroupBySelectSlices[T, U any, K comparable](
 	return Pipe(q,
 		func(yield func(KV[K, []U]) bool) {
 			m := map[K][]U{}
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				k, v := sel(t).KV()
 				m[k] = append(m[k], v)
 			}
-			shunt(FromMap(m).Range(), yield)
+			shunt(FromMap(m).Seq(), yield)
 		},
 		FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
 }

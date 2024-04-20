@@ -26,8 +26,8 @@ func IntersectBy[T, K comparable](a Query[T], b Query[K], key func(t T) K) Query
 	}
 	return FromSeq(
 		func(yield func(t T) bool) {
-			s := setFrom(b.Range())
-			for t := range a.Range() {
+			s := setFrom(b.Seq())
+			for t := range a.Seq() {
 				if s.Has(key(t)) {
 					if !yield(t) {
 						return

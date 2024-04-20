@@ -91,3 +91,10 @@ func TestZero(t *testing.T) {
 
 	assert.Equal(t, "", linq.Zero[string](42))
 }
+
+func TestMust(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 42, must(42, true))
+	assert.Panics(t, func() { must(0, false) })
+}

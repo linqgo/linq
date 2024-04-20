@@ -21,7 +21,7 @@ func (q Query[T]) Single() (T, bool) {
 func Single[T any](q Query[T]) (T, bool) {
 	i := -1
 	var t T
-	for i, t = range q.IRange() {
+	for i, t = range q.ISeq() {
 		if i == 1 {
 			return no[T]()
 		}

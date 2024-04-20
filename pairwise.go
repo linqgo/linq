@@ -17,7 +17,7 @@ package linq
 func Pairwise[T any](q Query[T]) Query[KV[T, T]] {
 	return Pipe(q, func(yield func(KV[T, T]) bool) {
 		var a T
-		for i, b := range q.IRange() {
+		for i, b := range q.ISeq() {
 			if i > 0 && !yield(NewKV(a, b)) {
 				return
 			}

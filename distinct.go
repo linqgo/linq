@@ -34,7 +34,7 @@ func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
 	return Pipe(q,
 		func(yield func(T) bool) {
 			s := set[U]{}
-			for t := range q.Range() {
+			for t := range q.Seq() {
 				if u := sel(t); !s.Has(u) {
 					s.Add(u)
 					if !yield(t) {

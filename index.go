@@ -30,7 +30,7 @@ func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
 	}
 	return Pipe(q,
 		func(yield func(KV[int, T]) bool) {
-			for i, t := range q.IRange() {
+			for i, t := range q.ISeq() {
 				if !yield(NewKV(start+i, t)) {
 					return
 				}

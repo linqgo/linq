@@ -34,7 +34,7 @@ func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
 func Aggregate[T any](q Query[T], agg func(a, b T) T) (T, bool) {
-	next, stop := iter.Pull(q.Range())
+	next, stop := iter.Pull(q.Seq())
 	defer stop()
 	if seed, ok := next(); ok {
 		agg, _ := aggregateNEnum(func(yield func(T) bool) {
@@ -61,7 +61,7 @@ func aggregate[T, A any](q Query[T], acc A, agg func(a A, t T) A) A {
 }
 
 func aggregateN[T, A any](q Query[T], acc A, agg func(a A, t T) A) (A, int) {
-	return aggregateNEnum(q.Range(), acc, agg)
+	return aggregateNEnum(q.Seq(), acc, agg)
 }
 
 func aggregateNEnum[T, A any](seq iter.Seq[T], acc A, agg func(a A, t T) A) (A, int) {

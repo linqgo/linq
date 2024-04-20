@@ -24,7 +24,7 @@ func (q Query[T]) Scanner() (pull func(p *T) bool, stop func()) {
 // pointer parameter to each element and returning true until it runs out of
 // elements. Then it returns false.
 func Scanner[T any](q Query[T]) (scan func(p *T) bool, stop func()) {
-	next, stop := iter.Pull(q.Range())
+	next, stop := iter.Pull(q.Seq())
 	return func(p *T) bool {
 		if t, ok := next(); ok {
 			*p = t
