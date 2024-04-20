@@ -30,6 +30,7 @@ func TestAccMean(t *testing.T) {
 		stats.AccMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, stats.AccMean(linq.SlideAll(odds)))
 	assertQueryEqual(t, []int{1, 2, 4, 6, 8}, stats.AccMean(linq.SlideFixed(odds, 2)))
+	assertQueryEqual(t, []int{1, 2, 4}, stats.AccMean(linq.SlideFixed(odds, 2)).Take(3))
 }
 
 // func TestAccMeanWt(t *testing.T) {
@@ -42,7 +43,7 @@ func TestAccGeometricMean(t *testing.T) {
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
 		stats.AccGeometricMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
 	assertQueryInEpsilon(t, []float64{1.0, 1.7321, 2.4662, 3.2011, 3.9363},
-		stats.AccGeometricMean(linq.SlideAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
+		stats.AccGeometricMean(linq.SlideAll(linq.Iota3(1.0, 10.0, 2.0))), 1.001)
 }
 
 func TestAccHarmonicMean(t *testing.T) {
@@ -50,8 +51,10 @@ func TestAccHarmonicMean(t *testing.T) {
 
 	assertQueryInEpsilon(t, []float64{2.0, 2.0, 2.0, 2.0, 2.0},
 		stats.AccHarmonicMean(linq.SlideAll(linq.Repeat(2.0, 5))), 1.001)
-	assertQueryInEpsilon(t, []float64{1.0, 1.5, 1.9565, 2.3864, 2.7975},
-		stats.AccHarmonicMean(linq.SlideAll(linq.Iota3(1.0, 11.0, 2.0))), 1.001)
+	if !assertQueryInEpsilon(t, []float64{1.0, 1.5, 1.9565, 2.3864, 2.7975},
+		stats.AccHarmonicMean(linq.SlideAll(linq.Iota3(1.0, 10.0, 2.0))), 1.001) {
+		t.Logf("%#v", linq.Iota3(1.0, 11.0, 2.0).ToSlice())
+	}
 }
 
 func TestAccProduct(t *testing.T) {

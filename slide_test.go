@@ -46,6 +46,7 @@ func TestSlide(t *testing.T) {
 	}
 
 	assertQueryEqual(t, data, slide())
+	assertQueryEqual(t, data[:2], slide().Take(2))
 }
 
 func TestSlideAll(t *testing.T) {

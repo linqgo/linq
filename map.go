@@ -14,20 +14,18 @@
 
 package linq
 
-import "iter"
-
 // FromMap returns a query with KVs sourced from m.
 func FromMap[K comparable, V any, M ~map[K]V](m M) Query[KV[K, V]] {
 	if len(m) == 0 {
 		return None[KV[K, V]]()
 	}
-	return FromSeq(func(yield func(KV[K, V]) bool) {
-		for k, v := range m {
-			if !yield(NewKV(k, v)) {
-				return
-			}
-		}
-	}, FastCountOption[KV[K, V]](len(m)))
+	return FromSeq(
+		func(yield func(KV[K, V]) bool) {
+			seqMap(m)(func(k K, v V) bool {
+				return yield(NewKV(k, v))
+			})
+		},
+		FastCountOption[KV[K, V]](len(m)))
 }
 
 // MustToMap converts a query to a map, with sel providing key/value pairs. If
@@ -78,18 +76,4 @@ func ToMap[T, U any, K comparable](q Query[T], sel func(t T) KV[K, U]) (map[K]U,
 // will return an error.
 func ToMapKV[K comparable, V any](q Query[KV[K, V]]) (map[K]V, error) {
 	return ToMap(q, Identity[KV[K, V]])
-}
-
-func Range2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
-	return func(yield func(k K, v V) bool) {
-		for t := range q.Seq() {
-			if !yield(sel(t)) {
-				return
-			}
-		}
-	}
-}
-
-func RangeKV[K, V any](q Query[KV[K, V]]) iter.Seq2[K, V] {
-	return Range2(q, func(kv KV[K, V]) (K, V) { return kv.KV() })
 }

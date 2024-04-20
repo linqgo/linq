@@ -23,19 +23,20 @@ import (
 func TestChunk(t *testing.T) {
 	t.Parallel()
 
-	data := linq.From(1, 2, 3, 4, 5)
+	data := func() linq.Query[int] { return linq.From(1, 2, 3, 4, 5) }
 
-	assertQueryEqual(t,
-		[][]int{{1, 2}, {3, 4}, {5}},
-		linq.ChunkSlices(data, 2),
-	)
+	assertQueryEqual(t, [][]int{{1, 2}, {3, 4}, {5}}, linq.ChunkSlices(data(), 2))
 
-	assertOneShot(t, false, linq.ChunkSlices(data, 2))
+	assertOneShot(t, false, linq.ChunkSlices(data(), 2))
 	assertOneShot(t, true, linq.ChunkSlices(oneshot(), 2))
 
-	assertSome(t, 3, linq.ChunkSlices(data, 2).FastCount)
-	assertSome(t, 2, linq.ChunkSlices(data.Skip(1), 2).FastCount)
+	assertSome(t, 3, linq.ChunkSlices(data(), 2).FastCount)
+	assertSome(t, 2, linq.ChunkSlices(data().Skip(1), 2).FastCount)
 	assertNo(t, linq.ChunkSlices(slowcount, 2).FastCount)
+
+	data = func() linq.Query[int] { return chanof(1, 2, 3, 4, 5) }
+
+	assertQueryEqual(t, [][]int{{1, 2}}, linq.ChunkSlices(data(), 2).Take(1))
 }
 
 func TestChunkElementAt(t *testing.T) {

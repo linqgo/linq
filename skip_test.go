@@ -57,6 +57,23 @@ func TestSkipLast(t *testing.T) {
 	assertNo(t, oneshot().SkipLast(0).FastCount)
 }
 
+func TestSkipLastChan(t *testing.T) {
+	t.Parallel()
+
+	data := func() linq.Query[int] { return chanof(1, 2, 3, 4, 5) }
+
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, data().SkipLast(0))
+	assertQueryEqual(t, []int{1, 2, 3}, data().SkipLast(1).Take(3))
+	assertQueryEqual(t, []int{1, 2, 3}, data().SkipLast(2))
+	assertQueryEqual(t, []int{}, data().SkipLast(10))
+	assertQueryEqual(t, []int{}, linq.From(1, 2, 3).Where(linq.False[int]).SkipLast(10))
+
+	assertOneShot(t, true, data().SkipLast(0))
+
+	assertNo(t, data().SkipLast(0).FastCount)
+	assertNo(t, data().SkipLast(3).FastCount)
+}
+
 func TestSkipWhile(t *testing.T) {
 	t.Parallel()
 

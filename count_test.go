@@ -46,11 +46,11 @@ func TestCountLimit(t *testing.T) {
 	assert.Equal(t, 3, linq.From(1, 2, 3, 4, 5).CountLimit(3))
 	assert.Equal(t, 5, linq.From(1, 2, 3, 4, 5).CountLimit(10))
 
-	c := make(chan int, 5)
-	for i := 1; i <= 5; i++ {
-		c <- i
-	}
-	assert.Equal(t, 3, linq.FromChannel(c).CountLimit(3))
+	assert.Equal(t, 0, chanof(1, 2, 3, 4, 5).CountLimit(0))
+	assert.Equal(t, 4, chanof(1, 2, 3, 4, 5).CountLimit(4))
+	assert.Equal(t, 5, chanof(1, 2, 3, 4, 5).CountLimit(5))
+	assert.Equal(t, 5, chanof(1, 2, 3, 4, 5).CountLimit(6))
+	assert.Equal(t, 5, chanof(1, 2, 3, 4, 5).CountLimit(10))
 }
 
 type countTrue[T any] struct {

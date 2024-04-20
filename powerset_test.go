@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/linqgo/linq"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPowerSet(t *testing.T) {
@@ -29,14 +30,24 @@ func TestPowerSet(t *testing.T) {
 
 	assertQueryElementsMatch(t, [][]int{nil}, powerset(linq.None[int]()))
 	assertQueryElementsMatch(t, [][]int{nil, {1}}, powerset(linq.From(1)))
-	assertQueryElementsMatch(t,
-		[][]int{nil, {1}, {4}, {1, 4}},
-		powerset(linq.From(1, 4)),
-	)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, powerset(linq.From(1, 4)))
 	q := powerset(linq.From(1, 4, 9))
-	assertQueryElementsMatch(t,
-		[][]int{nil, {1}, {4}, {1, 4}, {9}, {1, 9}, {4, 9}, {1, 4, 9}},
-		q)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}, {9}, {1, 9}, {4, 9}, {1, 4, 9}}, q)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, q.Take(4))
+
+	ee := make([]int, 0, 4)
+	for s := range linq.PowerSet(linq.From(1, 2, 3, 4, 5)).Seq() {
+		n := 0
+		ee = ee[:0]
+		for i, e := range s.ISeq() {
+			assert.True(t, i < e)
+			ee = append(ee, e)
+			if n == 2 {
+				break
+			}
+			n++
+		}
+	}
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, powerset(oneshot()))

@@ -35,11 +35,9 @@ func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
 	}
 	return Pipe(q,
 		func(yield func(U) bool) {
-			for t := range q.Seq() {
-				if !yield(sel(t)) {
-					return
-				}
-			}
+			q.Seq()(func(t T) bool {
+				return yield(sel(t))
+			})
 		},
 		FastGetOption(get),
 		FastCountOption[U](q.fastCount()),

@@ -56,6 +56,7 @@ func TestIota3(t *testing.T) {
 
 	assertQueryEqual(t, []int{3, 5, 7}, linq.Iota3(3, 8, 2))
 	assertQueryEqual(t, []int{8, 6, 4}, linq.Iota3(8, 3, -2))
+	assertQueryEqual(t, []int{8, 6}, linq.Iota3(8, 3, -2).Take(2))
 	assertQueryEqual(t, []int{}, linq.Iota3(0, 0, 0))
 	assert.Panics(t, func() { linq.Iota3(0, 1, 0) })
 

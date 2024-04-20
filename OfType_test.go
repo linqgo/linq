@@ -27,6 +27,7 @@ func TestOfType(t *testing.T) {
 	data := linq.From[any](1, "hello", 2, 3, "goodbye")
 
 	assertQueryEqual(t, []int{1, 2, 3}, linq.OfType[int](data))
+	assertQueryEqual(t, []int{1, 2}, linq.OfType[int](data).Take(2))
 	assertQueryEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data))
 
 	assertOneShot(t, false, linq.OfType[int](data))

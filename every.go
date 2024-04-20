@@ -34,12 +34,9 @@ func Every[T any](q Query[T], n int) Query[T] {
 // start-th element.
 func EveryFrom[T any](q Query[T], start, n int) Query[T] {
 	return Pipe(q, func(yield func(T) bool) {
-		for i, t := range q.ISeq() {
-			if start <= i && (i-start)%n == 0 && !yield(t) {
-				return
-			}
-			i++
-		}
+		q.ISeq()(func(i int, t T) bool {
+			return !(start <= i && (i-start)%n == 0) || yield(t)
+		})
 	}, ComputedFastCountOption[T](q.fastCount(), func(count int) int {
 		return (count-start-1)/n + 1
 	}))

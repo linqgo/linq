@@ -25,6 +25,7 @@ func TestDefaultIfEmpty(t *testing.T) {
 
 	assertQueryEqual(t, []int{42}, linq.From[int]().DefaultIfEmpty(42))
 	assertQueryEqual(t, []int{1, 2, 3}, linq.From(1, 2, 3).DefaultIfEmpty(42))
+	assertQueryEqual(t, []int{1, 2}, chanof(1, 2, 3).DefaultIfEmpty(42).Take(2))
 	assertQueryEqual(t, []int{42}, oneshot().DefaultIfEmpty(56))
 	assertQueryEqual(t, []int{56}, oneshot().Skip(2).DefaultIfEmpty(56))
 

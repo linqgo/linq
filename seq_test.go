@@ -17,18 +17,25 @@ package linq_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/linqgo/linq"
 )
 
-func TestReverse(t *testing.T) {
+func TestSeqKV(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, linq.Iota2(1, 6).Reverse())
-	assertQueryEqual(t, []int{5, 4, 3}, chanof(1, 2, 3, 4, 5).Reverse().Take(3))
-
-	assertOneShot(t, false, linq.Iota2(1, 6).Reverse())
-	assertOneShot(t, true, oneshot().Reverse())
-
-	assertSome(t, 5, linq.Iota2(1, 6).Reverse().FastCount)
-	assertNo(t, oneshot().Reverse().FastCount)
+	m := map[int]string{
+		1: "red",
+		2: "green",
+		4: "blue",
+	}
+	n := 0
+	for i, c := range linq.SeqKV(linq.FromMap(m)) {
+		assert.Equal(t, m[i], c)
+		if n == 2 {
+			break
+		}
+		n++
+	}
 }

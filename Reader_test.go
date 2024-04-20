@@ -32,6 +32,10 @@ func TestReaderByte(t *testing.T) {
 	q := linq.FromByteReader(s)
 	assertQueryEqual(t, []byte{'h', 'e', 'l', 'l', 'o'}, q)
 
+	s = bufio.NewReader(bytes.NewBuffer([]byte("hello")))
+	q = linq.FromByteReader(s)
+	assertQueryEqual(t, []byte{'h', 'e', 'l', 'l'}, q.Take(4))
+
 	assertOneShot(t, true, q)
 	assertNo(t, q.FastCount)
 }

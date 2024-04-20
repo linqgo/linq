@@ -30,6 +30,7 @@ func TestOrder(t *testing.T) {
 
 	assertQueryEqual(t, []int{}, linq.Order(nothing))
 	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Order(data))
+	assertQueryEqual(t, []int{1, 2, 3}, linq.Order(data).Take(3))
 
 	assertOneShot(t, false, linq.Order(data))
 	assertOneShot(t, true, linq.Order(oneshot()))

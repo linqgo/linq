@@ -14,7 +14,18 @@
 
 package linq
 
+import "iter"
+
 type Getter[T any] func(i int) (T, bool)
+
+func (g Getter[T]) Seq() iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		seqIota(func(i int) bool {
+			t, ok := g(i)
+			return ok && yield(t)
+		})
+	}
+}
 
 // ArrayGetter returns a Getter for an Array.
 func ArrayGetter[T any](a Array[T]) Getter[T] {
@@ -33,14 +44,7 @@ func LenGetGetter[T any](n int, get func(i int) T) Getter[T] {
 
 func FromGetter[T any](get Getter[T]) Query[T] {
 	return FromSeq(
-		func(yield func(t T) bool) {
-			for i := 0; ; i++ {
-				t, ok := get(i)
-				if !ok || !yield(t) {
-					return
-				}
-			}
-		},
+		get.Seq(),
 		FastGetOption(get),
 	)
 }

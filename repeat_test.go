@@ -28,6 +28,7 @@ func TestRepeat(t *testing.T) {
 	assert.True(t, linq.Repeat(0, 0).Empty())
 	assert.Equal(t, 10, linq.Repeat(0, 10).Count())
 	assertQueryEqual(t, []int{1, 1, 1, 1, 1}, linq.Repeat(1, 5))
+	assertQueryEqual(t, []int{1, 1, 1}, linq.Repeat(1, 5).Take(3))
 
 	assertOneShot(t, false, linq.Repeat(1, 5))
 

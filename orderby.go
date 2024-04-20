@@ -52,11 +52,7 @@ func oq[T any](q Query[T], cmp CmpFn[T]) Query[T] {
 		func(yield func(t T) bool) {
 			data := q.ToSlice()
 			slices.SortFunc(data, cmp)
-			for _, t := range data {
-				if !yield(t) {
-					return
-				}
-			}
+			seqSlice(data)(yield)
 		},
 		CmpersOption(cmp),
 		OneShotOption[T](q.OneShot()),

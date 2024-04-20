@@ -26,6 +26,7 @@ func TestElementAt(t *testing.T) {
 	assertNo(t, maybe(linq.From[int]().ElementAt(0)))
 	assertNo(t, maybe(linq.Iota2(1, 6).ElementAt(42)))
 	assertSome(t, 3, maybe(linq.Iota2(1, 6).ElementAt(2)))
+	assertSome(t, 3, maybe(chanof(1, 2, 3, 4, 5).ElementAt(2)))
 }
 
 func TestFastElementAt(t *testing.T) {

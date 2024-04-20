@@ -36,11 +36,7 @@ func Reverse[T any](q Query[T]) Query[T] {
 		func(yield func(t T) bool) {
 			s := q.ToSlice()
 			slices.Reverse(s)
-			for _, t := range s {
-				if !yield(t) {
-					return
-				}
-			}
+			seqSlice(s)(yield)
 		},
 		OneShotOption[T](q.OneShot()),
 		FastCountOption[T](q.fastCount()),

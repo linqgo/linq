@@ -22,11 +22,7 @@ func FromString(s string) Query[rune] {
 		return None[rune]()
 	}
 	return FromSeq(func(yield func(rune) bool) {
-		for _, r := range s {
-			if !yield(r) {
-				return
-			}
-		}
+		seqString(s)(yield)
 	}, FastCountOption[rune](len(s)))
 }
 

@@ -27,11 +27,9 @@ import (
 // window. Use the Slide... functions to construct a suitable input window.
 func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.Pipe(q, func(yield func(R) bool) {
-		for i, r := range accMeasure(q, 0, add[R], sub[R]) {
-			if !yield(r / R(i)) {
-				return
-			}
-		}
+		accMeasure(q, 0, add[R], sub[R])(func(i int, r R) bool {
+			return yield(r / R(i))
+		})
 	})
 }
 
@@ -62,11 +60,9 @@ func AccMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 // window.
 func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.Pipe(q, func(yield func(R) bool) {
-		for i, r := range accMeasure(q, 1, mul[R], div[R]) {
-			if !yield(r / R(i)) {
-				return
-			}
-		}
+		accMeasure(q, 1, mul[R], div[R])(func(i int, r R) bool {
+			return yield(r / R(i))
+		})
 	})
 }
 
@@ -75,11 +71,9 @@ func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[
 // window.
 func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
 	return linq.Pipe(q, func(yield func(F) bool) {
-		for i, r := range accMeasure(q, 0, recipAdd[F], recipSub[F]) {
-			if !yield(F(i) / r) {
-				return
-			}
-		}
+		accMeasure(q, 0, recipAdd[F], recipSub[F])(func(i int, f F) bool {
+			return yield(F(i) / f)
+		})
 	})
 	// return linq.PipeOneToOne(q, func() func(r linq.Delta[F]) F {
 	// 	recipSum := F(0)
@@ -98,11 +92,9 @@ func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Quer
 // window. Use the Slide... functions to construct a suitable input window.
 func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.Pipe(q, func(yield func(R) bool) {
-		for _, r := range accMeasure(q, 1, mul[R], div[R]) {
-			if !yield(r) {
-				return
-			}
-		}
+		accMeasure(q, 1, mul[R], div[R])(func(i int, r R) bool {
+			return yield(r)
+		})
 	})
 	// return linq.PipeOneToOne(q, func() func(r linq.Delta[R]) R {
 	// 	product := R(1)
@@ -117,11 +109,9 @@ func AccProduct[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 // the Slide... functions to construct a suitable input window.
 func AccSum[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[R] {
 	return linq.Pipe(q, func(yield func(R) bool) {
-		for _, r := range accMeasure(q, 0, add[R], sub[R]) {
-			if !yield(r) {
-				return
-			}
-		}
+		accMeasure(q, 0, add[R], sub[R])(func(i int, r R) bool {
+			return yield(r)
+		})
 	})
 }
 

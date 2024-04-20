@@ -15,8 +15,6 @@
 package stats
 
 import (
-	"log"
-
 	"github.com/linqgo/linq"
 )
 
@@ -28,7 +26,6 @@ func aggregate[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) A {
 func aggregateN[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) (A, int) {
 	n := 0
 	for e := range q.Seq() {
-		log.Printf("e = %v", e)
 		acc = agg(acc, e)
 		n++
 	}

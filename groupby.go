@@ -61,7 +61,7 @@ func GroupBySelectSlices[T, U any, K comparable](
 				k, v := sel(t).KV()
 				m[k] = append(m[k], v)
 			}
-			shunt(FromMap(m).Seq(), yield)
+			FromMap(m).Seq()(yield)
 		},
 		FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
 }

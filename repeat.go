@@ -40,13 +40,7 @@ func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
 // RepeatForever returns a query with value repeated forever.
 func RepeatForever[T any](value T) Query[T] {
 	return FromSeq(
-		func(yield func(t T) bool) {
-			for {
-				if !yield(value) {
-					return
-				}
-			}
-		},
+		func(yield func(t T) bool) { seqForever(func() bool { return yield(value) }) },
 		FastGetOption(func(i int) (T, bool) {
 			return value, 0 <= i
 		}),

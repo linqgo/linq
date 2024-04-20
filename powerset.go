@@ -40,11 +40,7 @@ func PowerSet[T any](q Query[T]) Query[Query[T]] {
 		for i, t := range q.ISeq() {
 			cache = append(cache, t)
 			hi := 1 << i
-			for mask := range hi {
-				if !yield(powerSubSet(cache, uint64(hi+mask))) {
-					return
-				}
-			}
+			seqN(hi)(func(mask int) bool { return yield(powerSubSet(cache, uint64(hi+mask))) })
 			mask++
 		}
 	}, FastCountOption[Query[T]](count))

@@ -17,65 +17,63 @@ package linq
 import "github.com/linqgo/linq/internal/num"
 
 // Iota returns a query with all integers from 0 up.
-func Iota[I num.RealNumber]() Query[I] {
+func Iota[R num.RealNumber]() Query[R] {
 	return FromSeq(
-		func(yield func(I) bool) {
-			for i := I(0); ; i++ {
+		func(yield func(R) bool) {
+			for i := R(0); ; i++ {
 				if !yield(i) {
 					return
 				}
 			}
 		},
-		FastGetOption(func(i int) (I, bool) { return I(i), true }),
+		FastGetOption(func(i int) (R, bool) { return R(i), true }),
 	)
 }
 
 // Iota1 returns a query with all integers in the range [0, stop).
-func Iota1[I num.RealNumber](stop I) Query[I] {
+func Iota1[R num.RealNumber](stop R) Query[R] {
 	return Iota3(0, stop, 1)
 }
 
 // Iota2 returns a query with all integers in the range [start, stop).
-func Iota2[I num.RealNumber](start, stop I) Query[I] {
+func Iota2[R num.RealNumber](start, stop R) Query[R] {
 	return Iota3(start, stop, 1)
 }
 
 // Iota3 returns a query with every step-th integer in the range [start, stop).
-func Iota3[I num.RealNumber](start, stop, step I) Query[I] {
+func Iota3[R num.RealNumber](start, stop, step R) Query[R] {
 	switch {
 	case step > 0:
-		n := int((stop-start-1)/step + 1)
+		n := (stop-start-1)/step + 1
 		return FromSeq(
-			func(yield func(I) bool) {
-				for i := start; i < stop; i += step {
-					if !yield(i) {
-						return
-					}
-				}
+			func(yield func(R) bool) {
+				seqN(n)(func(i R) bool {
+					return yield(start + step*i)
+				})
 			},
-			FastCountOption[I](n),
-			FastGetOption(LenGetGetter(n, func(i int) I {
-				return start + step*I(i)
+			FastCountOption[R](int(n)),
+			FastGetOption(LenGetGetter(int(n), func(i int) R {
+				return start + step*R(i)
 			})),
 		)
 	case step < 0:
 		n := int((start-stop-1)/-step + 1)
 		return FromSeq(
-			func(yield func(I) bool) {
+			func(yield func(R) bool) {
 				for i := start; i > stop; i += step {
 					if !yield(i) {
 						return
 					}
 				}
 			},
-			FastCountOption[I](n),
-			FastGetOption(LenGetGetter(n, func(i int) I {
-				return start + step*I(i)
+			FastCountOption[R](n),
+			FastGetOption(LenGetGetter(n, func(i int) R {
+				return start + step*R(i)
 			})),
 		)
 	default:
 		if start == stop {
-			return None[I]()
+			return None[R]()
 		}
 		panic(ZeroIotaStepError)
 	}

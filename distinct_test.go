@@ -25,6 +25,9 @@ func TestDistinct(t *testing.T) {
 
 	assertQueryEqual(t, []int{}, linq.Distinct(linq.None[int]()))
 
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Distinct(linq.From(1, 1, 2, 3, 4, 3, 3, 4, 5)))
+	assertQueryEqual(t, []int{1, 2, 3}, linq.Distinct(linq.From(1, 1, 2, 3, 4, 3, 3, 4, 5)).Take(3))
+
 	assertQueryEqual(t,
 		[]int{1, 2, 3, 4, 5, 6, 7},
 		linq.Distinct(linq.Concat(

@@ -27,25 +27,3 @@ func Pipe[T, U any](
 	options = append([]QueryOption[U]{OneShotOption[U](q.OneShot())}, options...)
 	return FromSeq(seq, options...)
 }
-
-// PipeOneToOne returns a Pipe with a bijection from input to output elements.
-func PipeOneToOne[T, U any](
-	q Query[T],
-	selfunc func() func(t T) U,
-	options ...QueryOption[U],
-) Query[U] {
-	options = append([]QueryOption[U]{
-		FastCountOption[U](q.fastCount()),
-	}, options...)
-	return Pipe(q,
-		func(yield func(U) bool) {
-			sel := selfunc()
-			for t := range q.Seq() {
-				if !yield(sel(t)) {
-					return
-				}
-			}
-		},
-		options...,
-	)
-}

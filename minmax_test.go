@@ -49,6 +49,11 @@ func TestMaxBy(t *testing.T) {
 	assertNo(t, maybe(linq.MaxBy(noone, name).Single()))
 	assertSome(t, linq.NewKV("John", 42), maybe(linq.MaxBy(peeps, age).Single()))
 	assertNo(t, maybe(linq.MaxBy(noone, age).Single()))
+
+	repeats := linq.From(1, 2, 4, 2, 3, 1)
+	mod3 := func(i int) int { return i % 3 }
+	assertQueryEqual(t, []int{2, 2}, (linq.MaxBy(repeats, mod3)))
+	assertQueryEqual(t, []int{2}, linq.MaxBy(repeats, mod3).Take(1))
 }
 
 func TestMin(t *testing.T) {

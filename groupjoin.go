@@ -27,11 +27,9 @@ func GroupJoin[Outer, Inner, Result any, Key comparable](
 	return FromSeq(
 		func(yield func(Result) bool) {
 			lup := buildLookup(inner, innerKey)
-			for o := range outer.Seq() {
-				if !yield(result(o, From(lup[outerKey(o)]...))) {
-					return
-				}
-			}
+			outer.Seq()(func(o Outer) bool {
+				return yield(result(o, From(lup[outerKey(o)]...)))
+			})
 		},
 		OneShotOption[Result](outer.OneShot() || inner.OneShot()),
 		FastCountOption[Result](outer.fastCount()),

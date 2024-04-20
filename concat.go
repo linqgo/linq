@@ -57,11 +57,7 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 	return FromSeq(func(yield func(T) bool) {
 		for _, q := range queries {
-			for t := range q.Seq() {
-				if !yield(t) {
-					return
-				}
-			}
+			q.Seq()(yield)
 		}
 	}, OneShotOption[T](oneshot), FastCountOption[T](count))
 }

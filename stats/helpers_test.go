@@ -62,6 +62,9 @@ func assertQueryInEpsilon[R num.RealNumber](t *testing.T, expected []R, q linq.Q
 	t.Helper()
 
 	s := q.ToSlice()
+	if len(s) != len(expected) {
+		return assert.Failf(t, "query has unexpected length", "%v", s)
+	}
 	if len(s) == 0 && len(expected) == 0 {
 		return true
 	}

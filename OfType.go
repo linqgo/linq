@@ -18,14 +18,11 @@ package linq
 func OfType[U, T any](q Query[T]) Query[U] {
 	return FromSeq(
 		func(yield func(U) bool) {
-			for t := range q.Seq() {
+			q.Seq()(func(t T) bool {
 				var i any = t
-				if u, is := i.(U); is {
-					if !yield(u) {
-						return
-					}
-				}
-			}
+				u, is := i.(U)
+				return !is || yield(u)
+			})
 		},
 		FastCountIfEmptyOption[U](q.fastCount()),
 		OneShotOption[U](q.OneShot()),

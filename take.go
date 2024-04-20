@@ -60,11 +60,9 @@ func Take[T any](q Query[T], take int) Query[T] {
 	}
 	return Pipe(q,
 		func(yield func(T) bool) {
-			for i, t := range q.ISeq() {
-				if i >= take || !yield(t) {
-					return
-				}
-			}
+			q.ISeq()(func(i int, t T) bool {
+				return i < take && yield(t)
+			})
 		},
 		FastCountOption[T](count),
 		FastGetOption(get),
@@ -86,17 +84,9 @@ func TakeLast[T any](q Query[T], take int) Query[T] {
 				i++
 			}
 			if i >= len(buf) {
-				for _, t := range buf[i%len(buf):] {
-					if !yield(t) {
-						return
-					}
-				}
+				seqSlice(buf[i%len(buf):])(yield)
 			}
-			for _, t := range buf[:i%len(buf)] {
-				if !yield(t) {
-					return
-				}
-			}
+			seqSlice(buf[:i%len(buf)])(yield)
 		},
 		FastCountOption[T](count),
 	)
@@ -106,13 +96,9 @@ func TakeLast[T any](q Query[T], take int) Query[T] {
 func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
 	return Pipe(q,
 		func(yield func(T) bool) {
-			i := 0
-			for t := range q.Seq() {
-				if !pred(t) || !yield(t) {
-					return
-				}
-				i++
-			}
+			q.Seq()(func(t T) bool {
+				return pred(t) && yield(t)
+			})
 		},
 		FastCountIfEmptyOption[T](q.fastCount()))
 }

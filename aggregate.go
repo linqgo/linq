@@ -37,13 +37,7 @@ func Aggregate[T any](q Query[T], agg func(a, b T) T) (T, bool) {
 	next, stop := iter.Pull(q.Seq())
 	defer stop()
 	if seed, ok := next(); ok {
-		agg, _ := aggregateNEnum(func(yield func(T) bool) {
-			for t := range nextToSeq(next) {
-				if !yield(t) {
-					return
-				}
-			}
-		}, seed, agg)
+		agg, _ := aggregateNEnum(seqNext(next), seed, agg)
 		return agg, true
 	}
 	return no[T]()

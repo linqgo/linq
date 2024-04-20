@@ -52,11 +52,7 @@ func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func
 			}
 			acc = append(acc, t)
 		}
-		for _, t := range acc {
-			if !yield(t) {
-				return
-			}
-		}
+		seqSlice(acc)(yield)
 	})
 }
 

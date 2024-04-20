@@ -45,19 +45,19 @@ func Join[A, B, R any, K comparable](
 				switch {
 				case !okA:
 					lup := lupA.Lookup()
-					shunt(SelectMany(lupB.Requery(), func(b B) Query[R] {
+					SelectMany(lupB.Requery(), func(b B) Query[R] {
 						return Select(From(lup[selKeyB(b)]...), func(a A) R {
 							return selResult(a, b)
 						})
-					}).Seq(), yield)
+					}).Seq()(yield)
 					return
 				case !okB:
 					lup := lupB.Lookup()
-					shunt(SelectMany(lupA.Requery(), func(a A) Query[R] {
+					SelectMany(lupA.Requery(), func(a A) Query[R] {
 						return Select(From(lup[selKeyA(a)]...), func(b B) R {
 							return selResult(a, b)
 						})
-					}).Seq(), yield)
+					}).Seq()(yield)
 					return
 				}
 			}

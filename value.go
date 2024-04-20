@@ -21,13 +21,7 @@ func From[T any](t ...T) Query[T] {
 	}
 
 	return FromSeq(
-		func(yield func(t T) bool) {
-			for _, e := range t {
-				if !yield(e) {
-					return
-				}
-			}
-		},
+		seqSlice(t),
 		FastCountOption[T](len(t)),
 		FastGetOption(LenGetGetter(len(t), func(i int) T { return t[i] })),
 	)

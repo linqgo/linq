@@ -12,23 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq_test
+package linq
 
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestReverse(t *testing.T) {
+func TestMust(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, linq.Iota2(1, 6).Reverse())
-	assertQueryEqual(t, []int{5, 4, 3}, chanof(1, 2, 3, 4, 5).Reverse().Take(3))
-
-	assertOneShot(t, false, linq.Iota2(1, 6).Reverse())
-	assertOneShot(t, true, oneshot().Reverse())
-
-	assertSome(t, 5, linq.Iota2(1, 6).Reverse().FastCount)
-	assertNo(t, oneshot().Reverse().FastCount)
+	assert.Equal(t, 42, must(42, true))
+	assert.Panics(t, func() { must(0, false) })
 }

@@ -19,11 +19,5 @@ package linq
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
 func FromChannel[T any](c <-chan T) Query[T] {
-	return FromSeq(func(yield func(T) bool) {
-		for t := range c {
-			if !yield(t) {
-				return
-			}
-		}
-	}, OneShotOption[T](true))
+	return FromSeq(seqChan(c), OneShotOption[T](true))
 }

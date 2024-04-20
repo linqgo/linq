@@ -26,11 +26,9 @@ func ArrayFromLenGet[T any](n int, get func(i int) T) Array[T] {
 func FromArray[T any](a Array[T]) Query[T] {
 	return FromSeq(
 		func(yield func(T) bool) {
-			for i, n := 0, a.Len(); i < n; i++ {
-				if !yield(a.Get(i)) {
-					return
-				}
-			}
+			seqN(a.Len())(func(i int) bool {
+				return yield(a.Get(i))
+			})
 		},
 		FastCountOption[T](a.Len()),
 		FastGetOption(ArrayGetter(a)),
