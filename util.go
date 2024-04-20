@@ -89,12 +89,3 @@ func Zero[U, T any](T) U {
 	var u U
 	return u
 }
-
-// Drain consumes next and returns the number of elements consumed.
-func Drain[T any](next Enumerator[T]) int {
-	n := 0
-	for t := next(); t.Valid(); t = next() {
-		n++
-	}
-	return n
-}

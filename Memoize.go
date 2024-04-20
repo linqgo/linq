@@ -15,24 +15,34 @@
 package linq
 
 import (
+	"iter"
 	"sync"
+	"sync/atomic"
 )
 
 // Memoize caches the elements of q. It returns a query that contains the same
 // elements as q, but, in the process of enumerating it, remembers the sequence
 // of values seen and ensures that every enumeration yields the same sequence.
-func (q Query[T]) Memoize() Query[T] {
+func (q Query[T]) Memoize() (_ Query[T], stop func()) {
 	return Memoize(q)
 }
 
 // Memoize caches the elements of q. It returns a query that contains the same
 // elements as q, but, in the process of enumerating it, remembers the sequence
 // of values seen and ensures that every enumeration yields the same sequence.
-func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
+func Memoize[T any](q Query[T]) (_ Query[T], stop func()) { //nolint:revive
+	var stopPtr atomic.Pointer[func()]
+	stop = func() {
+		if stop := stopPtr.Load(); stop != nil {
+			(*stop)()
+		}
+	}
+
 	getter := sync.OnceValue(func() func(i int) (T, bool) {
 		var mux sync.Mutex
 		var cache []T
-		next := pull(q.Range())
+		next, stop := iter.Pull(q.Range())
+		stopPtr.Store(&stop)
 
 		return func(i int) (T, bool) {
 			mux.Lock()
@@ -56,5 +66,5 @@ func Memoize[T any](q Query[T]) Query[T] { //nolint:revive
 				return
 			}
 		}
-	})
+	}), stop
 }

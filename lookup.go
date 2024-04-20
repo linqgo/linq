@@ -14,15 +14,20 @@
 
 package linq
 
+import "iter"
+
 type lookupBuilder[T any, K comparable] struct {
 	next func() (T, bool)
+	stop func()
 	key  func(T) K
 	lup  map[K][]T
 }
 
 func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBuilder[T, K] {
+	next, stop := iter.Pull(q.Range())
 	return &lookupBuilder[T, K]{
-		next: pull(q.Range()),
+		next: next,
+		stop: stop,
 		key:  key,
 		lup:  map[K][]T{},
 	}
@@ -30,6 +35,7 @@ func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBui
 
 func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
 	b := newLookupBuilder(q, key)
+	defer b.Close()
 	for b.Next() { //nolint:revive
 	}
 	return b.Lookup()
@@ -62,4 +68,8 @@ func (b *lookupBuilder[T, K]) Requery() Query[T] {
 			}
 		}),
 	)
+}
+
+func (b *lookupBuilder[T, K]) Close() {
+	b.stop()
 }

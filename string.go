@@ -14,9 +14,7 @@
 
 package linq
 
-import (
-	"strings"
-)
+import "strings"
 
 // FromString returns a Query[rune] with the runes from s.
 func FromString(s string) Query[rune] {
@@ -40,7 +38,8 @@ func ToString(q Query[rune]) string {
 // StringsJoin joins strings with a separator.
 func StringsJoin[S ~string](q Query[S], sep S) S {
 	var sb strings.Builder
-	scan := q.Scanner()
+	scan, stop := q.Scanner()
+	defer stop()
 	var s S
 
 	if c, ok := q.FastCount(); ok {
@@ -66,7 +65,8 @@ func StringsJoin[S ~string](q Query[S], sep S) S {
 
 func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
 	var sb strings.Builder
-	scan := q.Scanner()
+	scan, stop := q.Scanner()
+	defer stop()
 	var s S
 
 	if c, ok := q.FastCount(); ok {

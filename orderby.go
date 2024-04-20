@@ -16,6 +16,8 @@ package linq
 
 import (
 	"slices"
+
+	"golang.org/x/exp/constraints"
 )
 
 func (q Query[T]) OrderCmp(cmp CmpFn[T]) Query[T]     { return OrderCmp(q, cmp) }
@@ -28,23 +30,19 @@ func OrderCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T] { return qo(q, ba(cm
 func ThenCmp[T any](q Query[T], cmp CmpFn[T]) Query[T]      { return qo(q, then(q, cmp)) }
 func ThenCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T]  { return qo(q, then(q, ba(cmp))) }
 
-func Order[T Ordered](q Query[T]) Query[T]                             { return qo(q, kab(Identity[T])) }
-func OrderDesc[T Ordered](q Query[T]) Query[T]                         { return qo(q, kba(Identity[T])) }
-func OrderBy[T any, K Ordered](q Query[T], key func(T) K) Query[T]     { return qo(q, kab(key)) }
-func OrderByDesc[T any, K Ordered](q Query[T], key func(T) K) Query[T] { return qo(q, kba(key)) }
-func OrderByKey[T KV[K, V], K Ordered, V any](q Query[T]) Query[T]     { return qo(q, kab(Key[T])) }
-func OrderByKeyDesc[T KV[K, V], K Ordered, V any](q Query[T]) Query[T] { return qo(q, kba(Key[T])) }
+func Order[T Ord](q Query[T]) Query[T]                             { return qo(q, kab(Identity[T])) }
+func OrderDesc[T Ord](q Query[T]) Query[T]                         { return qo(q, kba(Identity[T])) }
+func OrderBy[T any, K Ord](q Query[T], key func(T) K) Query[T]     { return qo(q, kab(key)) }
+func OrderByDesc[T any, K Ord](q Query[T], key func(T) K) Query[T] { return qo(q, kba(key)) }
+func OrderByKey[T KV[K, V], K Ord, V any](q Query[T]) Query[T]     { return qo(q, kab(Key[T])) }
+func OrderByKeyDesc[T KV[K, V], K Ord, V any](q Query[T]) Query[T] { return qo(q, kba(Key[T])) }
 
-func Then[T Ordered](q Query[T]) Query[T]                         { return qo(q, then(q, kab(Identity[T]))) }
-func ThenDesc[T Ordered](q Query[T]) Query[T]                     { return qo(q, then(q, kba(Identity[T]))) }
-func ThenBy[T any, K Ordered](q Query[T], key func(T) K) Query[T] { return qo(q, then(q, kab(key))) }
-func ThenByKeyDesc[T KV[K, V], K Ordered, V any](q Query[T]) Query[T] {
-	return qo(q, then(q, kba(Key[T])))
-}
-func ThenByKey[T KV[K, V], K Ordered, V any](q Query[T]) Query[T] { return qo(q, then(q, kab(Key[T]))) }
-func ThenByDesc[T any, K Ordered](q Query[T], key func(T) K) Query[T] {
-	return qo(q, then(q, kba(key)))
-}
+func Then[T Ord](q Query[T]) Query[T]                             { return qo(q, then(q, kab(Identity[T]))) }
+func ThenDesc[T Ord](q Query[T]) Query[T]                         { return qo(q, then(q, kba(Identity[T]))) }
+func ThenBy[T any, K Ord](q Query[T], key func(T) K) Query[T]     { return qo(q, then(q, kab(key))) }
+func ThenByKeyDesc[T KV[K, V], K Ord, V any](q Query[T]) Query[T] { return qo(q, then(q, kba(Key[T]))) }
+func ThenByKey[T KV[K, V], K Ord, V any](q Query[T]) Query[T]     { return qo(q, then(q, kab(Key[T]))) }
+func ThenByDesc[T any, K Ord](q Query[T], key func(T) K) Query[T] { return qo(q, then(q, kba(key))) }
 
 var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy/ThenBy"
 
@@ -84,20 +82,13 @@ func then[T any](q Query[T], cmp CmpFn[T]) CmpFn[T] {
 }
 
 // kab returns a cmpFn that compares keys.
-func kab[T any, K Ordered](key func(T) K) CmpFn[T] {
+func kab[T any, K Ord](key func(T) K) CmpFn[T] {
 	return func(a, b T) int { return Cmp(key(a), key(b)) }
 }
 
 // ka returns a cmpFn that compares keys in descending order.
-func kba[T any, K Ordered](key func(T) K) CmpFn[T] {
+func kba[T any, K Ord](key func(T) K) CmpFn[T] {
 	return func(a, b T) int { return Cmp(key(b), key(a)) }
 }
 
-type o = Ordered
-
-type Ordered interface {
-	~string |
-		~int | ~int8 | ~int16 | ~int32 | ~int64 |
-		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
-		~float32 | ~float64
-}
+type Ord = constraints.Ordered

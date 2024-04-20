@@ -38,7 +38,9 @@ func TestMemoize(t *testing.T) {
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, q)
 	assertQueryEqual(t, []int{}, q)
 
-	m := linq.FromChannel(fiveInts()).Memoize()
+	m, stop := linq.FromChannel(fiveInts()).Memoize()
+	defer stop()
+
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 
@@ -49,11 +51,15 @@ func TestMemoize(t *testing.T) {
 func TestMemoizeTwofer(t *testing.T) {
 	t.Parallel()
 
-	m := linq.FromChannel(fiveInts()).Memoize()
+	m, stop := linq.FromChannel(fiveInts()).Memoize()
+	defer stop()
+
 	a, stopA := iter.Pull(m.Range())
 	defer stopA()
+
 	b, stopB := iter.Pull(m.Range())
 	defer stopB()
+
 	assertHave(t, 0, a)
 	assertHave(t, 0, b)
 	assertHave(t, 1, a)
@@ -71,7 +77,9 @@ func TestMemoizeTwofer(t *testing.T) {
 func TestMemoizeParallel(t *testing.T) {
 	t.Parallel()
 
-	m := linq.FromChannel(fiveInts()).Memoize()
+	m, stop := linq.FromChannel(fiveInts()).Memoize()
+	defer stop()
+
 	for i := 0; i < 10; i++ {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			for j := 0; j < 1000; j++ {

@@ -30,7 +30,9 @@ func Join[A, B, R any, K comparable](
 	return FromSeq(
 		func(yield func(R) bool) {
 			lupA := newLookupBuilder(a, selKeyA)
+			defer lupA.Close()
 			lupB := newLookupBuilder(b, selKeyB)
+			defer lupB.Close()
 
 			// Scan both inputs till one runs out. The exhausted input's map will be
 			// used for lookups. The other side will be repackaged into a new query

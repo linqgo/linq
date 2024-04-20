@@ -51,9 +51,11 @@ func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
 //	func DivMod(q Query[int], n int) (div, mod Query[int]) {
 //	    return Unzip(q, func(i int) (int, int) { return i / n, i % n })
 //	}
-func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (Query[R], Query[S]) {
+func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (_ Query[R], _ Query[S], stop func()) {
 	if q.OneShot() {
-		q = q.Memoize()
+		q, stop = q.Memoize()
+	} else {
+		stop = func() {}
 	}
 	r := Select(q, func(t T) R {
 		r, _ := unzip(t)
@@ -63,12 +65,12 @@ func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (Query[R], Query[S])
 		_, s := unzip(t)
 		return s
 	})
-	return r, s
+	return r, s, stop
 }
 
 // Unzip unzips a query containing key/value pairs into a query containing keys
 // and another query containing values.
-func UnzipKV[K, V any](q Query[KV[K, V]]) (Query[K], Query[V]) {
+func UnzipKV[K, V any](q Query[KV[K, V]]) (_ Query[K], _ Query[V], stop func()) {
 	return Unzip(q, func(kv KV[K, V]) (K, V) { return kv.Key, kv.Value })
 }
 

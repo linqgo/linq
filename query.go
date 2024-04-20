@@ -49,11 +49,6 @@ func FromSeq[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
 	return q
 }
 
-// Enumerator returns an enumerator for q.
-func (q Query[T]) Enumerator() Enumerator[T] {
-	return newEnumerable(q.seq)()
-}
-
 func (q Query[T]) OneShot() bool {
 	return q.extra != nil && q.extra.oneShot
 }

@@ -69,7 +69,8 @@ func TestZipKV(t *testing.T) {
 func TestUnzip(t *testing.T) {
 	t.Parallel()
 
-	a, b := linq.Unzip(linq.Iota1(10), func(i int) (int, int) { return i / 3, i % 3 })
+	a, b, stop := linq.Unzip(linq.Iota1(10), func(i int) (int, int) { return i / 3, i % 3 })
+	defer stop()
 
 	assertQueryEqual(t, []int{0, 0, 0, 1, 1, 1, 2, 2, 2, 3}, a)
 	assertQueryEqual(t, []int{0, 1, 2, 0, 1, 2, 0, 1, 2, 0}, b)
@@ -78,7 +79,8 @@ func TestUnzip(t *testing.T) {
 func TestUnzipKV(t *testing.T) {
 	t.Parallel()
 
-	k, v := linq.UnzipKV(linq.FromMap(map[string]int{"A": 1, "B": 2, "C": 3}))
+	k, v, stop := linq.UnzipKV(linq.FromMap(map[string]int{"A": 1, "B": 2, "C": 3}))
+	defer stop()
 
 	assertQueryElementsMatch(t, []string{"A", "B", "C"}, k)
 	assertQueryElementsMatch(t, []int{1, 2, 3}, v)
@@ -92,7 +94,9 @@ func TestUnzipKVBuffered(t *testing.T) {
 	c <- linq.NewKV("B", 2)
 	c <- linq.NewKV("C", 3)
 	close(c)
-	k, v := linq.UnzipKV(linq.FromChannel(c))
+
+	k, v, stop := linq.UnzipKV(linq.FromChannel(c))
+	defer stop()
 
 	assertQueryElementsMatch(t, []string{"A", "B", "C"}, k)
 	assertQueryElementsMatch(t, []int{1, 2, 3}, v)

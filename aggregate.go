@@ -18,7 +18,7 @@ import "iter"
 
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
-func (q Query[T]) Aggregate(agg func(a, b T) T) Maybe[T] {
+func (q Query[T]) Aggregate(agg func(a, b T) T) (T, bool) {
 	return Aggregate(q, agg)
 }
 
@@ -33,7 +33,7 @@ func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
 
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
-func Aggregate[T any](q Query[T], agg func(a, b T) T) Maybe[T] {
+func Aggregate[T any](q Query[T], agg func(a, b T) T) (T, bool) {
 	next, stop := iter.Pull(q.Range())
 	defer stop()
 	if seed, ok := next(); ok {
@@ -44,9 +44,9 @@ func Aggregate[T any](q Query[T], agg func(a, b T) T) Maybe[T] {
 				}
 			}
 		}, seed, agg)
-		return Some(agg)
+		return agg, true
 	}
-	return No[T]()
+	return no[T]()
 }
 
 // AggregateSeed applies an aggregator function to the elements of q, using seed
