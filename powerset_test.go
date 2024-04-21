@@ -17,8 +17,9 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq"
 )
 
 func TestPowerSet(t *testing.T) {
