@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 // OfType returns a Query that contains all the elements of q that have type U.

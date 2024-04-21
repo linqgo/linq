@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq/internal/num"
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
 func TestNaN(t *testing.T) {

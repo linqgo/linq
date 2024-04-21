@@ -1,4 +1,4 @@
-module github.com/linqgo/linq
+module github.com/linqgo/linq/v2
 
 go 1.22
 

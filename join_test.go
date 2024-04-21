@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestJoin(t *testing.T) {

@@ -17,7 +17,7 @@ package linq
 import (
 	"iter"
 
-	"github.com/linqgo/linq/internal/num"
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
 func (q Query[T]) Seq() iter.Seq[T] {

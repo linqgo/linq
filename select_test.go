@@ -18,7 +18,7 @@ import (
 	"math/bits"
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestSelect(t *testing.T) {

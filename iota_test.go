@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestIota(t *testing.T) {

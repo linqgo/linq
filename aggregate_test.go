@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func add(a, b int) int { return a + b }

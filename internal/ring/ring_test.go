@@ -20,8 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
-	"github.com/linqgo/linq/internal/ring"
+	"github.com/linqgo/linq/v2"
+	"github.com/linqgo/linq/v2/internal/ring"
 )
 
 func assertRingEmpty[T any](t *testing.T, r *ring.Ring[T], empty bool) bool {

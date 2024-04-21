@@ -17,8 +17,8 @@ package stats_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
-	"github.com/linqgo/linq/stats"
+	"github.com/linqgo/linq/v2"
+	"github.com/linqgo/linq/v2/stats"
 )
 
 func TestAccMean(t *testing.T) {

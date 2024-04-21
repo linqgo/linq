@@ -35,7 +35,7 @@
 // Unfortunately, there are no clean work-arounds. You may wish to use a
 // dot-import to ease the pain a little:
 //
-//	import . "github.com/linqgo/linq"
+//	import . "github.com/linqgo/linq/v2"
 //
 //	...
 //

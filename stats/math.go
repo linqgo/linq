@@ -19,15 +19,15 @@ import (
 
 	"golang.org/x/exp/constraints"
 
-	"github.com/linqgo/linq"
-	"github.com/linqgo/linq/internal/num"
+	"github.com/linqgo/linq/v2"
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
 // Mean returns the arithmetic mean of the numbers in q or ok = false if q is
 // empty.
 //
-// This function is equivalent to "github.com/linqgo/linq".Average, which is
-// retained for parity with .Net's Enumerable class.
+// This function is equivalent to "..".Average, which is retained for parity
+// with .Net's Enumerable class.
 func Mean[R num.RealNumber](q linq.Query[R]) (R, bool) {
 	return linq.Average(q)
 }
@@ -57,8 +57,8 @@ func Product[R num.Number](q linq.Query[R]) R { return aggregate(q, 1, mul[R]) }
 
 // Sum returns the sum of the num.Numbers in q or 0 if q is empty.
 //
-// This function is equivalent to "github.com/linqgo/linq".Sum, which is
-// retained for parity with .Net's Enumerable class.
+// This function is equivalent to "..".Sum, which is retained for parity with
+// .Net's Enumerable class.
 func Sum[R num.Number](q linq.Query[R]) R { return linq.Sum(q) }
 
 func add[N num.Number](a, b N) N             { return a + b }

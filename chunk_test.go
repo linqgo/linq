@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestChunk(t *testing.T) {

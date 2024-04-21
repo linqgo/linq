@@ -19,8 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
-	"github.com/linqgo/linq/internal/num"
+	"github.com/linqgo/linq/v2"
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
 func maybe[T any](t T, ok bool) func() (T, bool) {

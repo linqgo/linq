@@ -15,14 +15,14 @@
 package linq
 
 import (
-	"github.com/linqgo/linq/internal/num"
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
 // Average returns the arithmetic mean of the numbers in q or ok = false if q is
 // empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".Mean.
-// It is retained here for parity with .Net's Enumerable class.
+// This function is equivalent to "./stats".Mean and is retained here for parity
+// with .Net's Enumerable class.
 func Average[R num.RealNumber](q Query[R]) (R, bool) {
 	if sum, n := aggregateN(q, 0, add[R]); n > 0 {
 		return sum / R(n), true
@@ -32,8 +32,8 @@ func Average[R num.RealNumber](q Query[R]) (R, bool) {
 
 // Sum returns the sum of the num.Numbers in q or 0 if q is empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".Sum. It is
-// retained here for parity with .Net's Enumerable class.
+// This function is equivalent to "./stats".Sum and is retained here for parity
+// with .Net's Enumerable class.
 func Sum[R num.Number](q Query[R]) R {
 	return aggregate(q, 0, add[R])
 }

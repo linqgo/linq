@@ -14,7 +14,7 @@
 
 package linq
 
-import "github.com/linqgo/linq/internal/num"
+import "github.com/linqgo/linq/v2/internal/num"
 
 // Iota returns a query with all integers from 0 up.
 func Iota[R num.RealNumber]() Query[R] {

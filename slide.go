@@ -15,8 +15,8 @@
 package linq
 
 import (
-	"github.com/linqgo/linq/internal/num"
-	"github.com/linqgo/linq/internal/ring"
+	"github.com/linqgo/linq/v2/internal/num"
+	"github.com/linqgo/linq/v2/internal/ring"
 )
 
 // Slide implements a sliding window. All output elements represent windows over

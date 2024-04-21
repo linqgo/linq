@@ -17,8 +17,8 @@ package stats
 // import (
 // 	"math"
 
-// 	"github.com/linqgo/linq"
-// 	"github.com/linqgo/linq/internal/num"
+// 	"github.com/linqgo/linq/v2"
+// 	"github.com/linqgo/linq/v2/internal/num"
 // )
 
 // // func WeightUniform[W, T any](q linq.Query[T], w W) linq.Query[linq.KV[W, T]] {

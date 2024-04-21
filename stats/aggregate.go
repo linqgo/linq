@@ -14,9 +14,7 @@
 
 package stats
 
-import (
-	"github.com/linqgo/linq"
-)
+import "github.com/linqgo/linq/v2"
 
 func aggregate[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) A {
 	t, _ := aggregateN(q, acc, agg)
