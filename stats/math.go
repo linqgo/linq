@@ -17,8 +17,6 @@ package stats
 import (
 	"math"
 
-	"golang.org/x/exp/constraints"
-
 	"github.com/linqgo/linq/v2"
 	"github.com/linqgo/linq/v2/internal/num"
 )
@@ -44,7 +42,7 @@ func GeometricMean[R num.RealNumber](q linq.Query[R]) (R, bool) {
 
 // HarmonicMean returns the harmonic mean of the numbers in q or ok = false if q
 // is empty.
-func HarmonicMean[F constraints.Float](q linq.Query[F]) (F, bool) {
+func HarmonicMean[F num.Float](q linq.Query[F]) (F, bool) {
 	if recipSum, n := aggregateN(q, 0, recipAdd[F]); n > 0 {
 		return F(n) / F(recipSum), true
 	}
@@ -65,5 +63,5 @@ func add[N num.Number](a, b N) N             { return a + b }
 func sub[N num.Number](a, b N) N             { return a - b }
 func mul[N num.Number](a, b N) N             { return a * b }
 func div[N num.Number](a, b N) N             { return a / b }
-func recipAdd[R constraints.Float](a, b R) R { return a + 1/b }
-func recipSub[R constraints.Float](a, b R) R { return a - 1/b }
+func recipAdd[R num.Float](a, b R) R { return a + 1/b }
+func recipSub[R num.Float](a, b R) R { return a - 1/b }

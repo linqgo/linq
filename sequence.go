@@ -14,9 +14,7 @@
 
 package linq
 
-import (
-	"golang.org/x/exp/constraints"
-)
+import "cmp"
 
 // SequenceCmp returns SequenceCmp(q, r, cmp).
 func (q Query[T]) SequenceCmp(r Query[T], cmp CmpFn[T]) int {
@@ -80,7 +78,7 @@ func SequenceCmp[T any](a, b Query[T], cmp CmpFn[T]) int {
 }
 
 // SequenceGreater returns SequenceLess(b, a).
-func SequenceGreater[T constraints.Ordered](a, b Query[T]) bool {
+func SequenceGreater[T cmp.Ordered](a, b Query[T]) bool {
 	return SequenceLess(b, a)
 }
 
@@ -97,7 +95,7 @@ func SequenceGreaterCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
 //
 // This is known as lexicographical order and is analogous to the < operator on
 // strings.
-func SequenceLess[T constraints.Ordered](a, b Query[T]) bool {
+func SequenceLess[T cmp.Ordered](a, b Query[T]) bool {
 	return SequenceLessCmp(a, b, Cmp[T])
 }
 

@@ -17,8 +17,6 @@ package stats
 import (
 	"iter"
 
-	"golang.org/x/exp/constraints"
-
 	"github.com/linqgo/linq/v2"
 	"github.com/linqgo/linq/v2/internal/num"
 )
@@ -69,7 +67,7 @@ func AccGeometricMean[R num.RealNumber](q linq.Query[linq.Delta[R]]) linq.Query[
 // AccHarmonicMean accumulates the harmonic mean of the input values within a
 // sliding window. Use the Slide... functions to construct a suitable input
 // window.
-func AccHarmonicMean[F constraints.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
+func AccHarmonicMean[F num.Float](q linq.Query[linq.Delta[F]]) linq.Query[F] {
 	return linq.Pipe(q, func(yield func(F) bool) {
 		accMeasure(q, 0, recipAdd[F], recipSub[F])(func(i int, f F) bool {
 			return yield(F(i) / f)

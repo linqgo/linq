@@ -14,10 +14,10 @@
 
 package linq
 
-import "golang.org/x/exp/constraints"
+import "github.com/linqgo/linq/v2/internal/num"
 
 // Repeat returns a query with value repeated count times.
-func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
+func Repeat[T any, I num.Integer](value T, count I) Query[T] {
 	if count == 0 {
 		return None[T]()
 	}

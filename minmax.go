@@ -14,30 +14,30 @@
 
 package linq
 
-import "golang.org/x/exp/constraints"
+import "cmp"
 
 // Max returns the highest number in q or ok=false if q is empty.
-func Max[R constraints.Ordered](q Query[R]) (R, bool) {
+func Max[R cmp.Ordered](q Query[R]) (R, bool) {
 	return Aggregate(q, max[R])
 }
 
 // MaxBy returns the element(s) in q with the highest key.
-func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Query[T] {
+func MaxBy[T any, R cmp.Ordered](q Query[T], key func(T) R) Query[T] {
 	return bestBy(q, key, greater[R])
 }
 
 // Min returns the highest number in q or ok=false if q is empty.
-func Min[R constraints.Ordered](q Query[R]) (R, bool) {
+func Min[R cmp.Ordered](q Query[R]) (R, bool) {
 	return Aggregate(q, min[R])
 }
 
 // MinBy returns the element in q with the highest key or ok = false if q is
 // empty.
-func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) Query[T] {
+func MinBy[T any, K cmp.Ordered](q Query[T], key func(T) K) Query[T] {
 	return bestBy(q, key, less[K])
 }
 
-func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Query[T] {
+func bestBy[T any, O cmp.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Query[T] {
 	return FromSeq(func(yield func(T) bool) {
 		var acc []T
 		var best O
@@ -56,22 +56,22 @@ func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func
 	})
 }
 
-func greater[O constraints.Ordered](a, b O) bool {
+func greater[O cmp.Ordered](a, b O) bool {
 	return a > b
 }
 
-func less[O constraints.Ordered](a, b O) bool {
+func less[O cmp.Ordered](a, b O) bool {
 	return a < b
 }
 
-func max[O constraints.Ordered](a, b O) O {
+func max[O cmp.Ordered](a, b O) O {
 	if a >= b {
 		return a
 	}
 	return b
 }
 
-func min[O constraints.Ordered](a, b O) O {
+func min[O cmp.Ordered](a, b O) O {
 	if a <= b {
 		return a
 	}

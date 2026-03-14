@@ -15,9 +15,8 @@
 package linq
 
 import (
+	"cmp"
 	"slices"
-
-	"golang.org/x/exp/constraints"
 )
 
 func (q Query[T]) OrderCmp(cmp CmpFn[T]) Query[T]     { return OrderCmp(q, cmp) }
@@ -87,4 +86,4 @@ func kba[T any, K Ord](key func(T) K) CmpFn[T] {
 	return func(a, b T) int { return Cmp(key(b), key(a)) }
 }
 
-type Ord = constraints.Ordered
+type Ord = cmp.Ordered
