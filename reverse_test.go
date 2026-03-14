@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +17,18 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestReverse(t *testing.T) {
 	t.Parallel()
 
 	assertQueryEqual(t, []int{5, 4, 3, 2, 1}, linq.Iota2(1, 6).Reverse())
+	assertQueryEqual(t, []int{5, 4, 3}, chanof(1, 2, 3, 4, 5).Reverse().Take(3))
 
 	assertOneShot(t, false, linq.Iota2(1, 6).Reverse())
 	assertOneShot(t, true, oneshot().Reverse())
 
-	assertSome(t, 5, linq.Iota2(1, 6).Reverse().FastCount())
-	assertNo(t, oneshot().Reverse().FastCount())
+	assertSome(t, 5, linq.Iota2(1, 6).Reverse().FastCount)
+	assertNo(t, oneshot().Reverse().FastCount)
 }

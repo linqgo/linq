@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestDeref(t *testing.T) {
@@ -32,22 +32,6 @@ func TestFalse(t *testing.T) {
 	t.Parallel()
 
 	assert.False(t, linq.False(56))
-}
-
-func TestLess(t *testing.T) {
-	t.Parallel()
-
-	assert.False(t, linq.Less(10, 5))
-	assert.False(t, linq.Less(5, 5))
-	assert.True(t, linq.Less(5, 10))
-}
-
-func TestGreater(t *testing.T) {
-	t.Parallel()
-
-	assert.False(t, linq.Greater("10", "5"))
-	assert.False(t, linq.Greater("5", "5"))
-	assert.True(t, linq.Greater("5", "10"))
 }
 
 func TestLongerMap(t *testing.T) {
@@ -106,4 +90,11 @@ func TestZero(t *testing.T) {
 	t.Parallel()
 
 	assert.Equal(t, "", linq.Zero[string](42))
+}
+
+func TestMust(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 42, must(42, true))
+	assert.Panics(t, func() { must(0, false) })
 }

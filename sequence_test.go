@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestSequenceEqual(t *testing.T) {
@@ -34,7 +34,7 @@ func TestSequenceEqual(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			seq, eeq := a == b, linq.SequenceEqual(qa, qb)
+			seq, eeq := a == b, linq.SequenceEqual(qa.Seq(), qb.Seq())
 			assert.Equal(t, seq, eeq, "%q == %q expected %v, got %v", a, b, seq, eeq)
 		}
 	}
@@ -69,16 +69,16 @@ func TestSequenceGreater(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			slt, elt := a > b, linq.SequenceGreater(qa, qb)
+			slt, elt := a > b, linq.SequenceGreater(qa.Seq(), qb.Seq())
 			assert.Equal(t, slt, elt, "%q > %q expected %v, got %v", a, b, slt, elt)
 		}
 	}
 }
 
-func TestSequenceGreaterComp(t *testing.T) {
+func TestSequenceGreaterCmp(t *testing.T) {
 	t.Parallel()
 
-	data := []string{"", "Hello", "abc", "z"}
+	data := []string{"", "hello", "abc", "z"}
 
 	for _, a := range data {
 		qa := linq.FromString(a)
@@ -86,9 +86,7 @@ func TestSequenceGreaterComp(t *testing.T) {
 			qb := linq.FromString(b)
 
 			slt := strings.ToUpper(a) > strings.ToUpper(b)
-			elt := qa.SequenceGreaterComp(qb, func(a, b rune) bool {
-				return unicode.ToUpper(a) < unicode.ToUpper(b)
-			})
+			elt := qa.SequenceGreaterCmp(qb, func(a, b rune) int { return int(a - b) })
 			assert.Equal(t, slt, elt, "%q > %q expected %v, got %v", a, b, slt, elt)
 		}
 	}
@@ -105,9 +103,7 @@ func TestSequenceLess(t *testing.T) {
 			qb := linq.FromString(b)
 
 			slt := strings.ToUpper(a) < strings.ToUpper(b)
-			elt := qa.SequenceLessComp(qb, func(a, b rune) bool {
-				return unicode.ToUpper(a) < unicode.ToUpper(b)
-			})
+			elt := qa.SequenceLessCmp(qb, func(a, b rune) int { return int(a - b) })
 			assert.Equal(t, slt, elt, "%q < %q expected %v, got %v", a, b, slt, elt)
 		}
 	}

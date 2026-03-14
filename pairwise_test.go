@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestPairwise(t *testing.T) {
@@ -25,11 +25,9 @@ func TestPairwise(t *testing.T) {
 
 	type pair = linq.KV[int, int]
 
-	assertQueryEqual(t,
-		[]pair{{1, 2}, {2, 3}, {3, 4}, {4, 5}},
-		linq.Pairwise(linq.From(1, 2, 3, 4, 5)),
-	)
-	assertQueryEqual(t, []pair{{1, 2}}, linq.Pairwise(linq.From(1, 2)))
-	assertQueryEqual(t, []pair{}, linq.Pairwise(linq.From(1)))
-	assertQueryEqual(t, []pair{}, linq.Pairwise(linq.None[int]()))
+	assertSeqEqual(t, []pair{{1, 2}, {2, 3}, {3, 4}, {4, 5}}, linq.Pairwise(linq.From(1, 2, 3, 4, 5).Seq()))
+	assertQueryEqual(t, []pair{{1, 2}, {2, 3}}, linq.PairwiseQuery(linq.From(1, 2, 3, 4, 5)).Take(2))
+	assertSeqEqual(t, []pair{{1, 2}}, linq.Pairwise(linq.From(1, 2).Seq()))
+	assertSeqEqual(t, []pair{}, linq.Pairwise(linq.From(1).Seq()))
+	assertSeqEqual(t, []pair{}, linq.Pairwise(linq.None[int]().Seq()))
 }

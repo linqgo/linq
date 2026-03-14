@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestReaderByte(t *testing.T) {
@@ -32,8 +32,12 @@ func TestReaderByte(t *testing.T) {
 	q := linq.FromByteReader(s)
 	assertQueryEqual(t, []byte{'h', 'e', 'l', 'l', 'o'}, q)
 
+	s = bufio.NewReader(bytes.NewBuffer([]byte("hello")))
+	q = linq.FromByteReader(s)
+	assertQueryEqual(t, []byte{'h', 'e', 'l', 'l'}, q.Take(4))
+
 	assertOneShot(t, true, q)
-	assertNo(t, q.FastCount())
+	assertNo(t, q.FastCount)
 }
 
 func TestRuneReaderRune(t *testing.T) {
@@ -44,7 +48,7 @@ func TestRuneReaderRune(t *testing.T) {
 	assertQueryEqual(t, []rune{'太', '容', '易', '!'}, q)
 
 	assert.True(t, q.OneShot())
-	assertNo(t, q.FastCount())
+	assertNo(t, q.FastCount)
 }
 
 func TestFromScanner(t *testing.T) {
@@ -55,7 +59,7 @@ func TestFromScanner(t *testing.T) {
 	assertQueryEqual(t, [][]byte{[]byte("hello"), []byte("world")}, q)
 
 	assertOneShot(t, true, q)
-	assertNo(t, q.FastCount())
+	assertNo(t, q.FastCount)
 }
 
 func TestScannerText(t *testing.T) {
@@ -66,7 +70,7 @@ func TestScannerText(t *testing.T) {
 	assertQueryEqual(t, []string{"hello", "world"}, q)
 
 	assertOneShot(t, true, q)
-	assertNo(t, q.FastCount())
+	assertNo(t, q.FastCount)
 }
 
 func TestBadReader(t *testing.T) {

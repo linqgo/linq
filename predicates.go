@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,32 +14,33 @@
 
 package linq
 
+import "iter"
+
 // All returns true if pred returns true for all elements in q, including if q
 // is empty.
 func (q Query[T]) All(pred func(t T) bool) bool {
-	return All(q, pred)
+	return All(q.Seq(), pred)
 }
 
 // Any returns true if pred returns true for at least one element in q.
 func (q Query[T]) Any(pred func(t T) bool) bool {
-	return Any(q, pred)
+	return Any(q.Seq(), pred)
 }
 
 // Empty returns true if q has no elements.
 func (q Query[T]) Empty() bool {
-	return Empty(q)
+	return Empty(q.Seq())
 }
 
-// All returns true if pred returns true for all elements in q, including if q
+// All returns true if pred returns true for all elements in seq, including if seq
 // is empty.
-func All[T any](q Query[T], pred func(t T) bool) bool {
-	return !Any(q, Not(pred))
+func All[T any](seq iter.Seq[T], pred func(t T) bool) bool {
+	return !Any(seq, Not(pred))
 }
 
-// Any returns true if pred returns true for at least one element in q.
-func Any[T any](q Query[T], pred func(t T) bool) bool {
-	next := q.Enumerator()
-	for t, ok := next().Get(); ok; t, ok = next().Get() {
+// Any returns true if pred returns true for at least one element in seq.
+func Any[T any](seq iter.Seq[T], pred func(t T) bool) bool {
+	for t := range seq {
 		if pred(t) {
 			return true
 		}
@@ -47,8 +48,11 @@ func Any[T any](q Query[T], pred func(t T) bool) bool {
 	return false
 }
 
-// Empty returns true if q has no elements.
-func Empty[T any](q Query[T]) bool {
-	t := q.Enumerator()()
-	return !t.Valid()
+// Empty returns true if seq has no elements.
+func Empty[T any](seq iter.Seq[T]) bool {
+	for t := range seq {
+		_ = t
+		return false
+	}
+	return true
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 var (
-	testNums  = linq.Select(linq.Iota2(1, 11), func(i int) float64 { return float64(i) })
+	testNums  = linq.Select(linq.Iota2(1, 11).Seq(), func(i int) float64 { return float64(i) })
 	emptyNums = linq.None[float64]()
 )
 
 func TestMax(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 10.0, linq.Max(data))
-		assertNo(t, linq.Max(emptyNums))
-	}
+	assertSome(t, 10.0, maybe(linq.Max(testNums)))
+	assertNo(t, maybe(linq.Max(emptyNums.Seq())))
+
+	// Also test with reversed data via Query
+	rev := linq.FromSeq(testNums).Reverse()
+	assertSome(t, 10.0, maybe(linq.Max(rev.Seq())))
 }
 
 func TestMaxBy(t *testing.T) {
@@ -45,19 +47,25 @@ func TestMaxBy(t *testing.T) {
 	name := func(kv Person) string { return kv.Key }
 	age := func(kv Person) int { return kv.Value }
 
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MaxBy(peeps, name))
-	assertNo(t, linq.MaxBy(noone, name))
-	assertSome(t, linq.NewKV("John", 42), linq.MaxBy(peeps, age))
-	assertNo(t, linq.MaxBy(noone, age))
+	assertSome(t, linq.NewKV("Sanjiv", 22), maybe(linq.MaxBy(peeps, name).Single()))
+	assertNo(t, maybe(linq.MaxBy(noone, name).Single()))
+	assertSome(t, linq.NewKV("John", 42), maybe(linq.MaxBy(peeps, age).Single()))
+	assertNo(t, maybe(linq.MaxBy(noone, age).Single()))
+
+	repeats := linq.From(1, 2, 4, 2, 3, 1)
+	mod3 := func(i int) int { return i % 3 }
+	assertQueryEqual(t, []int{2, 2}, (linq.MaxBy(repeats, mod3)))
+	assertQueryEqual(t, []int{2}, linq.MaxBy(repeats, mod3).Take(1))
 }
 
 func TestMin(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 1.0, linq.Min(data))
-		assertNo(t, linq.Min(emptyNums))
-	}
+	assertSome(t, 1.0, maybe(linq.Min(testNums)))
+	assertNo(t, maybe(linq.Min(emptyNums.Seq())))
+
+	rev := linq.FromSeq(testNums).Reverse()
+	assertSome(t, 1.0, maybe(linq.Min(rev.Seq())))
 }
 
 func TestMinBy(t *testing.T) {
@@ -71,8 +79,8 @@ func TestMinBy(t *testing.T) {
 	name := linq.Key[Person]
 	age := linq.Value[Person]
 
-	assertSome(t, linq.NewKV("Andrea", 35), linq.MinBy(peeps, name))
-	assertNo(t, linq.MinBy(noone, name))
-	assertSome(t, linq.NewKV("Sanjiv", 22), linq.MinBy(peeps, age))
-	assertNo(t, linq.MinBy(noone, age))
+	assertSome(t, linq.NewKV("Andrea", 35), maybe(linq.MinBy(peeps, name).Single()))
+	assertNo(t, maybe(linq.MinBy(noone, name).Single()))
+	assertSome(t, linq.NewKV("Sanjiv", 22), maybe(linq.MinBy(peeps, age).Single()))
+	assertNo(t, maybe(linq.MinBy(noone, age).Single()))
 }

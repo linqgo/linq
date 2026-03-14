@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,59 +14,59 @@
 
 package linq
 
+import "iter"
+
 // Longer returns true if and only if q has more elements than r.
 func (q Query[T]) Longer(r Query[T]) bool {
-	return Shorter(r, q)
+	return Shorter(r.Seq(), q.Seq())
 }
 
 // Shorter returns true if and only if q has fewer elements than r.
 func (q Query[T]) Shorter(r Query[T]) bool {
-	return Shorter(q, r)
+	return Shorter(q.Seq(), r.Seq())
 }
 
 // FastLonger returns true if and only if a has more elements than b and this
 // can be determined in O(1) time, otherwise returns ok = false.
-func (a Query[T]) FastLonger(b Query[T]) Maybe[bool] {
+func (a Query[T]) FastLonger(b Query[T]) (x bool, ok bool) {
 	return FastLonger(a, b)
 }
 
 // FastShorter returns true if and only if a has fewer elements than b and this
 // can be determined in O(1) time, otherwise returns ok = false.
-func (a Query[T]) FastShorter(b Query[T]) Maybe[bool] {
+func (a Query[T]) FastShorter(b Query[T]) (x bool, ok bool) {
 	return FastShorter(a, b)
 }
 
 // FastLonger returns true if and only if a has more elements than b and this
 // can be determined in O(1) time, otherwise returns ok = false.
-func FastLonger[A, B any](a Query[A], b Query[B]) Maybe[bool] {
+func FastLonger[A, B any](a Query[A], b Query[B]) (x bool, ok bool) {
 	return FastShorter(b, a)
 }
 
 // FastShorter returns true if and only if a has fewer elements than b and this
 // can be determined in O(1) time, otherwise returns ok = false.
-func FastShorter[A, B any](a Query[A], b Query[B]) Maybe[bool] {
-	diff, ok := fastLenDiff(a, b).Get()
-	return NewMaybe(diff < 0, ok)
+func FastShorter[A, B any](a Query[A], b Query[B]) (x bool, ok bool) {
+	diff, ok := fastLenDiff(a, b)
+	return diff < 0, ok
 }
 
 // Longer returns true if and only if a has more elements than b.
-func Longer[A, B any](a Query[A], b Query[B]) bool {
+func Longer[A, B any](a iter.Seq[A], b iter.Seq[B]) bool {
 	return Shorter(b, a)
 }
 
 // Shorter returns true if and only if a has fewer elements than b.
-func Shorter[A, B any](a Query[A], b Query[B]) bool {
-	if shorter, ok := FastShorter(a, b).Get(); ok {
-		return shorter
+func Shorter[A, B any](a iter.Seq[A], b iter.Seq[B]) bool {
+	var end int
+	for k, v := range zipSeq(a, b, &end) {
+		_, _ = k, v
 	}
-
-	var aok, bok bool
-	Drain(zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok))
-	return !aok && bok
+	return end < 0
 }
 
-func fastLenDiff[A, B any](a Query[A], b Query[B]) Maybe[int] {
-	alen, alenok := a.FastCount().Get()
-	blen, blenok := b.FastCount().Get()
-	return NewMaybe(alen-blen, alenok && blenok)
+func fastLenDiff[A, B any](a Query[A], b Query[B]) (int, bool) {
+	alen, alenok := a.FastCount()
+	blen, blenok := b.FastCount()
+	return alen - blen, alenok && blenok
 }

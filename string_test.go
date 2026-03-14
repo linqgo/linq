@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestString(t *testing.T) {
@@ -29,18 +29,18 @@ func TestString(t *testing.T) {
 	assertQueryEqual(t, []rune{}, linq.FromString(""))
 
 	s := linq.FromString("Hello, world!")
-	assert.Equal(t, "!dlrow ,olleH", linq.ToString(s.Reverse()))
+	assert.Equal(t, "!dlrow ,olleH", linq.ToString(s.Reverse().Seq()))
 
 	assert.Equal(t, "HELLO",
 		linq.ToString(linq.Select(
-			s.TakeWhile(func(r rune) bool { return r != ',' }),
+			s.TakeWhile(func(r rune) bool { return r != ',' }).Seq(),
 			func(r rune) rune { return unicode.ToUpper(r) },
 		)),
 	)
 
 	assertOneShot(t, false, linq.FromString("abc"))
 
-	assertSome(t, 3, linq.FromString("abc").FastCount())
+	assertSome(t, 3, linq.FromString("abc").FastCount)
 }
 
 func TestStringsJoin(t *testing.T) {

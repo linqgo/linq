@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 package stats
 
-import "github.com/linqgo/linq"
+import "github.com/linqgo/linq/v2"
 
 func aggregate[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) A {
 	t, _ := aggregateN(q, acc, agg)
@@ -22,12 +22,8 @@ func aggregate[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) A {
 }
 
 func aggregateN[T, A any](q linq.Query[T], acc A, agg func(a A, t T) A) (A, int) {
-	return aggregateNEnum(q.Enumerator(), acc, agg)
-}
-
-func aggregateNEnum[T, A any](next linq.Enumerator[T], acc A, agg func(a A, t T) A) (A, int) {
 	n := 0
-	for e, ok := next().Get(); ok; e, ok = next().Get() {
+	for e := range q.Seq() {
 		acc = agg(acc, e)
 		n++
 	}

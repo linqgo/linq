@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,24 @@
 
 package linq
 
-// ToSlice returns a slice containing the elements of q.
-func (q Query[T]) ToSlice() []T {
-	return ToSlice(q)
-}
+import "iter"
 
 // ToSlice returns a slice containing the elements of q.
-func ToSlice[T any](q Query[T]) []T {
-	next := q.Enumerator()
+func (q Query[T]) ToSlice() []T {
 	var ret []T
-	for t, ok := next().Get(); ok; t, ok = next().Get() {
+	if c, ok := q.FastCount(); ok && c > 0 {
+		ret = make([]T, 0, c)
+	}
+	for t := range q.Seq() {
+		ret = append(ret, t)
+	}
+	return ret
+}
+
+// ToSlice returns a slice containing the elements of seq.
+func ToSlice[T any](seq iter.Seq[T]) []T {
+	var ret []T
+	for t := range seq {
 		ret = append(ret, t)
 	}
 	return ret

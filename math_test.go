@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,26 +15,27 @@
 package linq_test
 
 import (
+	"iter"
 	"testing"
 
-	"github.com/linqgo/linq"
-
 	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/v2"
 )
 
 func TestAverage(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 5.5, linq.Average(data))
-		assertNo(t, linq.Average(emptyNums))
+	for _, data := range []iter.Seq[float64]{testNums, linq.FromSeq(testNums).Reverse().Seq()} {
+		assertSome(t, 5.5, maybe(linq.Average(data)))
 	}
+	assertNo(t, maybe(linq.Average(emptyNums.Seq())))
 }
 
 func TestSum(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []iter.Seq[float64]{testNums, linq.FromSeq(testNums).Reverse().Seq()} {
 		assert.EqualValues(t, 55, linq.Sum(data))
 	}
 }

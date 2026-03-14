@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,28 +17,39 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestUnion(t *testing.T) {
 	t.Parallel()
 
 	f := linq.From[int]
-	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3, 4, 5), f(2, 4)))
-	assertQueryEqual(t, []int{1, 2, 3}, linq.Union(f(1, 2, 3), f(1, 2, 3)))
-	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(1, 2, 3, 4, 5)))
-	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(4, 5)))
-	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3), f(3, 4, 5)))
+	assertSeqEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3, 4, 5).Seq(), f(2, 4).Seq()))
+	assertSeqEqual(t, []int{1, 2, 3}, linq.Union(f(1, 2, 3).Seq(), f(1, 2, 3).Seq()))
+	assertSeqEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3).Seq(), f(1, 2, 3, 4, 5).Seq()))
+	assertSeqEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3).Seq(), f(4, 5).Seq()))
+	assertSeqEqual(t, []int{1, 2, 3, 4, 5}, linq.Union(f(1, 2, 3).Seq(), f(3, 4, 5).Seq()))
+}
 
-	assertOneShot(t, false, linq.Union(f(1, 2, 3), f(3, 4, 5)))
-	assertOneShot(t, true, linq.Union(oneshot(), f(3, 4, 5)))
-	assertOneShot(t, true, linq.Union(f(1, 2, 3), oneshot()))
-	assertOneShot(t, true, linq.Union(oneshot(), oneshot()))
+func TestUnionQuery(t *testing.T) {
+	t.Parallel()
 
-	assertSome(t, 3, linq.Union(f(), f(3, 4, 5)).FastCount())
-	assertSome(t, 3, linq.Union(f(1, 2, 3), f()).FastCount())
-	assertNo(t, linq.Union(f(1, 2, 3), f(3, 4, 5)).FastCount())
-	assertNo(t, linq.Union(oneshot(), f(3, 4, 5)).FastCount())
-	assertNo(t, linq.Union(f(1, 2, 3), oneshot()).FastCount())
-	assertNo(t, linq.Union(oneshot(), oneshot()).FastCount())
+	f := linq.From[int]
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.UnionQuery(f(1, 2, 3, 4, 5), f(2, 4)))
+	assertQueryEqual(t, []int{1, 2, 3}, linq.UnionQuery(f(1, 2, 3), f(1, 2, 3)))
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.UnionQuery(f(1, 2, 3), f(1, 2, 3, 4, 5)))
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.UnionQuery(f(1, 2, 3), f(4, 5)))
+	assertQueryEqual(t, []int{1, 2, 3, 4, 5}, linq.UnionQuery(f(1, 2, 3), f(3, 4, 5)))
+
+	assertOneShot(t, false, linq.UnionQuery(f(1, 2, 3), f(3, 4, 5)))
+	assertOneShot(t, true, linq.UnionQuery(oneshot(), f(3, 4, 5)))
+	assertOneShot(t, true, linq.UnionQuery(f(1, 2, 3), oneshot()))
+	assertOneShot(t, true, linq.UnionQuery(oneshot(), oneshot()))
+
+	assertSome(t, 3, linq.UnionQuery(f(), f(3, 4, 5)).FastCount)
+	assertSome(t, 3, linq.UnionQuery(f(1, 2, 3), f()).FastCount)
+	assertNo(t, linq.UnionQuery(f(1, 2, 3), f(3, 4, 5)).FastCount)
+	assertNo(t, linq.UnionQuery(oneshot(), f(3, 4, 5)).FastCount)
+	assertNo(t, linq.UnionQuery(f(1, 2, 3), oneshot()).FastCount)
+	assertNo(t, linq.UnionQuery(oneshot(), oneshot()).FastCount)
 }

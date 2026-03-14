@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestFromMap(t *testing.T) {
@@ -51,11 +51,11 @@ func TestMustToMapKV(t *testing.T) {
 
 	assert.Equal(t,
 		map[int]int{1: 10, 2: 20},
-		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(2, 20))),
+		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(2, 20)).Seq()),
 	)
 
 	assert.Panics(t, func() {
-		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(1, 20)))
+		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(1, 20)).Seq())
 	})
 }
 
@@ -65,14 +65,14 @@ func TestMustToMap(t *testing.T) {
 	assert.Equal(t,
 		map[int]int{1: 1, 2: 4, 3: 9, 4: 16, 5: 25},
 		linq.MustToMap(
-			linq.From(1, 2, 3, 4, 5),
+			linq.From(1, 2, 3, 4, 5).Seq(),
 			func(i int) linq.KV[int, int] { return linq.NewKV(i, i*i) },
 		),
 	)
 
 	assert.Panics(t, func() {
 		linq.MustToMap(
-			linq.From(1, 2, 3, 4, 5),
+			linq.From(1, 2, 3, 4, 5).Seq(),
 			func(i int) linq.KV[int, int] { return linq.NewKV(i%2, i) },
 		)
 	})

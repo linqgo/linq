@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,35 @@
 
 package linq
 
+import "iter"
+
 type lookupBuilder[T any, K comparable] struct {
-	next Enumerator[T]
+	next func() (T, bool)
+	stop func()
 	key  func(T) K
 	lup  map[K][]T
 }
 
-func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBuilder[T, K] {
+func newLookupBuilder[T any, K comparable](seq iter.Seq[T], key func(T) K) *lookupBuilder[T, K] {
+	next, stop := iter.Pull(seq)
 	return &lookupBuilder[T, K]{
-		next: q.Enumerator(),
+		next: next,
+		stop: stop,
 		key:  key,
 		lup:  map[K][]T{},
 	}
 }
 
-func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
-	b := newLookupBuilder(q, key)
+func buildLookup[T any, K comparable](seq iter.Seq[T], key func(T) K) map[K][]T {
+	b := newLookupBuilder(seq, key)
+	defer b.Close()
 	for b.Next() { //nolint:revive
 	}
 	return b.Lookup()
 }
 
 func (b *lookupBuilder[T, K]) Next() bool {
-	if t, ok := b.next().Get(); ok {
+	if t, ok := b.next(); ok {
 		k := b.key(t)
 		b.lup[k] = append(b.lup[k], t)
 		return true
@@ -48,11 +54,31 @@ func (b *lookupBuilder[T, K]) Lookup() map[K][]T {
 	return b.lup
 }
 
-func (b *lookupBuilder[T, K]) Requery() Query[T] {
+func (b *lookupBuilder[T, K]) Requery() iter.Seq[T] {
 	return Concat(
-		SelectMany(FromMap(b.lup), func(kv KV[K, []T]) Query[T] {
-			return From(kv.Value...)
-		}),
-		newQueryFromEnumerator(b.next),
+		SelectMany(
+			func(yield func(KV[K, []T]) bool) {
+				for k, v := range b.lup {
+					if !yield(NewKV(k, v)) {
+						return
+					}
+				}
+			},
+			func(kv KV[K, []T]) iter.Seq[T] {
+				return seqSlice(kv.Value)
+			},
+		),
+		func(yield func(T) bool) {
+			for {
+				t, ok := b.next()
+				if !ok || !yield(t) {
+					return
+				}
+			}
+		},
 	)
+}
+
+func (b *lookupBuilder[T, K]) Close() {
+	b.stop()
 }

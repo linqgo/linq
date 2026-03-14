@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestTake(t *testing.T) {
@@ -32,8 +32,8 @@ func TestTake(t *testing.T) {
 	assertOneShot(t, false, data.Take(999))
 	assertOneShot(t, true, oneshot().Take(999))
 
-	assertSome(t, 5, data.Take(999).FastCount())
-	assertNo(t, oneshot().Take(999).FastCount())
+	assertSome(t, 5, data.Take(999).FastCount)
+	assertNo(t, oneshot().Take(999).FastCount)
 }
 
 func TestTakeLast(t *testing.T) {
@@ -50,8 +50,8 @@ func TestTakeLast(t *testing.T) {
 	assertOneShot(t, false, data.TakeLast(999))
 	assertOneShot(t, true, oneshot().TakeLast(999))
 
-	assertSome(t, 5, data.TakeLast(999).FastCount())
-	assertNo(t, oneshot().TakeLast(999).FastCount())
+	assertSome(t, 5, data.TakeLast(999).FastCount)
+	assertNo(t, oneshot().TakeLast(999).FastCount)
 }
 
 func TestTakeLastOneShot(t *testing.T) {
@@ -72,14 +72,14 @@ func TestTakeWhile(t *testing.T) {
 	assertOneShot(t, false, data.TakeWhile(linq.True[int]))
 	assertOneShot(t, true, oneshot().TakeWhile(linq.True[int]))
 
-	assertSome(t, 0, linq.None[int]().TakeWhile(linq.True[int]).FastCount())
-	assertNo(t, data.TakeWhile(linq.True[int]).FastCount())
-	assertNo(t, oneshot().TakeLast(999).FastCount())
+	assertSome(t, 0, linq.None[int]().TakeWhile(linq.True[int]).FastCount)
+	assertNo(t, data.TakeWhile(linq.True[int]).FastCount)
+	assertNo(t, oneshot().TakeLast(999).FastCount)
 }
 
 func TestTakeElementAt(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 2, linq.Take(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(1))
-	assertNo(t, linq.Take(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(3))
+	assertSome(t, 2, maybe(linq.From(1, 2, 3, 4, 5).Take(3).FastElementAt(1)))
+	assertNo(t, maybe(linq.From(1, 2, 3, 4, 5).Take(3).FastElementAt(3)))
 }

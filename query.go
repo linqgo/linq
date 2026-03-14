@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +14,23 @@
 
 package linq
 
+import (
+	"iter"
+)
+
 type QueryOption[T any] func(q *queryExtra[T], count *int)
 
 // Query represents a query that can be enumerated. This is the main Linq
 // object, with many methods defined against it. Most Linq functions take and
 // return instances of this type.
 type Query[T any] struct {
-	enumerator func() Enumerator[T]
-	count      int
-	extra      *queryExtra[T]
+	seq   iter.Seq[T]
+	count int
+	extra *queryExtra[T]
 }
 
-// NewQuery returns a new query based on a function that returns enumerators.
-func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T] {
-	q := Query[T]{enumerator: i, count: -1}
+func FromSeq[T any](seq iter.Seq[T], options ...QueryOption[T]) Query[T] {
+	q := Query[T]{seq: seq, count: -1}
 
 	for _, option := range options {
 		if option != nil {
@@ -46,20 +49,15 @@ func NewQuery[T any](i func() Enumerator[T], options ...QueryOption[T]) Query[T]
 	return q
 }
 
-// Enumerator returns an enumerator for q.
-func (q Query[T]) Enumerator() Enumerator[T] {
-	return q.enumerator()
-}
-
 func (q Query[T]) OneShot() bool {
 	return q.extra != nil && q.extra.oneShot
 }
 
-func (q Query[T]) lesser() lesserFunc[T] {
-	if q.extra != nil {
-		return q.extra.lesser
+func (q Query[T]) cmp() CmpFn[T] {
+	if q.extra != nil && q.extra.cmp != nil {
+		return q.extra.cmp
 	}
-	return nil
+	panic(Error("ThenBy not immediately preceded by OrderBy/ThenBy"))
 }
 
 func (q Query[T]) getter() Getter[T] {
@@ -152,20 +150,14 @@ func ComputedFastCountOption[T any](
 	return nil
 }
 
-func LesserOption[T any](lesser lesserFunc[T]) QueryOption[T] {
+func CmpersOption[T any](cmp CmpFn[T]) QueryOption[T] {
 	return func(e *queryExtra[T], _ *int) {
-		e.lesser = lesser
+		e.cmp = cmp
 	}
 }
 
 type queryExtra[T any] struct {
-	lesser  lesserFunc[T]
+	cmp     CmpFn[T]
 	get     Getter[T]
 	oneShot bool
-}
-
-type lesserFunc[T any] func([]T) func(i, j int) bool
-
-func newQueryFromEnumerator[T any](e Enumerator[T]) Query[T] {
-	return NewQuery(func() Enumerator[T] { return e })
 }

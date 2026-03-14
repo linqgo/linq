@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,21 @@
 
 package linq
 
-func (q Query[T]) Single() Maybe[T] {
-	return Single(q)
+import "iter"
+
+func (q Query[T]) Single() (T, bool) {
+	return Single(q.Seq())
 }
 
-func Single[T any](q Query[T]) Maybe[T] {
-	next := q.Enumerator()
-	if t, ok := next().Get(); ok {
-		if _, tooMany := next().Get(); !tooMany {
-			return Some(t)
+func Single[T any](seq iter.Seq[T]) (T, bool) {
+	i := -1
+	var t T
+	for v := range seq {
+		i++
+		if i == 1 {
+			return no[T]()
 		}
+		t = v
 	}
-	return No[T]()
+	return t, i == 0
 }

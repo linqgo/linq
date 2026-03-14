@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,42 +14,35 @@
 
 package linq
 
-import "golang.org/x/exp/constraints"
+import "github.com/linqgo/linq/v2/internal/num"
 
 // Repeat returns a query with value repeated count times.
-func Repeat[T any, I constraints.Integer](value T, count I) Query[T] {
+func Repeat[T any, I num.Integer](value T, count I) Query[T] {
 	if count == 0 {
 		return None[T]()
 	}
 	n := int(count)
-	return NewQuery(
-		func() Enumerator[T] {
-			var i I = 0
-			return func() Maybe[T] {
-				if i < count {
-					i++
-					return Some(value)
+	return FromSeq(
+		func(yield func(t T) bool) {
+			for range n {
+				if !yield(value) {
+					return
 				}
-				return No[T]()
 			}
 		},
 		FastCountOption[T](int(count)),
-		FastGetOption(func(i int) Maybe[T] {
-			return NewMaybe(value, 0 <= i && i < n)
+		FastGetOption(func(i int) (T, bool) {
+			return value, 0 <= i && i < n
 		}),
 	)
 }
 
 // RepeatForever returns a query with value repeated forever.
 func RepeatForever[T any](value T) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
-			return func() Maybe[T] {
-				return Some(value)
-			}
-		},
-		FastGetOption(func(i int) Maybe[T] {
-			return NewMaybe(value, 0 <= i)
+	return FromSeq(
+		func(yield func(t T) bool) { seqForever(func() bool { return yield(value) }) },
+		FastGetOption(func(i int) (T, bool) {
+			return value, 0 <= i
 		}),
 	)
 }

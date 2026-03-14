@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package linq
 import (
 	"bufio"
 	"io"
+	"iter"
 )
 
 // FromByteReader returns a query containing bytes read from r. Hint: use a
@@ -24,6 +25,10 @@ import (
 //
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
+//
+// Note: non-EOF read errors cause a panic. If the underlying reader may
+// produce transient errors, wrap it in error-handling logic before passing
+// it to this function.
 func FromByteReader(r io.ByteReader) Query[byte] {
 	return readerQuery(r.ReadByte)
 }
@@ -33,6 +38,10 @@ func FromByteReader(r io.ByteReader) Query[byte] {
 //
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
+//
+// Note: non-EOF read errors cause a panic. If the underlying reader may
+// produce transient errors, wrap it in error-handling logic before passing
+// it to this function.
 func FromRuneReader(r io.RuneReader) Query[rune] {
 	return readerQuery(func() (rune, error) {
 		c, _, err := r.ReadRune()
@@ -43,8 +52,8 @@ func FromRuneReader(r io.RuneReader) Query[rune] {
 // FromScanner reads a query containing []byte tokens read from s. Hint: use
 // (Scanner).Split() to control how the input stream is tokenized.
 func FromScanner(s *bufio.Scanner) Query[[]byte] {
-	return NewQuery(func() Enumerator[[]byte] {
-		return readerEnumerator(func() ([]byte, error) {
+	return FromSeq(
+		readerSeq(func() ([]byte, error) {
 			switch {
 			case s.Scan():
 				return s.Bytes(), nil
@@ -53,42 +62,46 @@ func FromScanner(s *bufio.Scanner) Query[[]byte] {
 			default:
 				return nil, s.Err()
 			}
-		})
-	}, OneShotOption[[]byte](true))
+		}),
+		OneShotOption[[]byte](true),
+	)
 }
 
 // FromScannerString reads a query containing string tokens read from s. Hint: use
 // (Scanner).Split() to control how the input stream is tokenized.
-func FromScannerString(r *bufio.Scanner) Query[string] {
-	return NewQuery(func() Enumerator[string] {
-		return readerEnumerator(func() (string, error) {
+func FromScannerString(s *bufio.Scanner) Query[string] {
+	return FromSeq(
+		readerSeq(func() (string, error) {
 			switch {
-			case r.Scan():
-				return r.Text(), nil
-			case r.Err() == nil:
+			case s.Scan():
+				return s.Text(), nil
+			case s.Err() == nil:
 				return "", io.EOF
 			default:
-				return "", r.Err()
+				return "", s.Err()
 			}
-		})
-	}, OneShotOption[string](true))
+		}),
+		OneShotOption[string](true),
+	)
 }
 
 func readerQuery[T any](read func() (T, error)) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		return readerEnumerator(read)
-	}, OneShotOption[T](true))
+	return FromSeq(readerSeq(read), OneShotOption[T](true))
 }
 
-func readerEnumerator[T any](read func() (T, error)) Enumerator[T] {
-	return func() Maybe[T] {
-		c, err := read()
-		if err == nil {
-			return Some(c)
+func readerSeq[T any](read func() (T, error)) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		for {
+			c, err := read()
+			if err != nil {
+				if err != io.EOF {
+					panic(err)
+				}
+				return
+			}
+			if !yield(c) {
+				return
+			}
 		}
-		if err != io.EOF {
-			panic(err)
-		}
-		return No[T]()
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
+
+func cmp(a, b int) int { return a - b }
 
 func TestFirstComp(t *testing.T) {
 	t.Parallel()
 
 	q := linq.From(2, 8, 5, 1)
-	assertSome(t, 8, q.FirstComp(linq.Greater[int]))
-	assertNo(t, linq.None[int]().FirstComp(linq.Greater[int]))
+	assertSome(t, 1, maybe(q.FirstCmp(cmp)))
+	assertNo(t, maybe(linq.None[int]().FirstCmp(cmp)))
 }
 
 func TestLastComp(t *testing.T) {
 	t.Parallel()
 
 	q := linq.From(2, 8, 5, 1)
-	assertSome(t, 8, q.LastComp(linq.Less[int]))
-	assertNo(t, linq.None[int]().LastComp(linq.Less[int]))
+	assertSome(t, 8, maybe(q.LastCmp(cmp)))
+	assertNo(t, maybe(linq.None[int]().LastCmp(cmp)))
 }

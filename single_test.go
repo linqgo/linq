@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestSingle(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 42, linq.From(42).Single())
-	assertNo(t, linq.From[int]().Single())
-	assertNo(t, linq.From(42, 56).Single())
+	assertSome(t, 42, maybe(linq.From(42).Single()))
+	assertNo(t, maybe(linq.From[int]().Single()))
+	assertNo(t, maybe(linq.From(42, 56).Single()))
 }

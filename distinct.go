@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,35 +14,34 @@
 
 package linq
 
-// Distinct contains elements from an query with duplicates removed.
-func Distinct[T comparable](q Query[T]) Query[T] {
-	return DistinctBy(q, Identity[T])
+import "iter"
+
+// Distinct returns a seq with duplicates removed.
+func Distinct[T comparable](seq iter.Seq[T]) iter.Seq[T] {
+	return DistinctBy(seq, Identity[T])
 }
 
-// DistinctBy contains elements from a query with duplicates removed. A selector
-// function produces values for comparison. E.g. for case-insensitive
-// deduplication:
-//
-//	DistinctBy(names, strings.ToUpper)
-func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
-	var fastCountOption QueryOption[T]
+// DistinctBy returns a seq with duplicates removed. A selector
+// function produces values for comparison.
+func DistinctBy[T any, U comparable](seq iter.Seq[T], sel func(t T) U) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		s := set[U]{}
+		for t := range seq {
+			if u := sel(t); !s.Has(u) {
+				s.Add(u)
+				if !yield(t) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// DistinctQuery returns a query with duplicates removed, preserving metadata.
+func DistinctQuery[T comparable](q Query[T]) Query[T] {
 	switch q.fastCount() {
 	case 0, 1:
 		return q
 	}
-
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		s := set[U]{}
-		return func() Maybe[T] {
-			var t T
-			var ok bool
-			for t, ok = next().Get(); ok; t, ok = next().Get() {
-				if u := sel(t); !s.Has(u) {
-					s.Add(u)
-					return Some(t)
-				}
-			}
-			return No[T]()
-		}
-	}, fastCountOption)
+	return Pipe(q, Distinct(q.Seq()))
 }

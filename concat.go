@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,30 @@
 
 package linq
 
+import "iter"
+
+// Concat returns the concatenation of seqs. Enumerating it enumerates the
+// elements of each seq in turn.
+func Concat[T any](seqs ...iter.Seq[T]) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, seq := range seqs {
+			seq(yield)
+		}
+	}
+}
+
 // Concat returns the concatenation of q and r. Enumerating it enumerates the
 // elements of each Query in turn.
 func (q Query[T]) Concat(r Query[T]) Query[T] {
-	return Concat(q, r)
+	return q.ConcatAll(r)
 }
 
-// Concat returns the concatenation of queries. Enumerating it enumerates the
-// elements of each Query in turn.
-func Concat[T any](queries ...Query[T]) Query[T] {
+// ConcatAll returns the concatenation of q with additional queries.
+func (q Query[T]) ConcatAll(queries ...Query[T]) Query[T] {
+	all := append([]Query[T]{q}, queries...)
+
 	oneshot := false
-	for _, q := range queries {
+	for _, q := range all {
 		if q.OneShot() {
 			oneshot = true
 			break
@@ -33,11 +46,11 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 	nonempty := 0
 	count := 0
-	for i, q := range queries {
+	for i, q := range all {
 		c := q.fastCount()
 		if c != 0 {
 			if nonempty < i {
-				queries[nonempty] = q
+				all[nonempty] = q
 			}
 			nonempty++
 			if c < 0 {
@@ -51,30 +64,14 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 	// Exactly one non-empty input?
 	if nonempty == 1 {
-		return queries[0]
+		return all[0]
 	}
-	queries = queries[:nonempty]
+	all = all[:nonempty]
 
-	return NewQuery(func() Enumerator[T] {
-		enumerators := make([]Enumerator[T], 0, len(queries))
-		for _, q := range queries {
-			enumerators = append(enumerators, q.Enumerator())
-		}
-		return concatEnumerators(enumerators...)
-	}, OneShotOption[T](oneshot), FastCountOption[T](count))
-}
-
-func concatEnumerators[T any](nexts ...Enumerator[T]) Enumerator[T] {
-	next := No[T]
-	return func() Maybe[T] {
-		for {
-			if t := next(); t.Valid() {
-				return t
-			}
-			if len(nexts) == 0 {
-				return No[T]()
-			}
-			next, nexts = nexts[0], nexts[1:]
-		}
+	seqs := make([]iter.Seq[T], len(all))
+	for i, q := range all {
+		seqs[i] = q.Seq()
 	}
+
+	return FromSeq(Concat(seqs...), OneShotOption[T](oneshot), FastCountOption[T](count))
 }

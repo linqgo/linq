@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,32 +14,42 @@
 
 package linq
 
-// Zip zips the elements pairwise from a and b into a single query, using the
+import "iter"
+
+// Zip zips the elements pairwise from a and b into a single seq, using the
 // zip function to produce output elements.
-func Zip[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
+func Zip[A, B, R any](a iter.Seq[A], b iter.Seq[B], zip func(a A, b B) R) iter.Seq[R] {
+	return func(yield func(R) bool) {
+		var end int
+		zipSeq(a, b, &end)(func(a A, b B) bool {
+			return yield(zip(a, b))
+		})
+	}
+}
+
+// ZipKV zips two seqs into a single seq of KV pairs.
+func ZipKV[K, V any](k iter.Seq[K], v iter.Seq[V]) iter.Seq[KV[K, V]] {
+	return Zip(k, v, NewKV[K, V])
+}
+
+// ZipQuery zips the elements pairwise from a and b into a single query, using
+// the zip function to produce output elements.
+func ZipQuery[A, B, R any](a Query[A], b Query[B], zip func(a A, b B) R) Query[R] {
 	ac, bc := a.fastCount(), b.fastCount()
 	if ac > bc {
 		ac = bc
 	}
 
-	return NewQuery(
-		func() Enumerator[R] {
-			var aok, bok bool
-			next := zipEnumerator(a.Enumerator(), b.Enumerator(), &aok, &bok)
-			return func() Maybe[R] {
-				if ab, ok := next().Get(); ok {
-					return Some(zip(ab.KV()))
-				}
-				return No[R]()
-			}
-		},
+	return FromSeq(
+		Zip(a.Seq(), b.Seq(), zip),
 		OneShotOption[R](a.OneShot() || b.OneShot()),
 		FastCountOption[R](ac),
 	)
 }
 
-func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
-	return Zip(k, v, NewKV[K, V])
+// ZipKVQuery zips two queries into a single query of KV pairs.
+func ZipKVQuery[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
+	return ZipQuery(k, v, NewKV[K, V])
 }
 
 // Unzip unzips a single query into two queries whose elements come from the R
@@ -51,44 +61,53 @@ func ZipKV[K, V any](k Query[K], v Query[V]) Query[KV[K, V]] {
 //	func DivMod(q Query[int], n int) (div, mod Query[int]) {
 //	    return Unzip(q, func(i int) (int, int) { return i / n, i % n })
 //	}
-func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (Query[R], Query[S]) {
+func Unzip[T, R, S any](q Query[T], unzip func(t T) (R, S)) (_ Query[R], _ Query[S], stop func()) {
 	if q.OneShot() {
-		q = q.Memoize()
+		q, stop = q.Memoize()
+	} else {
+		stop = func() {}
 	}
-	r := Select(q, func(t T) R {
+	rq := Pipe(q, Select(q.Seq(), func(t T) R {
 		r, _ := unzip(t)
 		return r
-	})
-	s := Select(q, func(t T) S {
+	}))
+	sq := Pipe(q, Select(q.Seq(), func(t T) S {
 		_, s := unzip(t)
 		return s
-	})
-	return r, s
+	}))
+	return rq, sq, stop
 }
 
-// Unzip unzips a query containing key/value pairs into a query containing keys
+// UnzipKV unzips a query containing key/value pairs into a query containing keys
 // and another query containing values.
-func UnzipKV[K, V any](q Query[KV[K, V]]) (Query[K], Query[V]) {
+func UnzipKV[K, V any](q Query[KV[K, V]]) (_ Query[K], _ Query[V], stop func()) {
 	return Unzip(q, func(kv KV[K, V]) (K, V) { return kv.Key, kv.Value })
 }
 
-func zipEnumerator[A, B any](
-	a Enumerator[A],
-	b Enumerator[B],
-	aok, bok *bool,
-) func() Maybe[KV[A, B]] {
-	return func() Maybe[KV[A, B]] {
-		x, xok := a().Get()
-		y, yok := b().Get()
-		if !xok {
-			*aok, *bok = xok, yok
-			return No[KV[A, B]]()
+func zipSeq[A, B any](a iter.Seq[A], b iter.Seq[B], end *int) iter.Seq2[A, B] {
+	return func(yield func(a A, b B) bool) {
+		xn, xs := iter.Pull(a)
+		defer xs()
+		yn, ys := iter.Pull(b)
+		defer ys()
+
+		for {
+			x, xok := xn()
+			y, yok := yn()
+			switch {
+			case xok && yok:
+				if !yield(x, y) {
+					return
+				}
+				continue
+			case xok:
+				*end = 1
+			case yok:
+				*end = -1
+			default:
+				*end = 0
+			}
+			return
 		}
-		if !yok {
-			*aok, *bok = xok, yok
-			return No[KV[A, B]]()
-		}
-		*aok, *bok = xok, yok
-		return Some(NewKV(x, y))
 	}
 }

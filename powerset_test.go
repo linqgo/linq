@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,30 +17,57 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/v2"
 )
 
 func TestPowerSet(t *testing.T) {
 	t.Parallel()
 
+	// Test free function (iter.Seq version)
+	var result [][]int
+	for s := range linq.PowerSet(linq.From(1, 4).Seq()) {
+		result = append(result, toSlice(s))
+	}
+	assert.ElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, result)
+}
+
+func TestPowerSetQuery(t *testing.T) {
+	t.Parallel()
+
 	powerset := func(q linq.Query[int]) linq.Query[[]int] {
-		return linq.Select(linq.PowerSet(q), linq.ToSlice[int])
+		pq := linq.PowerSetQuery(q)
+		fc, _ := pq.FastCount()
+		return linq.Pipe(pq, linq.Select(pq.Seq(), func(q linq.Query[int]) []int {
+			return q.ToSlice()
+		}), linq.FastCountOption[[]int](fc))
 	}
 
 	assertQueryElementsMatch(t, [][]int{nil}, powerset(linq.None[int]()))
 	assertQueryElementsMatch(t, [][]int{nil, {1}}, powerset(linq.From(1)))
-	assertQueryElementsMatch(t,
-		[][]int{nil, {1}, {4}, {1, 4}},
-		powerset(linq.From(1, 4)),
-	)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, powerset(linq.From(1, 4)))
 	q := powerset(linq.From(1, 4, 9))
-	assertQueryElementsMatch(t,
-		[][]int{nil, {1}, {4}, {1, 4}, {9}, {1, 9}, {4, 9}, {1, 4, 9}},
-		q)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}, {9}, {1, 9}, {4, 9}, {1, 4, 9}}, q)
+	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, q.Take(4))
+
+	ee := make([]int, 0, 4)
+	for s := range linq.PowerSetQuery(linq.From(1, 2, 3, 4, 5)).Seq() {
+		n := 0
+		ee = ee[:0]
+		for i, e := range s.ISeq() {
+			assert.True(t, i < e)
+			ee = append(ee, e)
+			if n == 2 {
+				break
+			}
+			n++
+		}
+	}
 
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, powerset(oneshot()))
 
-	assertSome(t, 8, q.FastCount())
-	assertNo(t, powerset(oneshot()).FastCount())
+	assertSome(t, 8, q.FastCount)
+	assertNo(t, powerset(oneshot()).FastCount)
 }

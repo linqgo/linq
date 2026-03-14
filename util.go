@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
 // limitations under the License.
 
 package linq
-
-import "golang.org/x/exp/constraints"
 
 // Identity returns t unmodified.
 func Identity[T any](t T) T {
@@ -34,16 +32,6 @@ func Equal[T comparable](a, b T) bool {
 // False returns false, ignoring the input value.
 func False[T any](T) bool {
 	return false
-}
-
-// Greater returns a > b.
-func Greater[T constraints.Ordered](a, b T) bool {
-	return a > b
-}
-
-// Less returns a < b.
-func Less[T constraints.Ordered](a, b T) bool {
-	return a < b
 }
 
 // LongerSlice returns len(a) > len(b).
@@ -102,11 +90,9 @@ func Zero[U, T any](T) U {
 	return u
 }
 
-// Drain consumes next and returns the number of elements consumed.
-func Drain[T any](next Enumerator[T]) int {
-	n := 0
-	for t := next(); t.Valid(); t = next() {
-		n++
+func must[T any](t T, ok bool) T {
+	if !ok {
+		panic("no value")
 	}
-	return n
+	return t
 }

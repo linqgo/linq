@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,27 @@
 
 package num
 
-import (
-	"math"
+import "math"
 
-	"golang.org/x/exp/constraints"
-)
+type Integer interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
+}
+
+type Float interface {
+	~float32 | ~float64
+}
+
+type Complex interface {
+	~complex64 | ~complex128
+}
 
 type Number interface {
-	RealNumber | constraints.Complex
+	RealNumber | Complex
 }
 
 type RealNumber interface {
-	constraints.Integer | constraints.Float
+	Integer | Float
 }
 
 var NaN = math.NaN()

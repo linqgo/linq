@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,31 +15,41 @@
 package linq_test
 
 import (
+	"iter"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
-func assertNo[T any](t *testing.T, m linq.Maybe[T]) bool {
-	t.Helper()
-
-	v, valid := m.Get()
-	return assert.False(t, valid, v)
+func maybe[T any](t T, ok bool) func() (T, bool) {
+	return func() (T, bool) { return t, ok }
 }
 
-func assertSome[T any](t *testing.T, expected T, m linq.Maybe[T]) bool {
-	t.Helper()
-
-	v, valid := m.Get()
-	return assert.True(t, valid) && assert.Equal(t, expected, v)
+func must[T any](t T, ok bool) T {
+	if !ok {
+		panic("no value")
+	}
+	return t
 }
 
-func assertSomeQuery[T any](t *testing.T, expected []T, m linq.Maybe[linq.Query[T]]) bool {
+func assertSome[T any](t *testing.T, expected T, next func() (T, bool)) bool {
+	t.Helper()
+	v, ok := next()
+	return assert.True(t, ok) && assert.Equal(t, expected, v)
+}
+
+func assertNo[T any](t *testing.T, next func() (T, bool)) bool {
+	t.Helper()
+	v, ok := next()
+	return assert.False(t, ok, v)
+}
+
+func assertHaveQuery[T any](t *testing.T, expected []T, m func() (linq.Query[T], bool)) bool {
 	t.Helper()
 
-	v, valid := m.Get()
+	v, valid := m()
 	return assert.True(t, valid) && assertQueryEqual(t, expected, v)
 }
 
@@ -51,8 +61,7 @@ func assertQueryElementsMatch[T any](t *testing.T, expected []T, q linq.Query[T]
 		return true
 	}
 	return assert.Equal(t, q.Empty(), q.OneShot()) &&
-		assert.ElementsMatch(t, expected, s) &&
-		assertExhaustedEnumeratorBehavesWell(t, q)
+		assert.ElementsMatch(t, expected, s)
 }
 
 func assertQueryEqual[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
@@ -62,17 +71,7 @@ func assertQueryEqual[T any](t *testing.T, expected []T, q linq.Query[T]) bool {
 	if len(s) == 0 && len(expected) == 0 {
 		return true
 	}
-	return assert.Equal(t, expected, s) &&
-		assertExhaustedEnumeratorBehavesWell(t, q)
-}
-
-func assertExhaustedEnumeratorBehavesWell[T any](t *testing.T, q linq.Query[T]) bool {
-	t.Helper()
-
-	next := q.Enumerator()
-	linq.Drain(next)
-	var m linq.Maybe[T]
-	return assert.NotPanics(t, func() { m = next() }) && assertNo(t, m)
+	return assert.Equal(t, expected, s)
 }
 
 func assertAll[R any](
@@ -106,4 +105,21 @@ func chanof[T any](t ...T) linq.Query[T] {
 func assertOneShot[T any](t *testing.T, oneshot bool, q linq.Query[T]) bool {
 	t.Helper()
 	return assert.Equal(t, oneshot, q.OneShot())
+}
+
+func toSlice[T any](seq iter.Seq[T]) []T {
+	var s []T
+	for t := range seq {
+		s = append(s, t)
+	}
+	return s
+}
+
+func assertSeqEqual[T any](t *testing.T, expected []T, seq iter.Seq[T]) bool {
+	t.Helper()
+	s := toSlice(seq)
+	if len(s) == 0 && len(expected) == 0 {
+		return true
+	}
+	return assert.Equal(t, expected, s)
 }

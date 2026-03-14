@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestGroupBy(t *testing.T) {
@@ -28,10 +28,9 @@ func TestGroupBy(t *testing.T) {
 	mod2 := func(t int) int { return t % 2 }
 
 	q := linq.GroupBy(linq.From(1, 2, 3, 4, 5), mod2)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMap(q,
+		linq.MustToMap(q.Seq(),
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
@@ -41,9 +40,9 @@ func TestGroupBy(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, linq.GroupBy(oneshot(), mod2))
 
-	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
+	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount)
+	assertNo(t, q.FastCount)
+	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount)
 }
 
 func TestGroupBySlices(t *testing.T) {
@@ -51,19 +50,26 @@ func TestGroupBySlices(t *testing.T) {
 
 	mod2 := func(t int) int { return t % 2 }
 
-	q := linq.GroupBySlices(linq.From(1, 2, 3, 4, 5), mod2)
-	assertExhaustedEnumeratorBehavesWell(t, q)
+	// Test the free function (iter.Seq version)
+	result := make(map[int][]int)
+	for kv := range linq.GroupBySlices(linq.From(1, 2, 3, 4, 5).Seq(), mod2) {
+		result[kv.Key] = kv.Value
+	}
+	assert.Equal(t, map[int][]int{0: {2, 4}, 1: {1, 3, 5}}, result)
+
+	// Test the Query version
+	q := linq.GroupBySlicesQuery(linq.From(1, 2, 3, 4, 5), mod2)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMapKV(q),
+		linq.MustToMapKV(q.Seq()),
 	)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.GroupBySlices(linq.FromChannel(make(chan int)), mod2))
+	assertOneShot(t, true, linq.GroupBySlicesQuery(linq.FromChannel(make(chan int)), mod2))
 
-	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount())
+	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount)
+	assertNo(t, q.FastCount)
+	assertNo(t, linq.GroupBy(slowcount, mod2).FastCount)
 }
 
 func TestGroupBySelect(t *testing.T) {
@@ -73,10 +79,9 @@ func TestGroupBySelect(t *testing.T) {
 		linq.From(1, 2, 3, 4, 5),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMap(q,
+		linq.MustToMap(q.Seq(),
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
@@ -92,40 +97,50 @@ func TestGroupBySelect(t *testing.T) {
 	assertSome(t, 0, linq.GroupBySelect(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
-	assertNo(t, q.FastCount())
+	).FastCount)
+	assertNo(t, q.FastCount)
 	assertNo(t, linq.GroupBySelect(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
+	).FastCount)
 }
 
 func TestGroupBySelectSlices(t *testing.T) {
 	t.Parallel()
 
-	q := linq.GroupBySelectSlices(
+	// Test the free function (iter.Seq version)
+	result := make(map[int][]int)
+	for kv := range linq.GroupBySelectSlices(
+		linq.From(1, 2, 3, 4, 5).Seq(),
+		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
+	) {
+		result[kv.Key] = kv.Value
+	}
+	assert.Equal(t, map[int][]int{0: {12, 14}, 1: {11, 13, 15}}, result)
+
+	// Test the Query version
+	q := linq.GroupBySelectSlicesQuery(
 		linq.From(1, 2, 3, 4, 5),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	)
-	assertExhaustedEnumeratorBehavesWell(t, q)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMapKV(q),
+		linq.MustToMapKV(q.Seq()),
 	)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.GroupBySelectSlices(
+	assertOneShot(t, true, linq.GroupBySelectSlicesQuery(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertSome(t, 0, linq.GroupBySelectSlices(
+	assertSome(t, 0, linq.GroupBySelectSlicesQuery(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.GroupBySelectSlices(
+	).FastCount)
+	assertNo(t, q.FastCount)
+	assertNo(t, linq.GroupBySelectSlicesQuery(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
-	).FastCount())
+	).FastCount)
 }

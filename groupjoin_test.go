@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestGroupJoin(t *testing.T) {
@@ -55,18 +55,17 @@ func TestGroupJoin(t *testing.T) {
 	// type that contains a person's name and
 	// a collection of names of the pets they own.
 	query := func(people linq.Query[Person], pets linq.Query[Pet]) linq.Query[Ownership] {
-		return linq.GroupJoin(people, pets,
+		return linq.GroupJoinQuery(people, pets,
 			linq.Identity[Person],
 			func(pet Pet) Person { return pet.Owner },
 			func(person Person, pets linq.Query[Pet]) Ownership {
 				return Ownership{
 					Owner: person.Name,
-					Pets:  linq.Select(pets, func(pet Pet) string { return pet.Name }).ToSlice(),
+					Pets:  toSlice(linq.Select(pets.Seq(), func(pet Pet) string { return pet.Name })),
 				}
 			},
 		)
 	}
-	assertExhaustedEnumeratorBehavesWell(t, query(people, pets))
 
 	assert.Equal(t,
 		[]Ownership{
@@ -98,11 +97,11 @@ func TestGroupJoin(t *testing.T) {
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet))))
 
-	assertSome(t, 3, query(people, pets).FastCount())
-	assertNo(t, query(linq.FromChannel(make(chan Person)), pets).FastCount())
-	assertSome(t, 3, query(people, linq.FromChannel(make(chan Pet))).FastCount())
+	assertSome(t, 3, query(people, pets).FastCount)
+	assertNo(t, query(linq.FromChannel(make(chan Person)), pets).FastCount)
+	assertSome(t, 3, query(people, linq.FromChannel(make(chan Pet))).FastCount)
 	assertNo(t, query(
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet)),
-	).FastCount())
+	).FastCount)
 }

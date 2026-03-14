@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,45 +14,14 @@
 
 package linq
 
+import "iter"
+
 // Count returns the number of elements in q.
 func (q Query[T]) Count() int {
-	return Count(q)
-}
-
-// CountLimit returns a limited count, c, such that min(limit, Count(q)) <= c <=
-// Count(q). This is useful for learning something about the size of the input
-// without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
-//
-// If the query has a FastCount(), the return value is the true count.
-func (q Query[T]) CountLimit(limit int) int {
-	return CountLimit(q, limit)
-}
-
-// CountLimitTrue returns a limited count, c, such that min(limit, Count(q)) <=
-// c <= Count(q). This is useful for learning something about the size of the
-// input without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
-//
-// If the query has a FastCount(), the return value is the true count.
-//
-// The second return value is true if the returned count is the true count.
-func (q Query[T]) CountLimitTrue(limit int) (int, bool) {
-	return CountLimitTrue(q, limit)
-}
-
-// FastCount returns the number of elements in q if it can be computed in O(1)
-// time, otherwise the second return value is false.
-func (q Query[T]) FastCount() Maybe[int] {
-	return FastCount(q)
-}
-
-// Count returns the number of elements in q.
-func Count[T any](q Query[T]) int {
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		return c
 	}
-	return Drain(q.Enumerator())
+	return Count(q.Seq())
 }
 
 // CountLimit returns a limited count, c, such that min(limit, Count(q)) <= c <=
@@ -60,34 +29,47 @@ func Count[T any](q Query[T]) int {
 // without necessarily consuming it. One example is activating pagination
 // controls for a result with at least 11 elements.
 //
-// If the query has a FastCount(), the return value is the true count.
-func CountLimit[T any](q Query[T], limit int) int {
-	c, _ := CountLimitTrue(q, limit)
-	return c
-}
-
-// CountLimitTrue returns a limited count, c, such that min(limit, Count(q)) <=
-// c <= Count(q). This is useful for learning something about the size of the
-// input without necessarily consuming it. One example is activating pagination
-// controls for a result with at least 11 elements.
-//
-// If the query has a FastCount(), the return value is the true count.
-//
-// The second return value is true if the returned count is the true count.
-func CountLimitTrue[T any](q Query[T], limit int) (int, bool) {
-	if c, ok := FastCount(q).Get(); ok {
-		return c, true
+// If the query has a FastCount() the return value is the true count.
+func (q Query[T]) CountLimit(limit int) int {
+	if c, ok := q.FastCount(); ok {
+		return min(limit, c)
 	}
-
-	if n := Drain(Take(q, limit+1).Enumerator()); n <= limit {
-		return n, true
-	}
-	return limit, false
+	return CountLimit(q.Seq(), limit)
 }
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
-func FastCount[T any](q Query[T]) Maybe[int] {
+func (q Query[T]) FastCount() (int, bool) {
 	count := q.fastCount()
-	return NewMaybe(count, count >= 0)
+	return count, count >= 0
+}
+
+// Count returns the number of elements in seq.
+func Count[T any](seq iter.Seq[T]) int {
+	n := 0
+	for t := range seq {
+		_ = t
+		n++
+	}
+	return n
+}
+
+// CountLimit returns a limited count. This is useful for learning something
+// about the size of the input without having to consume all of it. One example
+// is determining whether pagination is required.
+//
+// To count up to N, but also learn if there are more than N elements:
+//
+//	n := CountLimit(N + 1)
+//	n, more := min(n, N), n > N
+func CountLimit[T any](seq iter.Seq[T], limit int) int {
+	n := 0
+	for t := range seq {
+		if n == limit {
+			return n
+		}
+		_ = t
+		n++
+	}
+	return n
 }

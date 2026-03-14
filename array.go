@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,18 +24,11 @@ func ArrayFromLenGet[T any](n int, get func(i int) T) Array[T] {
 }
 
 func FromArray[T any](a Array[T]) Query[T] {
-	return NewQuery(
-		func() Enumerator[T] {
-			n := a.Len()
-			i := 0
-			return func() Maybe[T] {
-				if i == n {
-					return No[T]()
-				}
-				t := a.Get(i)
-				i++
-				return Some(t)
-			}
+	return FromSeq(
+		func(yield func(T) bool) {
+			seqN(a.Len())(func(i int) bool {
+				return yield(a.Get(i))
+			})
 		},
 		FastCountOption[T](a.Len()),
 		FastGetOption(ArrayGetter(a)),
@@ -74,5 +67,8 @@ func (a queryArray[T]) Len() int {
 }
 
 func (a queryArray[T]) Get(i int) T {
-	return a.q.ElementAt(i).Must()
+	if t, ok := a.q.ElementAt(i); ok {
+		return t
+	}
+	panic("element not found")
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,10 +19,5 @@ package linq
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
 func FromChannel[T any](c <-chan T) Query[T] {
-	return NewQuery(func() Enumerator[T] {
-		return func() Maybe[T] {
-			t, ok := <-c
-			return NewMaybe(t, ok)
-		}
-	}, OneShotOption[T](true))
+	return FromSeq(seqChan(c), OneShotOption[T](true))
 }

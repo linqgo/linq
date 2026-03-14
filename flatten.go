@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,30 @@
 
 package linq
 
-func Flatten[T any](q Query[Query[T]]) Query[T] {
-	return SelectMany(q, Identity[Query[T]])
+import "iter"
+
+// Flatten flattens a seq of seqs into a single seq.
+func Flatten[T any](seq iter.Seq[iter.Seq[T]]) iter.Seq[T] {
+	return SelectMany(seq, func(s iter.Seq[T]) iter.Seq[T] { return s })
 }
 
-func FlattenSlices[T any](q Query[[]T]) Query[T] {
-	return SelectMany(q, func(t []T) Query[T] { return From(t...) })
+// FlattenSlices flattens a seq of slices into a single seq.
+func FlattenSlices[T any](seq iter.Seq[[]T]) iter.Seq[T] {
+	return SelectMany(seq, func(s []T) iter.Seq[T] { return seqSlice(s) })
+}
+
+// FlattenQuery flattens a Query of Queries into a single Query.
+func FlattenQuery[T any](q Query[Query[T]]) Query[T] {
+	return Pipe(q,
+		SelectMany(q.Seq(), func(inner Query[T]) iter.Seq[T] { return inner.Seq() }),
+		FastCountIfEmptyOption[T](q.fastCount()),
+	)
+}
+
+// FlattenSlicesQuery flattens a Query of slices into a single Query.
+func FlattenSlicesQuery[T any](q Query[[]T]) Query[T] {
+	return Pipe(q,
+		FlattenSlices(q.Seq()),
+		FastCountIfEmptyOption[T](q.fastCount()),
+	)
 }

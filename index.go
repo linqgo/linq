@@ -1,10 +1,10 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0//
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,28 +14,43 @@
 
 package linq
 
-func Index[T any](q Query[T]) Query[KV[int, T]] {
-	return IndexFrom(q, 0)
+import "iter"
+
+// Index returns a seq of index-value pairs starting from 0.
+func Index[T any](seq iter.Seq[T]) iter.Seq[KV[int, T]] {
+	return IndexFrom(seq, 0)
 }
 
-func IndexFrom[T any](q Query[T], start int) Query[KV[int, T]] {
+// IndexFrom returns a seq of index-value pairs starting from start.
+func IndexFrom[T any](seq iter.Seq[T], start int) iter.Seq[KV[int, T]] {
+	return func(yield func(KV[int, T]) bool) {
+		i := 0
+		seq(func(t T) bool {
+			cont := yield(NewKV(start+i, t))
+			i++
+			return cont
+		})
+	}
+}
+
+// IndexQuery returns a query of index-value pairs starting from 0.
+func IndexQuery[T any](q Query[T]) Query[KV[int, T]] {
+	return IndexFromQuery(q, 0)
+}
+
+// IndexFromQuery returns a query of index-value pairs starting from start.
+func IndexFromQuery[T any](q Query[T], start int) Query[KV[int, T]] {
 	var get Getter[KV[int, T]]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[KV[int, T]] {
-			if t, ok := qget(i).Get(); ok {
-				return Some(NewKV(start+i, t))
+		get = func(i int) (KV[int, T], bool) {
+			if t, ok := qget(i); ok {
+				return NewKV(start+i, t), true
 			}
-			return No[KV[int, T]]()
+			return no[KV[int, T]]()
 		}
 	}
-	return PipeOneToOne(q,
-		func() func(t T) KV[int, T] {
-			i := start - 1
-			return func(t T) KV[int, T] {
-				i++
-				return NewKV(i, t)
-			}
-		},
+	return Pipe(q, IndexFrom(q.Seq(), start),
 		FastGetOption(get),
+		FastCountOption[KV[int, T]](q.fastCount()),
 	)
 }

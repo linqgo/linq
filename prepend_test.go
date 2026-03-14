@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestPrepend(t *testing.T) {
 	t.Parallel()
 
-	q := linq.Prepend(6, 7)(linq.From(1, 2, 3, 4, 5)).Prepend(8, 9)
+	seq := linq.Prepend(6, 7)(linq.From(1, 2, 3, 4, 5).Seq())
+	assertSeqEqual(t, []int{6, 7, 1, 2, 3, 4, 5}, seq)
+
+	q := linq.From(1, 2, 3, 4, 5).Prepend(6, 7).Prepend(8, 9)
 	assertQueryEqual(t, []int{8, 9, 6, 7, 1, 2, 3, 4, 5}, q)
 
 	assertOneShot(t, false, q)

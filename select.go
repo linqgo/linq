@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,53 +14,47 @@
 
 package linq
 
+import "iter"
+
 // Select returns a query with the elements of q transformed by sel.
 //
 // Caveat: The output must be of the same type. For transforms to different
 // types, use the corresponding free function.
 func (q Query[T]) Select(sel func(t T) T) Query[T] {
-	return Select(q, sel)
-}
-
-// Select returns a query with the elements of q transformed by sel.
-func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
-	var get Getter[U]
+	var get Getter[T]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[U] {
-			if t, ok := qget(i).Get(); ok {
-				return Some(sel(t))
+		get = func(i int) (T, bool) {
+			if t, ok := qget(i); ok {
+				return sel(t), true
 			}
-			return No[U]()
+			return no[T]()
 		}
 	}
-	return PipeOneToOne(q, func() func(t T) U { return sel }, FastGetOption(get))
+	return Pipe(q, Select(q.Seq(), sel),
+		FastGetOption(get),
+		FastCountOption[T](q.fastCount()),
+	)
 }
 
-// SelectMany projects each element of q to a subquery and flattens the
-// subqueries into a single query.
-func SelectMany[T, U any](q Query[T], project func(T) Query[U]) Query[U] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[U] {
-		var t *T
-		var tNext Enumerator[U]
-		return func() Maybe[U] {
-			var u U
-			ok := false
-			for !ok {
-				if t == nil {
-					var v T
-					t = &v
-					if *t, ok = next().Get(); !ok {
-						return No[U]()
-					}
-					tNext = project(*t).Enumerator()
-				}
+// Select returns a seq with the elements of seq transformed by sel.
+func Select[T, U any](seq iter.Seq[T], sel func(t T) U) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		seq(func(t T) bool {
+			return yield(sel(t))
+		})
+	}
+}
 
-				u, ok = tNext().Get()
-				if !ok {
-					t = nil
+// SelectMany projects each element of seq to a sub-sequence and flattens the
+// sub-sequences into a single sequence.
+func SelectMany[T, U any](seq iter.Seq[T], project func(T) iter.Seq[U]) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		for t := range seq {
+			for u := range project(t) {
+				if !yield(u) {
+					return
 				}
 			}
-			return NewMaybe(u, ok)
 		}
-	}, FastCountIfEmptyOption[U](q.fastCount()))
+	}
 }

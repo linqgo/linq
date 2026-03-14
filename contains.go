@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package linq
 
 // Contains returns true if and only if t is an element in q.
 func Contains[T comparable](q Query[T], t T) bool {
-	next := q.Enumerator()
-	for e, ok := next().Get(); ok; e, ok = next().Get() {
+	for e := range q.Seq() {
 		if e == t {
 			return true
 		}

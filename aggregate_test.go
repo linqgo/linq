@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func add(a, b int) int { return a + b }
@@ -28,8 +28,8 @@ func add(a, b int) int { return a + b }
 func TestAggregate(t *testing.T) {
 	t.Parallel()
 
-	assertNo(t, linq.Iota1(0).Aggregate(add))
-	assertSome(t, 15, linq.Iota2(1, 6).Aggregate(add))
+	assertNo(t, maybe(linq.Iota1(0).Aggregate(add)))
+	assertSome(t, 15, maybe(linq.Iota2(1, 6).Aggregate(add)))
 }
 
 func TestAggregateSeed(t *testing.T) {
@@ -46,7 +46,7 @@ func TestAggregateSeed(t *testing.T) {
 	)
 
 	assert.Equal(t, ".1.2.3.4.5",
-		linq.AggregateSeed(linq.From(1, 2, 3, 4, 5), "",
+		linq.AggregateSeed(linq.From(1, 2, 3, 4, 5).Seq(), "",
 			func(a string, b int) string { return fmt.Sprintf("%s.%d", a, b) },
 		),
 	)

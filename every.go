@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,38 +14,36 @@
 
 package linq
 
+import "iter"
+
 // Every returns a query that contains every nth element from q.
 func (q Query[T]) Every(n int) Query[T] {
-	return Every(q, n)
+	return q.EveryFrom(0, n)
 }
 
-// Every returns a query that contains every nth element from q, starting at the
+// EveryFrom returns a query that contains every nth element from q, starting at the
 // start-th element.
 func (q Query[T]) EveryFrom(start, n int) Query[T] {
-	return EveryFrom(q, start, n)
+	return Pipe(q, EveryFrom(q.Seq(), start, n),
+		ComputedFastCountOption[T](q.fastCount(), func(count int) int {
+			return (count-start-1)/n + 1
+		}))
 }
 
-// Every returns a query that contains every nth element from q.
-func Every[T any](q Query[T], n int) Query[T] {
-	return EveryFrom(q, 0, n)
+// Every returns a seq that contains every nth element from seq.
+func Every[T any](seq iter.Seq[T], n int) iter.Seq[T] {
+	return EveryFrom(seq, 0, n)
 }
 
-// Every returns a query that contains every nth element from q, starting at the
+// EveryFrom returns a seq that contains every nth element from seq, starting at the
 // start-th element.
-func EveryFrom[T any](q Query[T], start, n int) Query[T] {
-	return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-		skip := start
-		return func() Maybe[T] {
-			for t := next(); t.Valid(); t = next() {
-				if skip == 0 {
-					skip = n - 1
-					return t
-				}
-				skip--
-			}
-			return No[T]()
-		}
-	}, ComputedFastCountOption[T](q.fastCount(), func(count int) int {
-		return (count-start-1)/n + 1
-	}))
+func EveryFrom[T any](seq iter.Seq[T], start, n int) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		i := 0
+		seq(func(t T) bool {
+			cont := !(start <= i && (i-start)%n == 0) || yield(t)
+			i++
+			return cont
+		})
+	}
 }

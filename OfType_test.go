@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 // OfType returns a Query that contains all the elements of q that have type U.
@@ -26,13 +26,14 @@ func TestOfType(t *testing.T) {
 
 	data := linq.From[any](1, "hello", 2, 3, "goodbye")
 
-	assertQueryEqual(t, []int{1, 2, 3}, linq.OfType[int](data))
-	assertQueryEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data))
+	assertSeqEqual(t, []int{1, 2, 3}, linq.OfType[int](data.Seq()))
+	assertQueryEqual(t, []int{1, 2}, linq.OfTypeQuery[int](data).Take(2))
+	assertSeqEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data.Seq()))
 
-	assertOneShot(t, false, linq.OfType[int](data))
-	assertOneShot(t, true, linq.OfType[int](oneshot()))
+	assertOneShot(t, false, linq.OfTypeQuery[int](data))
+	assertOneShot(t, true, linq.OfTypeQuery[int](oneshot()))
 
-	assertSome(t, 0, linq.OfType[int](linq.None[any]()).FastCount())
-	assertNo(t, linq.OfType[int](data).FastCount())
-	assertNo(t, linq.OfType[int](oneshot()).FastCount())
+	assertSome(t, 0, linq.OfTypeQuery[int](linq.None[any]()).FastCount)
+	assertNo(t, linq.OfTypeQuery[int](data).FastCount)
+	assertNo(t, linq.OfTypeQuery[int](oneshot()).FastCount)
 }

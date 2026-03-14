@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,25 +14,35 @@
 
 package linq
 
+import "iter"
+
 // Intersect returns the set intersection of a and b.
-func Intersect[T comparable](a, b Query[T]) Query[T] {
+func Intersect[T comparable](a, b iter.Seq[T]) iter.Seq[T] {
 	return IntersectBy(a, b, Identity[T])
 }
 
 // IntersectBy returns the set intersection of a and b.
-func IntersectBy[T, K comparable](
-	a Query[T],
-	b Query[K],
-	key func(t T) K,
-) Query[T] {
+func IntersectBy[T, K comparable](a iter.Seq[T], b iter.Seq[K], key func(t T) K) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		s := setFrom(b)
+		a(func(t T) bool {
+			return !s.Has(key(t)) || yield(t)
+		})
+	}
+}
+
+// IntersectQuery returns the set intersection of a and b as a Query.
+func IntersectQuery[T comparable](a, b Query[T]) Query[T] {
+	return IntersectByQuery(a, b, Identity[T])
+}
+
+// IntersectByQuery returns the set intersection of a and b as a Query.
+func IntersectByQuery[T, K comparable](a Query[T], b Query[K], key func(t T) K) Query[T] {
 	if a.fastCount() == 0 || b.fastCount() == 0 {
 		return None[T]()
 	}
-	return NewQuery(
-		func() Enumerator[T] {
-			s := setFrom(b.Enumerator())
-			return a.Where(func(t T) bool { return s.Has(key(t)) }).Enumerator()
-		},
+	return FromSeq(
+		IntersectBy(a.Seq(), b.Seq(), key),
 		OneShotOption[T](a.OneShot() || b.OneShot()),
 		FastCountIfEmptyOption[T](a.fastCount()*b.fastCount()),
 	)

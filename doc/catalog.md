@@ -17,16 +17,14 @@ available as methods.
 
 <table><tbody><tr>
 <td>
-    <h4>Query methods</h4>
+    <h4>Miscellaneous Query methods</h4>
     <ul>
-        <li><code>Enumerator</code></li>
         <li><code>OneShot</code></li>
     </ul>
     <h4>Construct</h4>
     <ul>
         <li><code>From[ByteReader,Channel,Map,RuneReader,[Scanner][String]]</code></li>
         <li><code>Iota[1,2,3]</code> (equivalent to <code>Enumerable.Range</code> in .Net)</li>
-        <li><code>NewQuery</code></li>
         <li><code>None</code></li>
         <li><code>Pipe</code></li>
         <li><code>Repeat[Forever<strong>⁺</strong>]</code></li>

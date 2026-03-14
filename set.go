@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 package linq
 
+import "iter"
+
 type set[T comparable] map[T]struct{}
 
 func (s set[T]) Has(t T) bool {
@@ -25,9 +27,9 @@ func (s set[T]) Add(t T) {
 	s[t] = struct{}{}
 }
 
-func setFrom[T comparable](i Enumerator[T]) set[T] {
+func setFrom[T comparable](seq iter.Seq[T]) set[T] {
 	m := set[T]{}
-	for t, ok := i().Get(); ok; t, ok = i().Get() {
+	for t := range seq {
 		m.Add(t)
 	}
 	return m

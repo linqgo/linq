@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,27 +15,29 @@
 package linq
 
 import (
-	"github.com/linqgo/linq/internal/num"
+	"iter"
+
+	"github.com/linqgo/linq/v2/internal/num"
 )
 
-// Average returns the arithmetic mean of the numbers in q or ok = false if q is
+// Average returns the arithmetic mean of the numbers in seq or ok = false if seq is
 // empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".Mean.
-// It is retained here for parity with .Net's Enumerable class.
-func Average[R num.RealNumber](q Query[R]) Maybe[R] {
-	if sum, n := aggregateN(q, 0, add[R]); n > 0 {
-		return Some(sum / R(n))
+// This function is equivalent to "./stats".Mean and is retained here for parity
+// with .Net's Enumerable class.
+func Average[R num.RealNumber](seq iter.Seq[R]) (R, bool) {
+	if sum, n := aggregateNEnum(seq, 0, add[R]); n > 0 {
+		return sum / R(n), true
 	}
-	return No[R]()
+	return no[R]()
 }
 
-// Sum returns the sum of the num.Numbers in q or 0 if q is empty.
+// Sum returns the sum of the num.Numbers in seq or 0 if seq is empty.
 //
-// This function is equivalent to "github.com/linqgo/linq/stats".Sum. It is
-// retained here for parity with .Net's Enumerable class.
-func Sum[R num.Number](q Query[R]) R {
-	return aggregate(q, 0, add[R])
+// This function is equivalent to "./stats".Sum and is retained here for parity
+// with .Net's Enumerable class.
+func Sum[R num.Number](seq iter.Seq[R]) R {
+	return AggregateSeed(seq, 0, add[R])
 }
 
 func add[N num.Number](a, b N) N {

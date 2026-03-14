@@ -12,15 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+.PHONY: all
 all: test lint
 
+.PHONY: test
 test:
-	go test -cover ./...
+	go test -cover -timeout 30s ./...
 
-coverage:
+.PHONY: cov
+cov:
 	go test -covermode count -coverprofile=coverage.out ./... && go tool cover -func=coverage.out \
 		| perl -ne 's{^'$$(awk '/^module/{print$$2}' go.mod)'/}{}; print unless m{^total:|100\.0%$$}' \
 		| sort -rn -k3
 
+.PHONY: lint
 lint:
 	golangci-lint run --max-same-issues 10
+
+.PHONY: fmt
+fmt:
+	gofmt -w -s . && goimports -w -local github.com/linqgo/linq .

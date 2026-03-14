@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,34 +14,34 @@
 
 package linq
 
-import "strings"
+import (
+	"iter"
+	"strings"
+)
 
 // FromString returns a Query[rune] with the runes from s.
 func FromString(s string) Query[rune] {
 	if len(s) == 0 {
 		return None[rune]()
 	}
-	return NewQuery(func() Enumerator[rune] {
-		r := strings.NewReader(s)
-		return func() Maybe[rune] {
-			ch, _, err := r.ReadRune()
-			return NewMaybe(ch, err == nil)
-		}
+	return FromSeq(func(yield func(rune) bool) {
+		seqString(s)(yield)
 	}, FastCountOption[rune](len(s)))
 }
 
-// ToString converts a Query[rune] to a string.
-func ToString(q Query[rune]) string {
-	return string(q.ToSlice())
+// ToString converts an iter.Seq[rune] to a string.
+func ToString(seq iter.Seq[rune]) string {
+	return string(ToSlice(seq))
 }
 
 // StringsJoin joins strings with a separator.
 func StringsJoin[S ~string](q Query[S], sep S) S {
 	var sb strings.Builder
-	scan := q.Scanner()
+	scan, stop := q.Scanner()
+	defer stop()
 	var s S
 
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		if c == 0 {
 			return ""
 		}
@@ -49,7 +49,7 @@ func StringsJoin[S ~string](q Query[S], sep S) S {
 		if c == 1 {
 			return s
 		}
-		sb.Grow((c-1)*len(sep) + Sum(Select(q, func(s S) int { return len(s) })))
+		sb.Grow((c-1)*len(sep) + Sum(Select(q.Seq(), func(s S) int { return len(s) })))
 	} else if !scan(&s) {
 		return ""
 	}
@@ -64,10 +64,11 @@ func StringsJoin[S ~string](q Query[S], sep S) S {
 
 func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
 	var sb strings.Builder
-	scan := q.Scanner()
+	scan, stop := q.Scanner()
+	defer stop()
 	var s S
 
-	if c, ok := q.FastCount().Get(); ok {
+	if c, ok := q.FastCount(); ok {
 		if c == 0 {
 			return ""
 		}
@@ -75,7 +76,7 @@ func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
 		if c == 1 {
 			return s
 		}
-		sb.Grow((c-1)*len(comma) + Sum(Select(q, func(s S) int { return len(s) })))
+		sb.Grow((c-1)*len(comma) + Sum(Select(q.Seq(), func(s S) int { return len(s) })))
 	} else if !scan(&s) {
 		return ""
 	}

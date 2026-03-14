@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,38 +14,35 @@
 
 package linq
 
-// DefaultIfEmpty returns q if not empty, otherwise it returns a query
-// containing alt.
-func (q Query[T]) DefaultIfEmpty(alt T) Query[T] {
-	return DefaultIfEmpty(q, alt)
-}
+import "iter"
 
 // DefaultIfEmpty returns q if not empty, otherwise it returns a query
 // containing alt.
-func DefaultIfEmpty[T any](q Query[T], alt T) Query[T] {
+func (q Query[T]) DefaultIfEmpty(alt T) Query[T] {
 	count := q.fastCount()
 	switch count {
 	case -1:
-		return Pipe(q, func(next Enumerator[T]) Enumerator[T] {
-			delivered := false
-			return func() Maybe[T] {
-				if next != nil {
-					if t := next(); t.Valid() {
-						delivered = true
-						return t
-					}
-					next = nil
-				}
-				if !delivered {
-					delivered = true
-					return Some(alt)
-				}
-				return No[T]()
-			}
-		})
+		return Pipe(q, DefaultIfEmpty(q.Seq(), alt))
 	case 0:
 		return From(alt)
 	default:
 		return q
+	}
+}
+
+// DefaultIfEmpty returns a seq that yields elements from seq, or alt if seq is
+// empty.
+func DefaultIfEmpty[T any](seq iter.Seq[T], alt T) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		delivered := false
+		for t := range seq {
+			if !yield(t) {
+				return
+			}
+			delivered = true
+		}
+		if !delivered {
+			yield(alt)
+		}
 	}
 }

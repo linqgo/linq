@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,34 +14,45 @@
 
 package linq
 
+import "iter"
+
+// ChunkSlices returns the elements of seq in slices of the specified size.
+func ChunkSlices[T any](seq iter.Seq[T], size int) iter.Seq[[]T] {
+	return func(yield func([]T) bool) {
+		chunk := make([]T, 0, size)
+		for t := range seq {
+			if len(chunk) == size {
+				if !yield(chunk) {
+					return
+				}
+				chunk = make([]T, 0, size)
+			}
+			chunk = append(chunk, t)
+		}
+		if len(chunk) > 0 {
+			yield(chunk)
+		}
+	}
+}
+
 // Chunk returns the elements of q in queries containing chunks of the specified
 // size.
 func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 	var get Getter[Query[T]]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) Maybe[Query[T]] {
+		get = func(i int) (Query[T], bool) {
 			start := size * i
-			if _, ok := qget(start).Get(); ok {
-				return Some(q.Skip(start).Take(size))
+			if _, ok := qget(start); ok {
+				return q.Skip(start).Take(size), true
 			}
-			return No[Query[T]]()
+			return no[Query[T]]()
 		}
 	}
-	return Pipe(q,
-		func(next Enumerator[T]) Enumerator[Query[T]] {
-			return func() Maybe[Query[T]] {
-				chunk := make([]T, 0, size)
-				for i := 0; i < size; i++ {
-					t, ok := next().Get()
-					if !ok {
-						next = No[T]
-						return NewMaybe(From(chunk...), len(chunk) > 0)
-					}
-					chunk = append(chunk, t)
-				}
-				return Some(From(chunk...))
-			}
-		},
+	return Pipe(
+		q,
+		Select(ChunkSlices(q.Seq(), size), func(chunk []T) Query[T] {
+			return From(chunk...)
+		}),
 		ComputedFastCountOption[Query[T]](q.fastCount(), func(count int) int {
 			return (count-1)/size + 1
 		}),
@@ -49,7 +60,12 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 	)
 }
 
-// ChunkSlices returns the elements of q in slices of the specified size.
-func ChunkSlices[T any](q Query[T], size int) Query[[]T] {
-	return Select(Chunk(q, size), func(c Query[T]) []T { return c.ToSlice() })
+// ChunkSlicesQuery returns the elements of q in slices of the specified size.
+func ChunkSlicesQuery[T any](q Query[T], size int) Query[[]T] {
+	return Pipe(q,
+		ChunkSlices(q.Seq(), size),
+		ComputedFastCountOption[[]T](q.fastCount(), func(count int) int {
+			return (count-1)/size + 1
+		}),
+	)
 }

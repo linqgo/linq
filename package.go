@@ -1,10 +1,10 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0//
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,14 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package linq is a data manipulation library inspired by .Net Linq.
+// Package linq is a data manipulation library inspired by .Net Linq. Version 2
+// is built on Go's range-over-function iterators (iter.Seq), providing 100+
+// composable operations with lazy evaluation.
 //
 // See the [Catalog] for a detailed functional overview of the library.
 //
-// # Usage
+// # Example usage (from [example/evens/main.go])
 //
-//	// Sample usage
-//	linq.From(1, 2, 3, 4, 5).Where(func(i int) bool { return i%2 == 0 })
+//	package main
+//
+//	import (
+//	    "fmt"
+//
+//	    "github.com/linqgo/linq/v2"
+//	)
+//
+//	func main() {
+//	    even := func(i int) bool { return i%2 == 0 }
+//	    for i := range linq.From(1, 2, 3, 4, 5).Where(even).Seq() {
+//	        fmt.Println(i)
+//	    }
+//	}
+//
+// To try it out:
+//
+//	(cd example/evens && go run .)
 //
 // # Caveats
 //
@@ -35,10 +53,8 @@
 // Unfortunately, there are no clean work-arounds. You may wish to use a
 // dot-import to ease the pain a little:
 //
-//	import . "github.com/linqgo/linq"
-//
-//	...
-//
+//	import . "github.com/linqgo/linq/v2"
+//	⋮
 //	Select(From(1, 2, 3, 4, 5), (func(i int) int { return i * i }))
 //
 // In case your preferred style is to always use global functions, all Query
@@ -53,8 +69,8 @@
 //   - AsEnumerable: not relevant to this library
 //   - Cast: doesn't map cleanly to Go's type system.
 //
-// On the flip side, this library implements a number of methods not provided
-// by .Net.
+// On the flip side, this library implements a number of methods not provided by
+// .Net.
 //
 // [Catalog]: https://github.com/linqgo/linq/blob/main/doc/catalog.md
 package linq

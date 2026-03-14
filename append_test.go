@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package linq_test
 import (
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestAppend(t *testing.T) {
@@ -29,6 +29,6 @@ func TestAppend(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Append(6).Append(7))
 
-	assertSome(t, 7, q.FastCount())
-	assertNo(t, slowcount.Append(6).Append(7).FastCount())
+	assertSome(t, 7, q.FastCount)
+	assertNo(t, slowcount.Append(6).Append(7).FastCount)
 }

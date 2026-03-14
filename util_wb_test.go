@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,15 @@
 
 package linq
 
-// TODO: Figure out Go-specific embodiments of Cast.
+import (
+	"testing"
 
-// // Cast returns a Query that contains all the elements of q that have type U.
-// func Cast[U, T realNumber](q Query[T]) Query[U] {
-// 	return NewQuery(func() Enumerator[U] {
-// 		next := q.Enumerator()
-// 		return func() (U, bool) {
-// 			if t, ok := next(); ok {
-// 				return U(t), true
-// 			}
-// 			var u U
-// 			return u, false
-// 		}
-// 	})
-// }
+	"github.com/stretchr/testify/assert"
+)
+
+func TestMust(t *testing.T) {
+	t.Parallel()
+
+	assert.Equal(t, 42, must(42, true))
+	assert.Panics(t, func() { must(0, false) })
+}

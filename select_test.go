@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 package linq_test
 
 import (
+	"iter"
+	"math/bits"
 	"testing"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestSelect(t *testing.T) {
@@ -30,21 +32,29 @@ func TestSelect(t *testing.T) {
 	assertOneShot(t, false, q)
 	assertOneShot(t, true, oneshot().Select(square))
 
-	assertSome(t, 5, q.FastCount())
-	assertNo(t, oneshot().Select(square).FastCount())
+	assertSome(t, 5, q.FastCount)
+	assertNo(t, oneshot().Select(square).FastCount)
+}
+
+func TestSelectFree(t *testing.T) {
+	t.Parallel()
+
+	square := func(x int) int { return x * x }
+	assertSeqEqual(t, []int{0, 1, 4, 9, 16}, linq.Select(linq.Iota1(5).Seq(), square))
 }
 
 func primeFactors(n int) linq.Query[int] {
-	return linq.NewQuery(func() linq.Enumerator[int] {
-		i, s := 2, 1
-		return func() linq.Maybe[int] {
-			for ; i <= n; i, s = i+s, 2 {
-				if n%i == 0 {
-					n /= i
-					return linq.Some(i)
+	return linq.FromSeq(func(yield func(int) bool) {
+		sqrt := 1 << ((bits.Len(uint(n)) + 1) / 2)
+		for i, s := 2, 1; i <= sqrt; {
+			if n%i == 0 {
+				n /= i
+				if !yield(i) {
+					return
 				}
+			} else {
+				i, s = i+s, 2
 			}
-			return linq.No[int]()
 		}
 	})
 }
@@ -52,12 +62,8 @@ func primeFactors(n int) linq.Query[int] {
 func TestSelectMany(t *testing.T) {
 	t.Parallel()
 
-	q := linq.SelectMany(linq.From(42, 56), primeFactors)
-	assertQueryEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
-
-	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.SelectMany(oneshot(), primeFactors))
-
-	assertNo(t, q.FastCount())
-	assertNo(t, linq.SelectMany(oneshot(), primeFactors).FastCount())
+	q := linq.SelectMany(linq.From(42, 56).Seq(), func(n int) iter.Seq[int] {
+		return primeFactors(n).Seq()
+	})
+	assertSeqEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/linqgo/linq"
+	"github.com/linqgo/linq/v2"
 )
 
 func TestShorter(t *testing.T) {
@@ -37,25 +37,25 @@ func TestShorter(t *testing.T) {
 				return assert.Equal(t, sr, qr,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr)
 			},
-				qa.Shorter(qb), linq.Shorter(qa, qb),
-				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...), qb),
-				qa.FastShorter(qb).Must(), linq.FastShorter(qa, qb).Must(),
+				qa.Shorter(qb), linq.Shorter(qa.Seq(), qb.Seq()),
+				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa.Seq(), chanof([]rune(b)...).Seq()),
+				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...).Seq(), qb.Seq()),
+				must(qa.FastShorter(qb)), must(linq.FastShorter(qa, qb)),
 			)
 
-			assertAll(t, func(qr linq.Maybe[bool]) bool {
-				v, valid := qr.Get()
+			assertAll(t, func(qr func() (bool, bool)) bool {
+				v, valid := qr()
 				return assert.True(t, valid) && assert.Equal(t, sr, v,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, v)
 			},
-				qa.FastShorter(qb), linq.FastShorter(qa, qb),
+				maybe(qa.FastShorter(qb)), maybe(linq.FastShorter(qa, qb)),
 			)
 
-			assertAll(t, func(qr linq.Maybe[bool]) bool { return assertNo(t, qr) },
-				qa.FastShorter(chanof([]rune(b)...)),
-				linq.FastShorter(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).FastShorter(qb),
-				linq.FastShorter(chanof([]rune(a)...), qb),
+			assertAll(t, func(qr func() (bool, bool)) bool { return assertNo(t, qr) },
+				maybe(qa.FastShorter(chanof([]rune(b)...))),
+				maybe(linq.FastShorter(qa, chanof([]rune(b)...))),
+				maybe(chanof([]rune(a)...).FastShorter(qb)),
+				maybe(linq.FastShorter(chanof([]rune(a)...), qb)),
 			)
 		}
 	}
@@ -76,25 +76,25 @@ func TestLonger(t *testing.T) {
 				return assert.Equal(t, sr, qr,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr)
 			},
-				qa.Longer(qb), linq.Longer(qa, qb),
-				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...), qb),
-				qa.FastLonger(qb).Must(), linq.FastLonger(qa, qb).Must(),
+				qa.Longer(qb), linq.Longer(qa.Seq(), qb.Seq()),
+				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa.Seq(), chanof([]rune(b)...).Seq()),
+				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...).Seq(), qb.Seq()),
+				must(qa.FastLonger(qb)), must(linq.FastLonger(qa, qb)),
 			)
 
-			assertAll(t, func(qr linq.Maybe[bool]) bool {
-				v, valid := qr.Get()
+			assertAll(t, func(qr func() (bool, bool)) bool {
+				v, valid := qr()
 				return assert.True(t, valid) && assert.Equal(t, sr, v,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, v)
 			},
-				qa.FastLonger(qb), linq.FastLonger(qa, qb),
+				maybe(qa.FastLonger(qb)), maybe(linq.FastLonger(qa, qb)),
 			)
 
-			assertAll(t, func(qr linq.Maybe[bool]) bool { return assertNo(t, qr) },
-				qa.FastLonger(chanof([]rune(b)...)),
-				linq.FastLonger(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).FastLonger(qb),
-				linq.FastLonger(chanof([]rune(a)...), qb),
+			assertAll(t, func(qr func() (bool, bool)) bool { return assertNo(t, qr) },
+				maybe(qa.FastLonger(chanof([]rune(b)...))),
+				maybe(linq.FastLonger(qa, chanof([]rune(b)...))),
+				maybe(chanof([]rune(a)...).FastLonger(qb)),
+				maybe(linq.FastLonger(chanof([]rune(a)...), qb)),
 			)
 		}
 	}

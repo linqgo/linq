@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,62 +14,70 @@
 
 package linq
 
-import "golang.org/x/exp/constraints"
+import (
+	"cmp"
+	"iter"
+)
 
-// Max returns the highest number in q or ok=false if q is empty.
-func Max[R constraints.Ordered](q Query[R]) Maybe[R] {
-	return Aggregate(q, max[R])
+// Max returns the highest number in seq or ok=false if seq is empty.
+func Max[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
+	return Aggregate(seq, max[R])
 }
 
-// MaxBy returns the element in q with the highest key or ok = false if q is
+// MaxBy returns the element(s) in q with the highest key.
+func MaxBy[T any, R cmp.Ordered](q Query[T], key func(T) R) Query[T] {
+	return bestBy(q.Seq(), key, greater[R])
+}
+
+// Min returns the lowest number in seq or ok=false if seq is empty.
+func Min[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
+	return Aggregate(seq, min[R])
+}
+
+// MinBy returns the element in q with the lowest key or ok = false if q is
 // empty.
-func MaxBy[T any, R constraints.Ordered](q Query[T], key func(T) R) Maybe[T] {
-	return bestBy(q, key, greater[R])
+func MinBy[T any, K cmp.Ordered](q Query[T], key func(T) K) Query[T] {
+	return bestBy(q.Seq(), key, less[K])
 }
 
-// Min returns the highest number in q or ok=false if q is empty.
-func Min[R constraints.Ordered](q Query[R]) Maybe[R] {
-	return Aggregate(q, min[R])
-}
-
-// MinBy returns the element in q with the highest key or ok = false if q is
-// empty.
-func MinBy[T any, K constraints.Ordered](q Query[T], key func(T) K) Maybe[T] {
-	return bestBy(q, key, less[K])
-}
-
-func bestBy[T any, O constraints.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Maybe[T] {
-	next := q.Enumerator()
-	bestValue, ok := next().Get()
-	if !ok {
-		return No[T]()
-	}
-	bestKey := key(bestValue)
-	for u, ok := next().Get(); ok; u, ok = next().Get() {
-		k := key(u)
-		if better(k, bestKey) {
-			bestValue, bestKey = u, k
+func bestBy[T any, O cmp.Ordered](seq iter.Seq[T], key func(T) O, better func(a, b O) bool) Query[T] {
+	return FromSeq(func(yield func(T) bool) {
+		var acc []T
+		var best O
+		i := 0
+		for t := range seq {
+			k := key(t)
+			switch {
+			case i == 0, better(k, best):
+				best = k
+				acc = acc[:0]
+			case better(best, k):
+				i++
+				continue
+			}
+			acc = append(acc, t)
+			i++
 		}
-	}
-	return Some(bestValue)
+		seqSlice(acc)(yield)
+	})
 }
 
-func greater[O constraints.Ordered](a, b O) bool {
+func greater[O cmp.Ordered](a, b O) bool {
 	return a > b
 }
 
-func less[O constraints.Ordered](a, b O) bool {
+func less[O cmp.Ordered](a, b O) bool {
 	return a < b
 }
 
-func max[O constraints.Ordered](a, b O) O {
+func max[O cmp.Ordered](a, b O) O {
 	if a >= b {
 		return a
 	}
 	return b
 }
 
-func min[O constraints.Ordered](a, b O) O {
+func min[O cmp.Ordered](a, b O) O {
 	if a <= b {
 		return a
 	}

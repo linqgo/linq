@@ -1,4 +1,4 @@
-// Copyright 2022 Marcelo Cantos
+// Copyright 2022-2024 Marcelo Cantos
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package linq
+package linq_test
 
-// Enumerator is a function type that enumerates values. To produce a value, it
-// returns the value and true. When there are no more values to produce, it
-// returns an indeterminate value and false.
-type Enumerator[T any] func() Maybe[T]
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/linqgo/linq/v2"
+)
+
+func TestSeqKV(t *testing.T) {
+	t.Parallel()
+
+	m := map[int]string{
+		1: "red",
+		2: "green",
+		4: "blue",
+	}
+	n := 0
+	for i, c := range linq.SeqKV(linq.FromMap(m)) {
+		assert.Equal(t, m[i], c)
+		if n == 2 {
+			break
+		}
+		n++
+	}
+}
