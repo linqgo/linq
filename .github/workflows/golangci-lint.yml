@@ -9,10 +9,11 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
+          go-version: "1.23"
       - uses: actions/checkout@v4
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v2.1
+          version: v1.62.2
           args: --timeout=5m
+          skip-cache: true
