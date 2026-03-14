@@ -25,6 +25,10 @@ import (
 //
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
+//
+// Note: non-EOF read errors cause a panic. If the underlying reader may
+// produce transient errors, wrap it in error-handling logic before passing
+// it to this function.
 func FromByteReader(r io.ByteReader) Query[byte] {
 	return readerQuery(r.ReadByte)
 }
@@ -34,6 +38,10 @@ func FromByteReader(r io.ByteReader) Query[byte] {
 //
 // The returned query is not replayable. Use (Query).Memoize() if you need a
 // replayable query.
+//
+// Note: non-EOF read errors cause a panic. If the underlying reader may
+// produce transient errors, wrap it in error-handling logic before passing
+// it to this function.
 func FromRuneReader(r io.RuneReader) Query[rune] {
 	return readerQuery(func() (rune, error) {
 		c, _, err := r.ReadRune()

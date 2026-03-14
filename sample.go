@@ -16,7 +16,7 @@ package linq
 
 import (
 	"iter"
-	"math/rand"
+	"math/rand/v2"
 )
 
 // Sample returns a query that randomly samples each element in q with
@@ -42,19 +42,18 @@ func (q Query[T]) SampleSeed(p float64, seed int64) Query[T] {
 // same intervals each time it is iterated. This is not the case
 // across calls to Sample.
 func Sample[T any](seq iter.Seq[T], p float64) iter.Seq[T] {
-	return SampleSeed(seq, p, rand.Int63())
+	return SampleSeed(seq, p, rand.Int64())
 }
 
 // SampleSeed returns a seq that randomly samples each element in seq with
 // probability p.
 //
-// The seed allows for deterministic results. Multiple invokations of
+// The seed allows for deterministic results. Multiple invocations of
 // SampleSeed with the same seed will return a seq that samples values
 // at the same intervals.
 func SampleSeed[T any](seq iter.Seq[T], p float64, seed int64) iter.Seq[T] {
 	return func(yield func(T) bool) {
-		src := rand.NewSource(seed)
-		rnd := rand.New(src)
+		rnd := rand.New(rand.NewPCG(uint64(seed), uint64(seed>>32)))
 		seq(func(t T) bool {
 			return p < rnd.Float64() || yield(t)
 		})
