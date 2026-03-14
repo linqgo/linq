@@ -40,7 +40,7 @@ func TestShorter(t *testing.T) {
 				qa.Shorter(qb), linq.Shorter(qa.Seq(), qb.Seq()),
 				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa.Seq(), chanof([]rune(b)...).Seq()),
 				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...).Seq(), qb.Seq()),
-				must(qa.FastShorter(qb)), must(linq.FastShorter(qa, qb)),
+				must[bool](qa.FastShorter(qb)), must[bool](linq.FastShorter(qa, qb)),
 			)
 
 			assertAll(t, func(qr func() (bool, bool)) bool {
@@ -79,7 +79,7 @@ func TestLonger(t *testing.T) {
 				qa.Longer(qb), linq.Longer(qa.Seq(), qb.Seq()),
 				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa.Seq(), chanof([]rune(b)...).Seq()),
 				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...).Seq(), qb.Seq()),
-				must(qa.FastLonger(qb)), must(linq.FastLonger(qa, qb)),
+				must[bool](qa.FastLonger(qb)), must[bool](linq.FastLonger(qa, qb)),
 			)
 
 			assertAll(t, func(qr func() (bool, bool)) bool {

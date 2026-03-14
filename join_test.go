@@ -77,7 +77,7 @@ func TestJoinQuery(t *testing.T) {
 	assertOneShot(t, false, join(linq.Iota2(0, 5), linq.Iota2(5, 10)))
 	assertOneShot(t, true, join(oneshot(), linq.Iota2(5, 10)))
 	assertOneShot(t, true, join(linq.Iota2(0, 5), oneshot()))
-	assertOneShot(t, true, join(oneshot(), oneshot()))
+	assertOneShot[string](t, true, join(oneshot(), oneshot()))
 
 	assertSome(t, 0, join(linq.Iota2(0, 0), linq.Iota2(5, 10)).FastCount)
 	assertSome(t, 0, join(linq.Iota2(0, 5), linq.Iota2(5, 5)).FastCount)

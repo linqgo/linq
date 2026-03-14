@@ -90,10 +90,10 @@ func TestGroupJoin(t *testing.T) {
 		query(people.Skip(10), pets).ToSlice(),
 	)
 
-	assertOneShot(t, false, query(people, pets))
-	assertOneShot(t, true, query(linq.FromChannel(make(chan Person)), pets))
-	assertOneShot(t, true, query(people, linq.FromChannel(make(chan Pet))))
-	assertOneShot(t, true, query(
+	assertOneShot[Ownership](t, false, query(people, pets))
+	assertOneShot[Ownership](t, true, query(linq.FromChannel(make(chan Person)), pets))
+	assertOneShot[Ownership](t, true, query(people, linq.FromChannel(make(chan Pet))))
+	assertOneShot[Ownership](t, true, query(
 		linq.FromChannel(make(chan Person)),
 		linq.FromChannel(make(chan Pet))))
 

@@ -54,10 +54,10 @@ func TestArrayLenAndGet(t *testing.T) {
 	t.Parallel()
 
 	assertSome(t, 5, testArray5.FastCount)
-	assertSome(t, 4, maybe(testArray5.FastElementAt(2)))
-	assertNo(t, maybe(testArray5.FastElementAt(5)))
-	assertNo(t, maybe(testArray5.FastElementAt(99)))
-	assertNo(t, maybe(testArray5.FastElementAt(-1)))
+	assertSome(t, 4, maybe[int](testArray5.FastElementAt(2)))
+	assertNo(t, maybe[int](testArray5.FastElementAt(5)))
+	assertNo(t, maybe[int](testArray5.FastElementAt(99)))
+	assertNo(t, maybe[int](testArray5.FastElementAt(-1)))
 }
 
 func TestToArray(t *testing.T) {
