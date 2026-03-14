@@ -1,5 +1,9 @@
 # Build artifacts
 coverage.out
+example/pipeline/pipeline
+example/wordcount/wordcount
+example/setops/setops
+example/evens/evens
 
 # IDE files
 .vscode/
