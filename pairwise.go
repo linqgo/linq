@@ -14,13 +14,23 @@
 
 package linq
 
-func Pairwise[T any](q Query[T]) Query[KV[T, T]] {
-	return Pipe(q, func(yield func(KV[T, T]) bool) {
+import "iter"
+
+// Pairwise returns a seq of consecutive pairs from seq.
+func Pairwise[T any](seq iter.Seq[T]) iter.Seq[KV[T, T]] {
+	return func(yield func(KV[T, T]) bool) {
 		var a T
-		q.ISeq()(func(i int, b T) bool {
+		i := 0
+		seq(func(b T) bool {
 			cont := i == 0 || yield(NewKV(a, b))
 			a = b
+			i++
 			return cont
 		})
-	})
+	}
+}
+
+// PairwiseQuery returns a query of consecutive pairs from q.
+func PairwiseQuery[T any](q Query[T]) Query[KV[T, T]] {
+	return Pipe(q, Pairwise(q.Seq()))
 }

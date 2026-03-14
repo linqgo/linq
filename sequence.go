@@ -14,21 +14,24 @@
 
 package linq
 
-import "cmp"
+import (
+	"cmp"
+	"iter"
+)
 
 // SequenceCmp returns SequenceCmp(q, r, cmp).
 func (q Query[T]) SequenceCmp(r Query[T], cmp CmpFn[T]) int {
-	return SequenceCmp(q, r, cmp)
+	return SequenceCmp(q.Seq(), r.Seq(), cmp)
 }
 
 // SequenceEqualEq calls SequenceEqualEq(q, r, eq).
 func (q Query[T]) SequenceEqualEq(r Query[T], eq func(a, b T) bool) bool {
-	return SequenceEqualEq(q, r, eq)
+	return SequenceEqualEq(q.Seq(), r.Seq(), eq)
 }
 
 // SequenceGreaterCmp returns SequenceGreaterCmp(q, r, cmp).
 func (q Query[T]) SequenceGreaterCmp(r Query[T], cmp CmpFn[T]) bool {
-	return SequenceGreaterCmp(q, r, cmp)
+	return SequenceGreaterCmp(q.Seq(), r.Seq(), cmp)
 }
 
 // SequenceLessCmp returns q.SequenceCmp(r) < 0.
@@ -37,7 +40,7 @@ func (q Query[T]) SequenceLessCmp(r Query[T], cmp CmpFn[T]) bool {
 }
 
 // SequenceEqual returns SequenceEqualEq(a, b, Equal[T]).
-func SequenceEqual[T comparable](a, b Query[T]) bool {
+func SequenceEqual[T comparable](a, b iter.Seq[T]) bool {
 	return SequenceEqualEq(a, b, Equal[T])
 }
 
@@ -45,13 +48,9 @@ func SequenceEqual[T comparable](a, b Query[T]) bool {
 // contain the same number of elements and every sequential element from a
 // equals the corresponding element from b. Two elements are equal if eq(aElem,
 // bElem) returns true.
-func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
-	if lenDiff, ok := fastLenDiff(a, b); ok && lenDiff != 0 {
-		return false
-	}
-
+func SequenceEqualEq[T any](a, b iter.Seq[T], eq func(a, b T) bool) bool {
 	var end int
-	for a, b := range zipSeq(a.Seq(), b.Seq(), &end) {
+	for a, b := range zipSeq(a, b, &end) {
 		if !eq(a, b) {
 			return false
 		}
@@ -67,9 +66,9 @@ func SequenceEqualEq[T any](a, b Query[T], eq func(a, b T) bool) bool {
 //
 // This is known as lexicographical order and is equivalent to the > operator on
 // strings.
-func SequenceCmp[T any](a, b Query[T], cmp CmpFn[T]) int {
+func SequenceCmp[T any](a, b iter.Seq[T], cmp CmpFn[T]) int {
 	var end int
-	for a, b := range zipSeq(a.Seq(), b.Seq(), &end) {
+	for a, b := range zipSeq(a, b, &end) {
 		if c := cmp(a, b); c != 0 {
 			return c
 		}
@@ -78,12 +77,12 @@ func SequenceCmp[T any](a, b Query[T], cmp CmpFn[T]) int {
 }
 
 // SequenceGreater returns SequenceLess(b, a).
-func SequenceGreater[T cmp.Ordered](a, b Query[T]) bool {
+func SequenceGreater[T cmp.Ordered](a, b iter.Seq[T]) bool {
 	return SequenceLess(b, a)
 }
 
 // SequenceGreaterCmp returns SequenceLessCmp(b, a, cmp).
-func SequenceGreaterCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
+func SequenceGreaterCmp[T any](a, b iter.Seq[T], cmp CmpFn[T]) bool {
 	return SequenceLessCmp(b, a, cmp)
 }
 
@@ -95,11 +94,11 @@ func SequenceGreaterCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
 //
 // This is known as lexicographical order and is analogous to the < operator on
 // strings.
-func SequenceLess[T cmp.Ordered](a, b Query[T]) bool {
+func SequenceLess[T cmp.Ordered](a, b iter.Seq[T]) bool {
 	return SequenceLessCmp(a, b, Cmp[T])
 }
 
 // SequenceLessCmp returns SequenceCmp(a, b) < 0.
-func SequenceLessCmp[T any](a, b Query[T], cmp CmpFn[T]) bool {
+func SequenceLessCmp[T any](a, b iter.Seq[T], cmp CmpFn[T]) bool {
 	return SequenceCmp(a, b, cmp) < 0
 }

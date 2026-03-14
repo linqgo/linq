@@ -14,7 +14,14 @@
 
 package linq
 
+import "iter"
+
 // Union returns the set union of a and b.
-func Union[T comparable](a, b Query[T]) Query[T] {
-	return a.Concat(Except(b, a))
+func Union[T comparable](a, b iter.Seq[T]) iter.Seq[T] {
+	return Concat(a, Except(b, a))
+}
+
+// UnionQuery returns the set union of a and b as a Query.
+func UnionQuery[T comparable](a, b Query[T]) Query[T] {
+	return a.Concat(ExceptQuery(b, a))
 }

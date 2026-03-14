@@ -51,11 +51,11 @@ func TestMustToMapKV(t *testing.T) {
 
 	assert.Equal(t,
 		map[int]int{1: 10, 2: 20},
-		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(2, 20))),
+		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(2, 20)).Seq()),
 	)
 
 	assert.Panics(t, func() {
-		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(1, 20)))
+		linq.MustToMapKV(linq.From(linq.NewKV(1, 10), linq.NewKV(1, 20)).Seq())
 	})
 }
 
@@ -65,14 +65,14 @@ func TestMustToMap(t *testing.T) {
 	assert.Equal(t,
 		map[int]int{1: 1, 2: 4, 3: 9, 4: 16, 5: 25},
 		linq.MustToMap(
-			linq.From(1, 2, 3, 4, 5),
+			linq.From(1, 2, 3, 4, 5).Seq(),
 			func(i int) linq.KV[int, int] { return linq.NewKV(i, i*i) },
 		),
 	)
 
 	assert.Panics(t, func() {
 		linq.MustToMap(
-			linq.From(1, 2, 3, 4, 5),
+			linq.From(1, 2, 3, 4, 5).Seq(),
 			func(i int) linq.KV[int, int] { return linq.NewKV(i%2, i) },
 		)
 	})

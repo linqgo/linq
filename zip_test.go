@@ -24,18 +24,34 @@ import (
 func TestZip(t *testing.T) {
 	t.Parallel()
 
-	assertQueryEqual(t,
+	// Test free function (iter.Seq version)
+	assertSeqEqual(t,
 		[]string{"A1", "B2", "C3"},
 		linq.Zip(
-			linq.From("A", "B", "C"),
-			linq.From(1, 2, 3, 4),
+			linq.From("A", "B", "C").Seq(),
+			linq.From(1, 2, 3, 4).Seq(),
 			func(a string, b int) string {
 				return fmt.Sprintf("%s%d", a, b)
 			},
 		),
 	)
 
-	q := linq.Zip(
+	assertSeqEqual(t,
+		[]string{"A1", "B2", "C3"},
+		linq.Zip(
+			linq.From("A", "B", "C", "D").Seq(),
+			linq.From(1, 2, 3).Seq(),
+			func(a string, b int) string {
+				return fmt.Sprintf("%s%d", a, b)
+			},
+		),
+	)
+}
+
+func TestZipQuery(t *testing.T) {
+	t.Parallel()
+
+	q := linq.ZipQuery(
 		linq.From("A", "B", "C", "D"),
 		linq.From(1, 2, 3),
 		func(a string, b int) string {
@@ -45,12 +61,12 @@ func TestZip(t *testing.T) {
 	assertQueryEqual(t, []string{"A1", "B2", "C3"}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.Zip(
+	assertOneShot(t, true, linq.ZipQuery(
 		oneshot(),
 		linq.From(1, 2, 3),
 		func(a, b int) int { return a + b },
 	))
-	assertOneShot(t, true, linq.Zip(
+	assertOneShot(t, true, linq.ZipQuery(
 		linq.From(1, 2, 3),
 		oneshot(),
 		func(a, b int) int { return a + b },
@@ -60,9 +76,19 @@ func TestZip(t *testing.T) {
 func TestZipKV(t *testing.T) {
 	t.Parallel()
 
+	// Test free function (iter.Seq version)
+	assertSeqEqual(t,
+		[]linq.KV[string, int]{{"A", 1}, {"B", 2}, {"C", 3}},
+		linq.ZipKV(linq.From("A", "B", "C").Seq(), linq.From(1, 2, 3, 4).Seq()),
+	)
+}
+
+func TestZipKVQuery(t *testing.T) {
+	t.Parallel()
+
 	assertQueryEqual(t,
 		[]linq.KV[string, int]{{"A", 1}, {"B", 2}, {"C", 3}},
-		linq.ZipKV(linq.From("A", "B", "C"), linq.From(1, 2, 3, 4)),
+		linq.ZipKVQuery(linq.From("A", "B", "C"), linq.From(1, 2, 3, 4)),
 	)
 }
 

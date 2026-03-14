@@ -29,11 +29,11 @@ func TestString(t *testing.T) {
 	assertQueryEqual(t, []rune{}, linq.FromString(""))
 
 	s := linq.FromString("Hello, world!")
-	assert.Equal(t, "!dlrow ,olleH", linq.ToString(s.Reverse()))
+	assert.Equal(t, "!dlrow ,olleH", linq.ToString(s.Reverse().Seq()))
 
 	assert.Equal(t, "HELLO",
 		linq.ToString(linq.Select(
-			s.TakeWhile(func(r rune) bool { return r != ',' }),
+			s.TakeWhile(func(r rune) bool { return r != ',' }).Seq(),
 			func(r rune) rune { return unicode.ToUpper(r) },
 		)),
 	)

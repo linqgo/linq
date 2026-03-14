@@ -14,14 +14,16 @@
 
 package linq
 
+import "iter"
+
 // Longer returns true if and only if q has more elements than r.
 func (q Query[T]) Longer(r Query[T]) bool {
-	return Shorter(r, q)
+	return Shorter(r.Seq(), q.Seq())
 }
 
 // Shorter returns true if and only if q has fewer elements than r.
 func (q Query[T]) Shorter(r Query[T]) bool {
-	return Shorter(q, r)
+	return Shorter(q.Seq(), r.Seq())
 }
 
 // FastLonger returns true if and only if a has more elements than b and this
@@ -50,18 +52,14 @@ func FastShorter[A, B any](a Query[A], b Query[B]) (x bool, ok bool) {
 }
 
 // Longer returns true if and only if a has more elements than b.
-func Longer[A, B any](a Query[A], b Query[B]) bool {
+func Longer[A, B any](a iter.Seq[A], b iter.Seq[B]) bool {
 	return Shorter(b, a)
 }
 
 // Shorter returns true if and only if a has fewer elements than b.
-func Shorter[A, B any](a Query[A], b Query[B]) bool {
-	if shorter, ok := FastShorter(a, b); ok {
-		return shorter
-	}
-
+func Shorter[A, B any](a iter.Seq[A], b iter.Seq[B]) bool {
 	var end int
-	for k, v := range zipSeq(a.Seq(), b.Seq(), &end) {
+	for k, v := range zipSeq(a, b, &end) {
 		_, _ = k, v
 	}
 	return end < 0

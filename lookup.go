@@ -23,8 +23,8 @@ type lookupBuilder[T any, K comparable] struct {
 	lup  map[K][]T
 }
 
-func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBuilder[T, K] {
-	next, stop := iter.Pull(q.Seq())
+func newLookupBuilder[T any, K comparable](seq iter.Seq[T], key func(T) K) *lookupBuilder[T, K] {
+	next, stop := iter.Pull(seq)
 	return &lookupBuilder[T, K]{
 		next: next,
 		stop: stop,
@@ -33,8 +33,8 @@ func newLookupBuilder[T any, K comparable](q Query[T], key func(T) K) *lookupBui
 	}
 }
 
-func buildLookup[T any, K comparable](q Query[T], key func(T) K) map[K][]T {
-	b := newLookupBuilder(q, key)
+func buildLookup[T any, K comparable](seq iter.Seq[T], key func(T) K) map[K][]T {
+	b := newLookupBuilder(seq, key)
 	defer b.Close()
 	for b.Next() { //nolint:revive
 	}
@@ -54,19 +54,28 @@ func (b *lookupBuilder[T, K]) Lookup() map[K][]T {
 	return b.lup
 }
 
-func (b *lookupBuilder[T, K]) Requery() Query[T] {
+func (b *lookupBuilder[T, K]) Requery() iter.Seq[T] {
 	return Concat(
-		SelectMany(FromMap(b.lup), func(kv KV[K, []T]) Query[T] {
-			return From(kv.Value...)
-		}),
-		FromSeq(func(yield func(T) bool) {
+		SelectMany(
+			func(yield func(KV[K, []T]) bool) {
+				for k, v := range b.lup {
+					if !yield(NewKV(k, v)) {
+						return
+					}
+				}
+			},
+			func(kv KV[K, []T]) iter.Seq[T] {
+				return seqSlice(kv.Value)
+			},
+		),
+		func(yield func(T) bool) {
 			for {
 				t, ok := b.next()
 				if !ok || !yield(t) {
 					return
 				}
 			}
-		}),
+		},
 	)
 }
 

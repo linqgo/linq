@@ -15,19 +15,28 @@
 package linq
 
 import (
+	"iter"
+
 	"github.com/linqgo/linq/v2/internal/num"
 	"github.com/linqgo/linq/v2/internal/ring"
 )
 
-// Slide implements a sliding window. All output elements represent windows over
-// the input elements. Windows are represented as Deltas indicating which
-// element is entering and which, if any, elements are exiting the window as it
-// slides along.
-func Slide[T any](q Query[T], expired func(older, current T) bool) Query[Delta[T]] {
-	return FromSeq(func(yield func(Delta[T]) bool) {
+type Delta[T any] struct {
+	Outs Query[T]
+	In   T
+}
+
+func newDelta[T any](outs Query[T], in T) Delta[T] {
+	return Delta[T]{Outs: outs, In: in}
+}
+
+// Slide implements a sliding window over a seq. Windows are represented as
+// Deltas indicating which element is entering and which, if any, elements are
+// exiting the window.
+func Slide[T any](seq iter.Seq[T], expired func(older, current T) bool) iter.Seq[Delta[T]] {
+	return func(yield func(Delta[T]) bool) {
 		window := ring.New[T]()
-		for t := range q.Seq() {
-			// Empty all expired elements
+		for t := range seq {
 			out := make([]T, 0, 1)
 			window.Push(t)
 			for !window.Empty() && expired(window.Head(), t) {
@@ -37,46 +46,76 @@ func Slide[T any](q Query[T], expired func(older, current T) bool) Query[Delta[T
 				return
 			}
 		}
-	})
+	}
+}
+
+// SlideQuery implements a sliding window over a Query.
+func SlideQuery[T any](q Query[T], expired func(older, current T) bool) Query[Delta[T]] {
+	return Pipe(q, Slide(q.Seq(), expired))
 }
 
 // SlideAll implements an ever-expanding window of all elements seen to date.
-func SlideAll[T any](q Query[T]) Query[Delta[T]] {
-	return Slide(q, func(T, T) bool { return false })
+func SlideAll[T any](seq iter.Seq[T]) iter.Seq[Delta[T]] {
+	return Slide(seq, func(T, T) bool { return false })
+}
+
+// SlideAllQuery implements an ever-expanding window over a Query.
+func SlideAllQuery[T any](q Query[T]) Query[Delta[T]] {
+	return SlideQuery(q, func(T, T) bool { return false })
 }
 
 // SlideFixed implements a sliding window of at most windowSize elements.
-func SlideFixed[T any](q Query[T], windowSize int) Query[Delta[T]] {
-	return windowValues(SlideTime(Index(q), windowSize))
+func SlideFixed[T any](seq iter.Seq[T], windowSize int) iter.Seq[Delta[T]] {
+	return windowValues(SlideTime(indexSeq(seq), windowSize))
 }
 
-// SlideTime implements a sliding window of elements that are younger than the
-// specified expiryAge.
+// SlideFixedQuery implements a sliding window of at most windowSize elements
+// over a Query.
+func SlideFixedQuery[T any](q Query[T], windowSize int) Query[Delta[T]] {
+	return Pipe(q, SlideFixed(q.Seq(), windowSize))
+}
+
+// SlideTime implements a sliding window of elements younger than expiryAge.
 func SlideTime[Time num.RealNumber, T any](
-	q Query[KV[Time, T]],
+	seq iter.Seq[KV[Time, T]],
 	expiryAge Time,
-) Query[Delta[KV[Time, T]]] {
-	return Slide(q, func(older, current KV[Time, T]) bool {
+) iter.Seq[Delta[KV[Time, T]]] {
+	return Slide(seq, func(older, current KV[Time, T]) bool {
 		return current.Key-older.Key >= expiryAge
 	})
 }
 
-func windowValues[K, V any](q Query[Delta[KV[K, V]]]) Query[Delta[V]] {
-	return Select(q,
+// SlideTimeQuery implements a sliding window of elements younger than expiryAge
+// over a Query.
+func SlideTimeQuery[Time num.RealNumber, T any](
+	q Query[KV[Time, T]],
+	expiryAge Time,
+) Query[Delta[KV[Time, T]]] {
+	return SlideQuery(q, func(older, current KV[Time, T]) bool {
+		return current.Key-older.Key >= expiryAge
+	})
+}
+
+func windowValues[K, V any](seq iter.Seq[Delta[KV[K, V]]]) iter.Seq[Delta[V]] {
+	return Select(seq,
 		func(d Delta[KV[K, V]]) Delta[V] {
 			return newDelta(
-				Select(d.Outs, Value[KV[K, V]]),
+				FromSeq(Select(d.Outs.Seq(), Value[KV[K, V]])),
 				d.In.Value,
 			)
 		},
 	)
 }
 
-type Delta[T any] struct {
-	Outs Query[T]
-	In   T
-}
-
-func newDelta[T any](outs Query[T], in T) Delta[T] {
-	return Delta[T]{Outs: outs, In: in}
+// indexSeq adds integer indices to elements of a seq.
+func indexSeq[T any](seq iter.Seq[T]) iter.Seq[KV[int, T]] {
+	return func(yield func(KV[int, T]) bool) {
+		i := 0
+		for t := range seq {
+			if !yield(NewKV(i, t)) {
+				return
+			}
+			i++
+		}
+	}
 }

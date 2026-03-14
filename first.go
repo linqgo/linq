@@ -14,44 +14,48 @@
 
 package linq
 
+import "iter"
+
 // FirstCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
 func (q Query[T]) FirstCmp(cmp func(a, b T) int) (T, bool) {
-	return FirstCmp(q, cmp)
+	return FirstCmp(q.Seq(), cmp)
 }
 
 // LastCmp returns the element in q that cmp every other element or ok =
 // false if q is empty.
 func (q Query[T]) LastCmp(cmp func(a, b T) int) (T, bool) {
-	return LastCmp(q, cmp)
+	return LastCmp(q.Seq(), cmp)
 }
 
-// FirstCmp returns the element in q that cmp every other element or ok =
-// false if q is empty.
-func FirstCmp[T any](q Query[T], cmp func(a, b T) int) (T, bool) {
-	return firstBy(q, Identity[T], cmp)
+// FirstCmp returns the element in seq that cmp every other element or ok =
+// false if seq is empty.
+func FirstCmp[T any](seq iter.Seq[T], cmp func(a, b T) int) (T, bool) {
+	return firstBy(seq, Identity[T], cmp)
 }
 
-// LastCmp returns the element in q that cmp every other element or ok =
-// false if q is empty.
-func LastCmp[T any](q Query[T], cmp func(a, b T) int) (T, bool) {
-	return lastBy(q, Identity[T], cmp)
+// LastCmp returns the element in seq that cmp every other element or ok =
+// false if seq is empty.
+func LastCmp[T any](seq iter.Seq[T], cmp func(a, b T) int) (T, bool) {
+	return lastBy(seq, Identity[T], cmp)
 }
 
-func firstBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
+func firstBy[T, K any](seq iter.Seq[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
 	var firstValue T
 	var firstKey K
 	ok := false
-	for i, t := range q.ISeq() {
+	i := 0
+	for t := range seq {
 		k := key(t)
 		if i == 0 || cmp(k, firstKey) < 0 {
 			firstValue, firstKey = t, k
 		}
 		ok = true
+		i++
 	}
 	return firstValue, ok
 }
 
-func lastBy[T, K any](q Query[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
-	return firstBy(q, key, SwapArgs(cmp))
+func lastBy[T, K any](seq iter.Seq[T], key func(T) K, cmp func(a, b K) int) (T, bool) {
+	return firstBy(seq, key, SwapArgs(cmp))
 }

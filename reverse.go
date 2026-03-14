@@ -14,15 +14,13 @@
 
 package linq
 
-import "slices"
+import (
+	"iter"
+	"slices"
+)
 
 // Reverse returns a query with the elements of q in reverse.
 func (q Query[T]) Reverse() Query[T] {
-	return Reverse(q)
-}
-
-// Reverse returns a query with the elements of q in reverse.
-func Reverse[T any](q Query[T]) Query[T] {
 	var get Getter[T]
 	if q.count >= 0 {
 		if qget := q.getter(); qget != nil {
@@ -32,14 +30,21 @@ func Reverse[T any](q Query[T]) Query[T] {
 			}))
 		}
 	}
-	return FromSeq(
-		func(yield func(t T) bool) {
-			s := q.ToSlice()
-			slices.Reverse(s)
-			seqSlice(s)(yield)
-		},
-		OneShotOption[T](q.OneShot()),
+	return Pipe(q, Reverse(q.Seq()),
 		FastCountOption[T](q.fastCount()),
 		FastGetOption(get),
 	)
+}
+
+// Reverse returns a seq with the elements of seq in reverse.
+func Reverse[T any](seq iter.Seq[T]) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		s := slices.Collect(seq)
+		slices.Reverse(s)
+		for _, t := range s {
+			if !yield(t) {
+				return
+			}
+		}
+	}
 }

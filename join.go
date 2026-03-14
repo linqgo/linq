@@ -14,10 +14,55 @@
 
 package linq
 
-// Join returns the join of q1 and q2. selKey1 and selKey2 produce keys from
-// elements of q1 and q2, respectively. Element pairs with the same key are
+import "iter"
+
+// Join returns the join of a and b. selKeyA and selKeyB produce keys from
+// elements of a and b, respectively. Element pairs with the same key are
 // passed to selResult to produce output elements.
 func Join[A, B, R any, K comparable](
+	a iter.Seq[A],
+	b iter.Seq[B],
+	selKeyA func(a A) K,
+	selKeyB func(b B) K,
+	selResult func(a A, b B) R,
+) iter.Seq[R] {
+	return func(yield func(R) bool) {
+		lupA := newLookupBuilder(a, selKeyA)
+		defer lupA.Close()
+		lupB := newLookupBuilder(b, selKeyB)
+		defer lupB.Close()
+
+		// Scan both inputs till one runs out. The exhausted input's map will be
+		// used for lookups. The other side will be repackaged into a new seq
+		// for full traversal.
+		for {
+			okA := lupA.Next()
+			okB := lupB.Next()
+
+			switch {
+			case !okA:
+				lup := lupA.Lookup()
+				SelectMany(lupB.Requery(), func(b B) iter.Seq[R] {
+					return Select(seqSlice(lup[selKeyB(b)]), func(a A) R {
+						return selResult(a, b)
+					})
+				})(yield)
+				return
+			case !okB:
+				lup := lupB.Lookup()
+				SelectMany(lupA.Requery(), func(a A) iter.Seq[R] {
+					return Select(seqSlice(lup[selKeyA(a)]), func(b B) R {
+						return selResult(a, b)
+					})
+				})(yield)
+				return
+			}
+		}
+	}
+}
+
+// JoinQuery returns the join of a and b as a Query.
+func JoinQuery[A, B, R any, K comparable](
 	a Query[A],
 	b Query[B],
 	selKeyA func(a A) K,
@@ -28,40 +73,7 @@ func Join[A, B, R any, K comparable](
 		return None[R]()
 	}
 	return FromSeq(
-		func(yield func(R) bool) {
-			lupA := newLookupBuilder(a, selKeyA)
-			defer lupA.Close()
-			lupB := newLookupBuilder(b, selKeyB)
-			defer lupB.Close()
-
-			// Scan both inputs till one runs out. The exhausted input's map will be
-			// used for lookups. The other side will be repackaged into a new query
-			// for full traversal. This includes the entries already loaded into the
-			// now unneeded lookup and the values remaining in the enumerator.
-			for {
-				okA := lupA.Next()
-				okB := lupB.Next()
-
-				switch {
-				case !okA:
-					lup := lupA.Lookup()
-					SelectMany(lupB.Requery(), func(b B) Query[R] {
-						return Select(From(lup[selKeyB(b)]...), func(a A) R {
-							return selResult(a, b)
-						})
-					}).Seq()(yield)
-					return
-				case !okB:
-					lup := lupB.Lookup()
-					SelectMany(lupA.Requery(), func(a A) Query[R] {
-						return Select(From(lup[selKeyA(a)]...), func(b B) R {
-							return selResult(a, b)
-						})
-					}).Seq()(yield)
-					return
-				}
-			}
-		},
+		Join(a.Seq(), b.Seq(), selKeyA, selKeyB, selResult),
 		OneShotOption[R](a.OneShot() || b.OneShot()),
 	)
 }

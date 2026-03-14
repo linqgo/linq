@@ -80,6 +80,6 @@ func TestTakeWhile(t *testing.T) {
 func TestTakeElementAt(t *testing.T) {
 	t.Parallel()
 
-	assertSome(t, 2, maybe(linq.Take(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(1)))
-	assertNo(t, maybe(linq.Take(linq.From(1, 2, 3, 4, 5), 3).FastElementAt(3)))
+	assertSome(t, 2, maybe(linq.From(1, 2, 3, 4, 5).Take(3).FastElementAt(1)))
+	assertNo(t, maybe(linq.From(1, 2, 3, 4, 5).Take(3).FastElementAt(3)))
 }

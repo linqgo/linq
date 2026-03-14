@@ -14,19 +14,44 @@
 
 package linq
 
+import "iter"
+
 // Skip returns a query all elements of q except the first n.
 func (q Query[T]) Skip(skip int) Query[T] {
-	return Skip(q, skip)
+	if skip <= 0 {
+		return q
+	}
+	count := countWhenSkipping(q, skip)
+	if count == 0 {
+		return None[T]()
+	}
+	var get Getter[T]
+	if qget := q.getter(); qget != nil {
+		get = func(i int) (T, bool) { return qget(skip + i) }
+	}
+	return Pipe(q, Skip(q.Seq(), skip),
+		FastCountOption[T](count),
+		FastGetOption(get),
+	)
 }
 
 // SkipLast returns a query all elements of q except the last n.
 func (q Query[T]) SkipLast(skip int) Query[T] {
-	return SkipLast(q, skip)
+	if skip == 0 {
+		return q
+	}
+	count := countWhenSkipping(q, skip)
+	if count >= 0 {
+		return q.Take(q.fastCount() - skip)
+	}
+	return Pipe(q, SkipLast(q.Seq(), skip),
+		FastCountOption[T](count))
 }
 
 // SkipWhile returns a query that skips elements of q while pred returns true.
 func (q Query[T]) SkipWhile(pred func(t T) bool) Query[T] {
-	return SkipWhile(q, pred)
+	return Pipe(q, SkipWhile(q.Seq(), pred),
+		FastCountIfEmptyOption[T](q.fastCount()))
 }
 
 func countWhenSkipping[T any](q Query[T], skip int) int {
@@ -41,58 +66,40 @@ func countWhenSkipping[T any](q Query[T], skip int) int {
 	}
 }
 
-// Skip returns a query all elements of q except the first n.
-func Skip[T any](q Query[T], skip int) Query[T] {
-	if skip <= 0 {
-		return q
+// Skip returns a seq with all elements of seq except the first n.
+func Skip[T any](seq iter.Seq[T], skip int) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		i := 0
+		seq(func(t T) bool {
+			i++
+			return i <= skip || yield(t)
+		})
 	}
-	count := countWhenSkipping(q, skip)
-	if count == 0 {
-		return None[T]()
-	}
-	var get Getter[T]
-	if qget := q.getter(); qget != nil {
-		get = func(i int) (T, bool) { return qget(skip + i) }
-	}
-	return Pipe(q,
-		func(yield func(T) bool) {
-			q.ISeq()(func(i int, t T) bool {
-				return i < skip || yield(t)
-			})
-		},
-		FastCountOption[T](count),
-		FastGetOption(get),
-	)
 }
 
-// SkipLast returns a query all elements of q except the last n.
-func SkipLast[T any](q Query[T], skip int) Query[T] {
-	if skip == 0 {
-		return q
-	}
-	count := countWhenSkipping(q, skip)
-	if count >= 0 {
-		return Take(q, q.count-skip)
-	}
-	return Pipe(q, func(yield func(T) bool) {
+// SkipLast returns a seq with all elements of seq except the last n.
+func SkipLast[T any](seq iter.Seq[T], skip int) iter.Seq[T] {
+	return func(yield func(T) bool) {
 		buf := make([]T, skip)
-		for i, t := range q.ISeq() {
+		i := 0
+		for t := range seq {
 			p := &buf[i%skip]
 			if i >= skip && !yield(*p) {
 				return
 			}
 			*p = t
+			i++
 		}
-	}, FastCountOption[T](count))
+	}
 }
 
-// SkipWhile returns a query that skips elements of q while pred returns true.
-func SkipWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return Pipe(q, func(yield func(T) bool) {
+// SkipWhile returns a seq that skips elements of seq while pred returns true.
+func SkipWhile[T any](seq iter.Seq[T], pred func(t T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
 		active := false
-		q.Seq()(func(t T) bool {
+		seq(func(t T) bool {
 			active = active || !pred(t)
 			return !active || yield(t)
 		})
-	}, FastCountIfEmptyOption[T](q.fastCount()))
+	}
 }

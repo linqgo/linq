@@ -14,6 +14,27 @@
 
 package linq
 
+import "iter"
+
+// ChunkSlices returns the elements of seq in slices of the specified size.
+func ChunkSlices[T any](seq iter.Seq[T], size int) iter.Seq[[]T] {
+	return func(yield func([]T) bool) {
+		chunk := make([]T, 0, size)
+		for t := range seq {
+			if len(chunk) == size {
+				if !yield(chunk) {
+					return
+				}
+				chunk = make([]T, 0, size)
+			}
+			chunk = append(chunk, t)
+		}
+		if len(chunk) > 0 {
+			yield(chunk)
+		}
+	}
+}
+
 // Chunk returns the elements of q in queries containing chunks of the specified
 // size.
 func Chunk[T any](q Query[T], size int) Query[Query[T]] {
@@ -29,21 +50,9 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 	}
 	return Pipe(
 		q,
-		func(yield func(Query[T]) bool) {
-			chunk := make([]T, 0, size)
-			for t := range q.Seq() {
-				if len(chunk) == size {
-					if !yield(From(chunk...)) {
-						return
-					}
-					chunk = make([]T, 0, size)
-				}
-				chunk = append(chunk, t)
-			}
-			if len(chunk) > 0 {
-				yield(From(chunk...))
-			}
-		},
+		Select(ChunkSlices(q.Seq(), size), func(chunk []T) Query[T] {
+			return From(chunk...)
+		}),
 		ComputedFastCountOption[Query[T]](q.fastCount(), func(count int) int {
 			return (count-1)/size + 1
 		}),
@@ -51,7 +60,12 @@ func Chunk[T any](q Query[T], size int) Query[Query[T]] {
 	)
 }
 
-// ChunkSlices returns the elements of q in slices of the specified size.
-func ChunkSlices[T any](q Query[T], size int) Query[[]T] {
-	return Select(Chunk(q, size), func(c Query[T]) []T { return c.ToSlice() })
+// ChunkSlicesQuery returns the elements of q in slices of the specified size.
+func ChunkSlicesQuery[T any](q Query[T], size int) Query[[]T] {
+	return Pipe(q,
+		ChunkSlices(q.Seq(), size),
+		ComputedFastCountOption[[]T](q.fastCount(), func(count int) int {
+			return (count-1)/size + 1
+		}),
+	)
 }

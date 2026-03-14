@@ -30,7 +30,7 @@ func TestGroupBy(t *testing.T) {
 	q := linq.GroupBy(linq.From(1, 2, 3, 4, 5), mod2)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMap(q,
+		linq.MustToMap(q.Seq(),
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
@@ -50,14 +50,22 @@ func TestGroupBySlices(t *testing.T) {
 
 	mod2 := func(t int) int { return t % 2 }
 
-	q := linq.GroupBySlices(linq.From(1, 2, 3, 4, 5), mod2)
+	// Test the free function (iter.Seq version)
+	result := make(map[int][]int)
+	for kv := range linq.GroupBySlices(linq.From(1, 2, 3, 4, 5).Seq(), mod2) {
+		result[kv.Key] = kv.Value
+	}
+	assert.Equal(t, map[int][]int{0: {2, 4}, 1: {1, 3, 5}}, result)
+
+	// Test the Query version
+	q := linq.GroupBySlicesQuery(linq.From(1, 2, 3, 4, 5), mod2)
 	assert.Equal(t,
 		map[int][]int{0: {2, 4}, 1: {1, 3, 5}},
-		linq.MustToMapKV(q),
+		linq.MustToMapKV(q.Seq()),
 	)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.GroupBySlices(linq.FromChannel(make(chan int)), mod2))
+	assertOneShot(t, true, linq.GroupBySlicesQuery(linq.FromChannel(make(chan int)), mod2))
 
 	assertSome(t, 0, linq.GroupBy(linq.None[int](), mod2).FastCount)
 	assertNo(t, q.FastCount)
@@ -73,7 +81,7 @@ func TestGroupBySelect(t *testing.T) {
 	)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMap(q,
+		linq.MustToMap(q.Seq(),
 			func(kv linq.KV[int, linq.Query[int]]) linq.KV[int, []int] {
 				return linq.NewKV(kv.Key, kv.Value.ToSlice())
 			},
@@ -100,27 +108,38 @@ func TestGroupBySelect(t *testing.T) {
 func TestGroupBySelectSlices(t *testing.T) {
 	t.Parallel()
 
-	q := linq.GroupBySelectSlices(
+	// Test the free function (iter.Seq version)
+	result := make(map[int][]int)
+	for kv := range linq.GroupBySelectSlices(
+		linq.From(1, 2, 3, 4, 5).Seq(),
+		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
+	) {
+		result[kv.Key] = kv.Value
+	}
+	assert.Equal(t, map[int][]int{0: {12, 14}, 1: {11, 13, 15}}, result)
+
+	// Test the Query version
+	q := linq.GroupBySelectSlicesQuery(
 		linq.From(1, 2, 3, 4, 5),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	)
 	assert.Equal(t,
 		map[int][]int{0: {12, 14}, 1: {11, 13, 15}},
-		linq.MustToMapKV(q),
+		linq.MustToMapKV(q.Seq()),
 	)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.GroupBySelectSlices(
+	assertOneShot(t, true, linq.GroupBySelectSlicesQuery(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	))
 
-	assertSome(t, 0, linq.GroupBySelectSlices(
+	assertSome(t, 0, linq.GroupBySelectSlicesQuery(
 		linq.None[int](),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	).FastCount)
 	assertNo(t, q.FastCount)
-	assertNo(t, linq.GroupBySelectSlices(
+	assertNo(t, linq.GroupBySelectSlicesQuery(
 		linq.FromChannel(make(chan int)),
 		func(t int) linq.KV[int, int] { return linq.NewKV(t%2, 10+t) },
 	).FastCount)

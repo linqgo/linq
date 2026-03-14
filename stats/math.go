@@ -27,7 +27,7 @@ import (
 // This function is equivalent to "..".Average, which is retained for parity
 // with .Net's Enumerable class.
 func Mean[R num.RealNumber](q linq.Query[R]) (R, bool) {
-	return linq.Average(q)
+	return linq.Average(q.Seq())
 }
 
 // GeometricMean returns the geometric mean of the numbers in q or ok=false if q
@@ -57,7 +57,7 @@ func Product[R num.Number](q linq.Query[R]) R { return aggregate(q, 1, mul[R]) }
 //
 // This function is equivalent to "..".Sum, which is retained for parity with
 // .Net's Enumerable class.
-func Sum[R num.Number](q linq.Query[R]) R { return linq.Sum(q) }
+func Sum[R num.Number](q linq.Query[R]) R { return linq.Sum(q.Seq()) }
 
 func add[N num.Number](a, b N) N             { return a + b }
 func sub[N num.Number](a, b N) N             { return a - b }

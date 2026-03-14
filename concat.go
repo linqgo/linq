@@ -14,17 +14,30 @@
 
 package linq
 
+import "iter"
+
+// Concat returns the concatenation of seqs. Enumerating it enumerates the
+// elements of each seq in turn.
+func Concat[T any](seqs ...iter.Seq[T]) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, seq := range seqs {
+			seq(yield)
+		}
+	}
+}
+
 // Concat returns the concatenation of q and r. Enumerating it enumerates the
 // elements of each Query in turn.
 func (q Query[T]) Concat(r Query[T]) Query[T] {
-	return Concat(q, r)
+	return q.ConcatAll(r)
 }
 
-// Concat returns the concatenation of queries. Enumerating it enumerates the
-// elements of each Query in turn.
-func Concat[T any](queries ...Query[T]) Query[T] {
+// ConcatAll returns the concatenation of q with additional queries.
+func (q Query[T]) ConcatAll(queries ...Query[T]) Query[T] {
+	all := append([]Query[T]{q}, queries...)
+
 	oneshot := false
-	for _, q := range queries {
+	for _, q := range all {
 		if q.OneShot() {
 			oneshot = true
 			break
@@ -33,11 +46,11 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 	nonempty := 0
 	count := 0
-	for i, q := range queries {
+	for i, q := range all {
 		c := q.fastCount()
 		if c != 0 {
 			if nonempty < i {
-				queries[nonempty] = q
+				all[nonempty] = q
 			}
 			nonempty++
 			if c < 0 {
@@ -51,13 +64,14 @@ func Concat[T any](queries ...Query[T]) Query[T] {
 
 	// Exactly one non-empty input?
 	if nonempty == 1 {
-		return queries[0]
+		return all[0]
 	}
-	queries = queries[:nonempty]
+	all = all[:nonempty]
 
-	return FromSeq(func(yield func(T) bool) {
-		for _, q := range queries {
-			q.Seq()(yield)
-		}
-	}, OneShotOption[T](oneshot), FastCountOption[T](count))
+	seqs := make([]iter.Seq[T], len(all))
+	for i, q := range all {
+		seqs[i] = q.Seq()
+	}
+
+	return FromSeq(Concat(seqs...), OneShotOption[T](oneshot), FastCountOption[T](count))
 }

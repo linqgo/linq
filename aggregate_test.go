@@ -46,7 +46,7 @@ func TestAggregateSeed(t *testing.T) {
 	)
 
 	assert.Equal(t, ".1.2.3.4.5",
-		linq.AggregateSeed(linq.From(1, 2, 3, 4, 5), "",
+		linq.AggregateSeed(linq.From(1, 2, 3, 4, 5).Seq(), "",
 			func(a string, b int) string { return fmt.Sprintf("%s.%d", a, b) },
 		),
 	)

@@ -14,19 +14,48 @@
 
 package linq
 
+import "iter"
+
 // Take returns a query with the first n elements of q.
 func (q Query[T]) Take(count int) Query[T] {
-	return Take(q, count)
+	take := count
+	cnt, all := countWhenTaking(q, take)
+	if all {
+		return q
+	}
+	if cnt == 0 {
+		return None[T]()
+	}
+	var get Getter[T]
+	if qget := q.getter(); qget != nil {
+		get = func(i int) (T, bool) {
+			if i < take {
+				return qget(i)
+			}
+			return no[T]()
+		}
+	}
+	return Pipe(q, Take(q.Seq(), take),
+		FastCountOption[T](cnt),
+		FastGetOption(get),
+	)
 }
 
 // TakeLast returns a query with the last n elements of q.
 func (q Query[T]) TakeLast(count int) Query[T] {
-	return TakeLast(q, count)
+	if q.fastCount() >= 0 {
+		return q.Skip(q.fastCount() - count)
+	}
+	cnt, _ := countWhenTaking(q, count)
+	return Pipe(q, TakeLast(q.Seq(), count),
+		FastCountOption[T](cnt),
+	)
 }
 
 // TakeWhile returns a query that takes elements of q while pred returns true.
 func (q Query[T]) TakeWhile(pred func(t T) bool) Query[T] {
-	return TakeWhile(q, pred)
+	return Pipe(q, TakeWhile(q.Seq(), pred),
+		FastCountIfEmptyOption[T](q.fastCount()))
 }
 
 func countWhenTaking[T any](q Query[T], take int) (count int, all bool) {
@@ -40,65 +69,41 @@ func countWhenTaking[T any](q Query[T], take int) (count int, all bool) {
 	return count, count >= 0
 }
 
-// Take returns a query with the first n elements of q.
-func Take[T any](q Query[T], take int) Query[T] {
-	count, all := countWhenTaking(q, take)
-	if all {
-		return q
-	}
-	if count == 0 {
-		return None[T]()
-	}
-	var get Getter[T]
-	if qget := q.getter(); qget != nil {
-		get = func(i int) (T, bool) {
-			if i < take {
-				return qget(i)
+// Take returns a seq with the first n elements of seq.
+func Take[T any](seq iter.Seq[T], take int) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		i := 0
+		seq(func(t T) bool {
+			if i >= take {
+				return false
 			}
-			return no[T]()
+			i++
+			return yield(t)
+		})
+	}
+}
+
+// TakeLast returns a seq with the last n elements of seq.
+func TakeLast[T any](seq iter.Seq[T], take int) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		buf := make([]T, take)
+		i := 0
+		for t := range seq {
+			buf[i%take] = t
+			i++
 		}
+		if i >= len(buf) {
+			seqSlice(buf[i%len(buf):])(yield)
+		}
+		seqSlice(buf[:i%len(buf)])(yield)
 	}
-	return Pipe(q,
-		func(yield func(T) bool) {
-			q.ISeq()(func(i int, t T) bool {
-				return i < take && yield(t)
-			})
-		},
-		FastCountOption[T](count),
-		FastGetOption(get),
-	)
 }
 
-// TakeLast returns a query with the last n elements of q.
-func TakeLast[T any](q Query[T], take int) Query[T] {
-	if q.count >= 0 {
-		return Skip(q, q.count-take)
+// TakeWhile returns a seq that takes elements of seq while pred returns true.
+func TakeWhile[T any](seq iter.Seq[T], pred func(t T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		seq(func(t T) bool {
+			return pred(t) && yield(t)
+		})
 	}
-	count, _ := countWhenTaking(q, take)
-	return Pipe(q,
-		func(yield func(T) bool) {
-			buf := make([]T, take)
-			i := 0
-			for t := range q.Seq() {
-				buf[i%take] = t
-				i++
-			}
-			if i >= len(buf) {
-				seqSlice(buf[i%len(buf):])(yield)
-			}
-			seqSlice(buf[:i%len(buf)])(yield)
-		},
-		FastCountOption[T](count),
-	)
-}
-
-// TakeWhile returns a query that takes elements of q while pred returns true.
-func TakeWhile[T any](q Query[T], pred func(t T) bool) Query[T] {
-	return Pipe(q,
-		func(yield func(T) bool) {
-			q.Seq()(func(t T) bool {
-				return pred(t) && yield(t)
-			})
-		},
-		FastCountIfEmptyOption[T](q.fastCount()))
 }

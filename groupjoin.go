@@ -14,7 +14,26 @@
 
 package linq
 
+import "iter"
+
+// GroupJoin returns the group join of outer and inner seqs.
 func GroupJoin[Outer, Inner, Result any, Key comparable](
+	outer iter.Seq[Outer],
+	inner iter.Seq[Inner],
+	outerKey func(Outer) Key,
+	innerKey func(Inner) Key,
+	result func(Outer, iter.Seq[Inner]) Result,
+) iter.Seq[Result] {
+	return func(yield func(Result) bool) {
+		lup := buildLookup(inner, innerKey)
+		outer(func(o Outer) bool {
+			return yield(result(o, seqSlice(lup[outerKey(o)])))
+		})
+	}
+}
+
+// GroupJoinQuery returns the group join of outer and inner queries.
+func GroupJoinQuery[Outer, Inner, Result any, Key comparable](
 	outer Query[Outer],
 	inner Query[Inner],
 	outerKey func(Outer) Key,
@@ -25,12 +44,16 @@ func GroupJoin[Outer, Inner, Result any, Key comparable](
 		return None[Result]()
 	}
 	return FromSeq(
-		func(yield func(Result) bool) {
-			lup := buildLookup(inner, innerKey)
-			outer.Seq()(func(o Outer) bool {
-				return yield(result(o, From(lup[outerKey(o)]...)))
-			})
-		},
+		GroupJoin(outer.Seq(), inner.Seq(), outerKey, innerKey,
+			func(o Outer, inners iter.Seq[Inner]) Result {
+				// Collect the inner seq into a slice so we can wrap as Query
+				var s []Inner
+				for i := range inners {
+					s = append(s, i)
+				}
+				return result(o, From(s...))
+			},
+		),
 		OneShotOption[Result](outer.OneShot() || inner.OneShot()),
 		FastCountOption[Result](outer.fastCount()),
 	)

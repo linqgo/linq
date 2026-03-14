@@ -34,7 +34,7 @@ func TestSequenceEqual(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			seq, eeq := a == b, linq.SequenceEqual(qa, qb)
+			seq, eeq := a == b, linq.SequenceEqual(qa.Seq(), qb.Seq())
 			assert.Equal(t, seq, eeq, "%q == %q expected %v, got %v", a, b, seq, eeq)
 		}
 	}
@@ -69,7 +69,7 @@ func TestSequenceGreater(t *testing.T) {
 		for _, b := range data {
 			qb := linq.FromString(b)
 
-			slt, elt := a > b, linq.SequenceGreater(qa, qb)
+			slt, elt := a > b, linq.SequenceGreater(qa.Seq(), qb.Seq())
 			assert.Equal(t, slt, elt, "%q > %q expected %v, got %v", a, b, slt, elt)
 		}
 	}

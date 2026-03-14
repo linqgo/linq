@@ -15,6 +15,7 @@
 package linq_test
 
 import (
+	"iter"
 	"math/bits"
 	"testing"
 
@@ -33,6 +34,13 @@ func TestSelect(t *testing.T) {
 
 	assertSome(t, 5, q.FastCount)
 	assertNo(t, oneshot().Select(square).FastCount)
+}
+
+func TestSelectFree(t *testing.T) {
+	t.Parallel()
+
+	square := func(x int) int { return x * x }
+	assertSeqEqual(t, []int{0, 1, 4, 9, 16}, linq.Select(linq.Iota1(5).Seq(), square))
 }
 
 func primeFactors(n int) linq.Query[int] {
@@ -54,12 +62,8 @@ func primeFactors(n int) linq.Query[int] {
 func TestSelectMany(t *testing.T) {
 	t.Parallel()
 
-	q := linq.SelectMany(linq.From(42, 56), primeFactors)
-	assertQueryEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
-
-	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.SelectMany(oneshot(), primeFactors))
-
-	assertNo(t, q.FastCount)
-	assertNo(t, linq.SelectMany(oneshot(), primeFactors).FastCount)
+	q := linq.SelectMany(linq.From(42, 56).Seq(), func(n int) iter.Seq[int] {
+		return primeFactors(n).Seq()
+	})
+	assertSeqEqual(t, []int{2, 3, 7, 2, 2, 2, 7}, q)
 }

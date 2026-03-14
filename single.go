@@ -14,17 +14,21 @@
 
 package linq
 
+import "iter"
+
 func (q Query[T]) Single() (T, bool) {
-	return Single(q)
+	return Single(q.Seq())
 }
 
-func Single[T any](q Query[T]) (T, bool) {
+func Single[T any](seq iter.Seq[T]) (T, bool) {
 	i := -1
 	var t T
-	for i, t = range q.ISeq() {
+	for v := range seq {
+		i++
 		if i == 1 {
 			return no[T]()
 		}
+		t = v
 	}
 	return t, i == 0
 }

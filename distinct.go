@@ -14,34 +14,34 @@
 
 package linq
 
-// Distinct contains elements from an query with duplicates removed.
-func Distinct[T comparable](q Query[T]) Query[T] {
-	return DistinctBy(q, Identity[T])
+import "iter"
+
+// Distinct returns a seq with duplicates removed.
+func Distinct[T comparable](seq iter.Seq[T]) iter.Seq[T] {
+	return DistinctBy(seq, Identity[T])
 }
 
-// DistinctBy contains elements from a query with duplicates removed. A selector
-// function produces values for comparison. E.g. for case-insensitive
-// deduplication:
-//
-//	DistinctBy(names, strings.ToUpper)
-func DistinctBy[T any, U comparable](q Query[T], sel func(t T) U) Query[T] {
-	var fastCountOption QueryOption[T]
+// DistinctBy returns a seq with duplicates removed. A selector
+// function produces values for comparison.
+func DistinctBy[T any, U comparable](seq iter.Seq[T], sel func(t T) U) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		s := set[U]{}
+		for t := range seq {
+			if u := sel(t); !s.Has(u) {
+				s.Add(u)
+				if !yield(t) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// DistinctQuery returns a query with duplicates removed, preserving metadata.
+func DistinctQuery[T comparable](q Query[T]) Query[T] {
 	switch q.fastCount() {
 	case 0, 1:
 		return q
 	}
-
-	return Pipe(q,
-		func(yield func(T) bool) {
-			s := set[U]{}
-			for t := range q.Seq() {
-				if u := sel(t); !s.Has(u) {
-					s.Add(u)
-					if !yield(t) {
-						return
-					}
-				}
-			}
-		},
-		fastCountOption)
+	return Pipe(q, Distinct(q.Seq()))
 }

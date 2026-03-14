@@ -21,17 +21,19 @@ import (
 )
 
 var (
-	testNums  = linq.Select(linq.Iota2(1, 11), func(i int) float64 { return float64(i) })
+	testNums  = linq.Select(linq.Iota2(1, 11).Seq(), func(i int) float64 { return float64(i) })
 	emptyNums = linq.None[float64]()
 )
 
 func TestMax(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 10.0, maybe(linq.Max(data)))
-		assertNo(t, maybe(linq.Max(emptyNums)))
-	}
+	assertSome(t, 10.0, maybe(linq.Max(testNums)))
+	assertNo(t, maybe(linq.Max(emptyNums.Seq())))
+
+	// Also test with reversed data via Query
+	rev := linq.FromSeq(testNums).Reverse()
+	assertSome(t, 10.0, maybe(linq.Max(rev.Seq())))
 }
 
 func TestMaxBy(t *testing.T) {
@@ -59,10 +61,11 @@ func TestMaxBy(t *testing.T) {
 func TestMin(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
-		assertSome(t, 1.0, maybe(linq.Min(data)))
-		assertNo(t, maybe(linq.Min(emptyNums)))
-	}
+	assertSome(t, 1.0, maybe(linq.Min(testNums)))
+	assertNo(t, maybe(linq.Min(emptyNums.Seq())))
+
+	rev := linq.FromSeq(testNums).Reverse()
+	assertSome(t, 1.0, maybe(linq.Min(rev.Seq())))
 }
 
 func TestMinBy(t *testing.T) {

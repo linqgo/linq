@@ -16,43 +16,64 @@ package linq
 
 import (
 	"cmp"
+	"iter"
 	"slices"
 )
 
-func (q Query[T]) OrderCmp(cmp CmpFn[T]) Query[T]     { return OrderCmp(q, cmp) }
-func (q Query[T]) OrderCmpDesc(cmp CmpFn[T]) Query[T] { return OrderCmpDesc(q, cmp) }
+// Query methods delegate to Query-level functions.
+func (q Query[T]) OrderCmp(cmp CmpFn[T]) Query[T]     { return OrderCmpQuery(q, cmp) }
+func (q Query[T]) OrderCmpDesc(cmp CmpFn[T]) Query[T] { return OrderCmpDescQuery(q, cmp) }
 func (q Query[T]) ThenCmp(cmp CmpFn[T]) Query[T]      { return ThenCmp(q, cmp) }
-func (q Query[T]) ThenCmpDesc(cmp CmpFn[T]) Query[T]  { return ThenCmpDesc(q, cmp) }
+func (q Query[T]) ThenCmpDesc(cmp CmpFn[T]) Query[T]   { return ThenCmpDesc(q, cmp) }
 
-func OrderCmp[T any](q Query[T], cmp CmpFn[T]) Query[T]     { return oq(q, cmp) }
-func OrderCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T] { return oq(q, ba(cmp)) }
-func ThenCmp[T any](q Query[T], cmp CmpFn[T]) Query[T]      { return oq(q, then(q, cmp)) }
-func ThenCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T]  { return oq(q, then(q, ba(cmp))) }
+// Free functions: accept iter.Seq, return iter.Seq.
+func OrderCmp[T any](seq iter.Seq[T], cmp CmpFn[T]) iter.Seq[T]     { return sortSeq(seq, cmp) }
+func OrderCmpDesc[T any](seq iter.Seq[T], cmp CmpFn[T]) iter.Seq[T] { return sortSeq(seq, ba(cmp)) }
 
-func Order[T Ord](q Query[T]) Query[T]                             { return oq(q, kab(Identity[T])) }
-func OrderDesc[T Ord](q Query[T]) Query[T]                         { return oq(q, kba(Identity[T])) }
-func OrderBy[T any, K Ord](q Query[T], key func(T) K) Query[T]     { return oq(q, kab(key)) }
-func OrderByDesc[T any, K Ord](q Query[T], key func(T) K) Query[T] { return oq(q, kba(key)) }
-func OrderByKey[T KV[K, V], K Ord, V any](q Query[T]) Query[T]     { return oq(q, kab(Key[T])) }
-func OrderByKeyDesc[T KV[K, V], K Ord, V any](q Query[T]) Query[T] { return oq(q, kba(Key[T])) }
+func Order[T Ord](seq iter.Seq[T]) iter.Seq[T]                             { return sortSeq(seq, kab(Identity[T])) }
+func OrderDesc[T Ord](seq iter.Seq[T]) iter.Seq[T]                         { return sortSeq(seq, kba(Identity[T])) }
+func OrderBy[T any, K Ord](seq iter.Seq[T], key func(T) K) iter.Seq[T]     { return sortSeq(seq, kab(key)) }
+func OrderByDesc[T any, K Ord](seq iter.Seq[T], key func(T) K) iter.Seq[T] { return sortSeq(seq, kba(key)) }
 
+// Query-level functions: accept Query, return Query.
+func OrderCmpQuery[T any](q Query[T], cmp CmpFn[T]) Query[T]     { return oq(q, cmp) }
+func OrderCmpDescQuery[T any](q Query[T], cmp CmpFn[T]) Query[T] { return oq(q, ba(cmp)) }
+
+func OrderQuery[T Ord](q Query[T]) Query[T]                             { return oq(q, kab(Identity[T])) }
+func OrderDescQuery[T Ord](q Query[T]) Query[T]                         { return oq(q, kba(Identity[T])) }
+func OrderByQuery[T any, K Ord](q Query[T], key func(T) K) Query[T]     { return oq(q, kab(key)) }
+func OrderByDescQuery[T any, K Ord](q Query[T], key func(T) K) Query[T] { return oq(q, kba(key)) }
+func OrderByKeyQuery[T KV[K, V], K Ord, V any](q Query[T]) Query[T]     { return oq(q, kab(Key[T])) }
+func OrderByKeyDescQuery[T KV[K, V], K Ord, V any](q Query[T]) Query[T] { return oq(q, kba(Key[T])) }
+
+// Then* functions remain Query-only (they read q.cmp() which is Query metadata).
 func Then[T Ord](q Query[T]) Query[T]                             { return oq(q, then(q, kab(Identity[T]))) }
 func ThenDesc[T Ord](q Query[T]) Query[T]                         { return oq(q, then(q, kba(Identity[T]))) }
 func ThenBy[T any, K Ord](q Query[T], key func(T) K) Query[T]     { return oq(q, then(q, kab(key))) }
 func ThenByKeyDesc[T KV[K, V], K Ord, V any](q Query[T]) Query[T] { return oq(q, then(q, kba(Key[T]))) }
 func ThenByKey[T KV[K, V], K Ord, V any](q Query[T]) Query[T]     { return oq(q, then(q, kab(Key[T]))) }
 func ThenByDesc[T any, K Ord](q Query[T], key func(T) K) Query[T] { return oq(q, then(q, kba(key))) }
+func ThenCmp[T any](q Query[T], cmp CmpFn[T]) Query[T]            { return oq(q, then(q, cmp)) }
+func ThenCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T]        { return oq(q, then(q, ba(cmp))) }
 
 var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy/ThenBy"
+
+// sortSeq sorts elements from a seq using the given comparator.
+func sortSeq[T any](seq iter.Seq[T], cmp CmpFn[T]) iter.Seq[T] {
+	return func(yield func(t T) bool) {
+		var data []T
+		for t := range seq {
+			data = append(data, t)
+		}
+		slices.SortFunc(data, cmp)
+		seqSlice(data)(yield)
+	}
+}
 
 // oq returns a query that orders q's elements according to cmp.
 func oq[T any](q Query[T], cmp CmpFn[T]) Query[T] {
 	return FromSeq(
-		func(yield func(t T) bool) {
-			data := q.ToSlice()
-			slices.SortFunc(data, cmp)
-			seqSlice(data)(yield)
-		},
+		sortSeq(q.Seq(), cmp),
 		CmpersOption(cmp),
 		OneShotOption[T](q.OneShot()),
 		FastCountOption[T](q.fastCount()),

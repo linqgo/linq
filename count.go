@@ -14,9 +14,14 @@
 
 package linq
 
+import "iter"
+
 // Count returns the number of elements in q.
 func (q Query[T]) Count() int {
-	return Count(q)
+	if c, ok := q.FastCount(); ok {
+		return c
+	}
+	return Count(q.Seq())
 }
 
 // CountLimit returns a limited count, c, such that min(limit, Count(q)) <= c <=
@@ -24,24 +29,25 @@ func (q Query[T]) Count() int {
 // without necessarily consuming it. One example is activating pagination
 // controls for a result with at least 11 elements.
 //
-// If the query has a FastCount(), the return value is the true count.
+// If the query has a FastCount() the return value is the true count.
 func (q Query[T]) CountLimit(limit int) int {
-	return CountLimit(q, limit)
+	if c, ok := q.FastCount(); ok {
+		return min(limit, c)
+	}
+	return CountLimit(q.Seq(), limit)
 }
 
 // FastCount returns the number of elements in q if it can be computed in O(1)
 // time, otherwise the second return value is false.
 func (q Query[T]) FastCount() (int, bool) {
-	return FastCount(q)
+	count := q.fastCount()
+	return count, count >= 0
 }
 
-// Count returns the number of elements in q.
-func Count[T any](q Query[T]) int {
-	if c, ok := q.FastCount(); ok {
-		return c
-	}
+// Count returns the number of elements in seq.
+func Count[T any](seq iter.Seq[T]) int {
 	n := 0
-	for t := range q.Seq() {
+	for t := range seq {
 		_ = t
 		n++
 	}
@@ -56,13 +62,9 @@ func Count[T any](q Query[T]) int {
 //
 //	n := CountLimit(N + 1)
 //	n, more := min(n, N), n > N
-func CountLimit[T any](q Query[T], limit int) int {
-	if c, ok := FastCount(q); ok {
-		return min(limit, c)
-	}
-
+func CountLimit[T any](seq iter.Seq[T], limit int) int {
 	n := 0
-	for t := range q.Seq() {
+	for t := range seq {
 		if n == limit {
 			return n
 		}
@@ -70,11 +72,4 @@ func CountLimit[T any](q Query[T], limit int) int {
 		n++
 	}
 	return n
-}
-
-// FastCount returns the number of elements in q if it can be computed in O(1)
-// time, otherwise the second return value is false.
-func FastCount[T any](q Query[T]) (int, bool) {
-	count := q.fastCount()
-	return count, count >= 0
 }

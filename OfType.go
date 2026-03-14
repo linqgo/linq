@@ -14,16 +14,23 @@
 
 package linq
 
-// OfType returns a Query that contains all the elements of q that have type U.
-func OfType[U, T any](q Query[T]) Query[U] {
+import "iter"
+
+// OfType returns a seq that contains all the elements of seq that have type U.
+func OfType[U, T any](seq iter.Seq[T]) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		seq(func(t T) bool {
+			var i any = t
+			u, is := i.(U)
+			return !is || yield(u)
+		})
+	}
+}
+
+// OfTypeQuery returns a Query that contains all the elements of q that have type U.
+func OfTypeQuery[U, T any](q Query[T]) Query[U] {
 	return FromSeq(
-		func(yield func(U) bool) {
-			q.Seq()(func(t T) bool {
-				var i any = t
-				u, is := i.(U)
-				return !is || yield(u)
-			})
-		},
+		OfType[U](q.Seq()),
 		FastCountIfEmptyOption[U](q.fastCount()),
 		OneShotOption[U](q.OneShot()),
 	)

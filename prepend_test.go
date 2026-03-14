@@ -23,7 +23,10 @@ import (
 func TestPrepend(t *testing.T) {
 	t.Parallel()
 
-	q := linq.Prepend(6, 7)(linq.From(1, 2, 3, 4, 5)).Prepend(8, 9)
+	seq := linq.Prepend(6, 7)(linq.From(1, 2, 3, 4, 5).Seq())
+	assertSeqEqual(t, []int{6, 7, 1, 2, 3, 4, 5}, seq)
+
+	q := linq.From(1, 2, 3, 4, 5).Prepend(6, 7).Prepend(8, 9)
 	assertQueryEqual(t, []int{8, 9, 6, 7, 1, 2, 3, 4, 5}, q)
 
 	assertOneShot(t, false, q)

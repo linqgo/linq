@@ -19,7 +19,7 @@ import "iter"
 // Aggregate applies an aggregator function to the elements of q and returns the
 // aggregated result or !ok if q is empty.
 func (q Query[T]) Aggregate(agg func(a, b T) T) (T, bool) {
-	return Aggregate(q, agg)
+	return Aggregate(q.Seq(), agg)
 }
 
 // AggregateSeed applies an aggregator function to the elements of q, using
@@ -28,13 +28,13 @@ func (q Query[T]) Aggregate(agg func(a, b T) T) (T, bool) {
 // Use the global AggregateSeed function if the seed and result are not of
 // type T (e.g., concatenate a Query[int] into a string).
 func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
-	return AggregateSeed(q, seed, agg)
+	return AggregateSeed(q.Seq(), seed, agg)
 }
 
-// Aggregate applies an aggregator function to the elements of q and returns the
-// aggregated result or !ok if q is empty.
-func Aggregate[T any](q Query[T], agg func(a, b T) T) (T, bool) {
-	next, stop := iter.Pull(q.Seq())
+// Aggregate applies an aggregator function to the elements of seq and returns the
+// aggregated result or !ok if seq is empty.
+func Aggregate[T any](seq iter.Seq[T], agg func(a, b T) T) (T, bool) {
+	next, stop := iter.Pull(seq)
 	defer stop()
 	if seed, ok := next(); ok {
 		agg, _ := aggregateNEnum(seqNext(next), seed, agg)
@@ -43,19 +43,11 @@ func Aggregate[T any](q Query[T], agg func(a, b T) T) (T, bool) {
 	return no[T]()
 }
 
-// AggregateSeed applies an aggregator function to the elements of q, using seed
+// AggregateSeed applies an aggregator function to the elements of seq, using seed
 // as the initial value, and returns the aggregated result.
-func AggregateSeed[T, A any](q Query[T], seed A, agg func(a A, t T) A) A {
-	return aggregate(q, seed, agg)
-}
-
-func aggregate[T, A any](q Query[T], acc A, agg func(a A, t T) A) A {
-	t, _ := aggregateN(q, acc, agg)
+func AggregateSeed[T, A any](seq iter.Seq[T], seed A, agg func(a A, t T) A) A {
+	t, _ := aggregateNEnum(seq, seed, agg)
 	return t
-}
-
-func aggregateN[T, A any](q Query[T], acc A, agg func(a A, t T) A) (A, int) {
-	return aggregateNEnum(q.Seq(), acc, agg)
 }
 
 func aggregateNEnum[T, A any](seq iter.Seq[T], acc A, agg func(a A, t T) A) (A, int) {

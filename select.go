@@ -14,49 +14,47 @@
 
 package linq
 
+import "iter"
+
 // Select returns a query with the elements of q transformed by sel.
 //
 // Caveat: The output must be of the same type. For transforms to different
 // types, use the corresponding free function.
 func (q Query[T]) Select(sel func(t T) T) Query[T] {
-	return Select(q, sel)
-}
-
-// Select returns a query with the elements of q transformed by sel.
-func Select[T, U any](q Query[T], sel func(t T) U) Query[U] {
-	var get Getter[U]
+	var get Getter[T]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) (U, bool) {
+		get = func(i int) (T, bool) {
 			if t, ok := qget(i); ok {
 				return sel(t), true
 			}
-			return no[U]()
+			return no[T]()
 		}
 	}
-	return Pipe(q,
-		func(yield func(U) bool) {
-			q.Seq()(func(t T) bool {
-				return yield(sel(t))
-			})
-		},
+	return Pipe(q, Select(q.Seq(), sel),
 		FastGetOption(get),
-		FastCountOption[U](q.fastCount()),
+		FastCountOption[T](q.fastCount()),
 	)
 }
 
-// SelectMany projects each element of q to a subquery and flattens the
-// subqueries into a single query.
-func SelectMany[T, U any](q Query[T], project func(T) Query[U]) Query[U] {
-	return Pipe(q,
-		func(yield func(U) bool) {
-			for t := range q.Seq() {
-				for u := range project(t).Seq() {
-					if !yield(u) {
-						return
-					}
+// Select returns a seq with the elements of seq transformed by sel.
+func Select[T, U any](seq iter.Seq[T], sel func(t T) U) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		seq(func(t T) bool {
+			return yield(sel(t))
+		})
+	}
+}
+
+// SelectMany projects each element of seq to a sub-sequence and flattens the
+// sub-sequences into a single sequence.
+func SelectMany[T, U any](seq iter.Seq[T], project func(T) iter.Seq[U]) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		for t := range seq {
+			for u := range project(t) {
+				if !yield(u) {
+					return
 				}
 			}
-		},
-		FastCountIfEmptyOption[U](q.fastCount()),
-	)
+		}
+	}
 }

@@ -55,13 +55,13 @@ func TestGroupJoin(t *testing.T) {
 	// type that contains a person's name and
 	// a collection of names of the pets they own.
 	query := func(people linq.Query[Person], pets linq.Query[Pet]) linq.Query[Ownership] {
-		return linq.GroupJoin(people, pets,
+		return linq.GroupJoinQuery(people, pets,
 			linq.Identity[Person],
 			func(pet Pet) Person { return pet.Owner },
 			func(person Person, pets linq.Query[Pet]) Ownership {
 				return Ownership{
 					Owner: person.Name,
-					Pets:  linq.Select(pets, func(pet Pet) string { return pet.Name }).ToSlice(),
+					Pets:  toSlice(linq.Select(pets.Seq(), func(pet Pet) string { return pet.Name })),
 				}
 			},
 		)

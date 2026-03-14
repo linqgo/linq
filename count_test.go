@@ -29,13 +29,7 @@ func TestCount(t *testing.T) {
 	assert.Equal(t, 5, linq.From(1, 2, 3, 4, 5).Count())
 	assert.Equal(t, 1, linq.From(42).Count())
 	assert.Equal(t, 7,
-		linq.Concat(
-			linq.Concat(
-				linq.From(1, 2, 3),
-				linq.From(4),
-			),
-			linq.From(5, 6, 7),
-		).Count(),
+		linq.From(1, 2, 3).Concat(linq.From(4)).Concat(linq.From(5, 6, 7)).Count(),
 	)
 }
 

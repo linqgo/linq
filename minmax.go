@@ -14,43 +14,49 @@
 
 package linq
 
-import "cmp"
+import (
+	"cmp"
+	"iter"
+)
 
-// Max returns the highest number in q or ok=false if q is empty.
-func Max[R cmp.Ordered](q Query[R]) (R, bool) {
-	return Aggregate(q, max[R])
+// Max returns the highest number in seq or ok=false if seq is empty.
+func Max[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
+	return Aggregate(seq, max[R])
 }
 
 // MaxBy returns the element(s) in q with the highest key.
 func MaxBy[T any, R cmp.Ordered](q Query[T], key func(T) R) Query[T] {
-	return bestBy(q, key, greater[R])
+	return bestBy(q.Seq(), key, greater[R])
 }
 
-// Min returns the highest number in q or ok=false if q is empty.
-func Min[R cmp.Ordered](q Query[R]) (R, bool) {
-	return Aggregate(q, min[R])
+// Min returns the lowest number in seq or ok=false if seq is empty.
+func Min[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
+	return Aggregate(seq, min[R])
 }
 
-// MinBy returns the element in q with the highest key or ok = false if q is
+// MinBy returns the element in q with the lowest key or ok = false if q is
 // empty.
 func MinBy[T any, K cmp.Ordered](q Query[T], key func(T) K) Query[T] {
-	return bestBy(q, key, less[K])
+	return bestBy(q.Seq(), key, less[K])
 }
 
-func bestBy[T any, O cmp.Ordered](q Query[T], key func(T) O, better func(a, b O) bool) Query[T] {
+func bestBy[T any, O cmp.Ordered](seq iter.Seq[T], key func(T) O, better func(a, b O) bool) Query[T] {
 	return FromSeq(func(yield func(T) bool) {
 		var acc []T
 		var best O
-		for i, t := range q.ISeq() {
+		i := 0
+		for t := range seq {
 			k := key(t)
 			switch {
 			case i == 0, better(k, best):
 				best = k
 				acc = acc[:0]
 			case better(best, k):
+				i++
 				continue
 			}
 			acc = append(acc, t)
+			i++
 		}
 		seqSlice(acc)(yield)
 	})

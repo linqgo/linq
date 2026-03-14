@@ -14,7 +14,10 @@
 
 package linq
 
-import "strings"
+import (
+	"iter"
+	"strings"
+)
 
 // FromString returns a Query[rune] with the runes from s.
 func FromString(s string) Query[rune] {
@@ -26,9 +29,9 @@ func FromString(s string) Query[rune] {
 	}, FastCountOption[rune](len(s)))
 }
 
-// ToString converts a Query[rune] to a string.
-func ToString(q Query[rune]) string {
-	return string(q.ToSlice())
+// ToString converts an iter.Seq[rune] to a string.
+func ToString(seq iter.Seq[rune]) string {
+	return string(ToSlice(seq))
 }
 
 // StringsJoin joins strings with a separator.
@@ -46,7 +49,7 @@ func StringsJoin[S ~string](q Query[S], sep S) S {
 		if c == 1 {
 			return s
 		}
-		sb.Grow((c-1)*len(sep) + Sum(Select(q, func(s S) int { return len(s) })))
+		sb.Grow((c-1)*len(sep) + Sum(Select(q.Seq(), func(s S) int { return len(s) })))
 	} else if !scan(&s) {
 		return ""
 	}
@@ -73,7 +76,7 @@ func StringsCommaAnd[S ~string](q Query[S], comma, and S) S {
 		if c == 1 {
 			return s
 		}
-		sb.Grow((c-1)*len(comma) + Sum(Select(q, func(s S) int { return len(s) })))
+		sb.Grow((c-1)*len(comma) + Sum(Select(q.Seq(), func(s S) int { return len(s) })))
 	} else if !scan(&s) {
 		return ""
 	}

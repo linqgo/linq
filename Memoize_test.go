@@ -44,8 +44,8 @@ func TestMemoize(t *testing.T) {
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 	assertQueryEqual(t, []int{0, 1, 2, 3, 4}, m)
 
-	assertOneShot(t, true, linq.OfType[int](q))
-	assertOneShot(t, false, linq.OfType[int](m))
+	assertOneShot(t, true, linq.OfTypeQuery[int](q))
+	assertOneShot(t, false, linq.OfTypeQuery[int](m))
 }
 
 func TestMemoizeTwofer(t *testing.T) {

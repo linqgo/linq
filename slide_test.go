@@ -34,15 +34,15 @@ func TestSlide(t *testing.T) {
 		{{5, 5}, {8}},
 	}
 	slide := func() linq.Query[[][]int] {
-		return linq.Select(
-			linq.Slide(
+		return linq.FromSeq(linq.Select(
+			linq.SlideQuery(
 				linq.From(1, 2, 3, 5, 5, 6, 7, 8),
 				func(tail, head int) bool { return tail < head-2 },
-			),
+			).Seq(),
 			func(d linq.Delta[int]) [][]int {
 				return [][]int{d.Outs.ToSlice(), {d.In}}
 			},
-		)
+		))
 	}
 
 	assertQueryEqual(t, data, slide())
@@ -52,7 +52,7 @@ func TestSlide(t *testing.T) {
 func TestSlideAll(t *testing.T) {
 	t.Parallel()
 
-	s := linq.SlideAll(chanof(1, 2, 3)).ToSlice()
+	s := toSlice(linq.SlideAll(chanof(1, 2, 3).Seq()))
 	for i, kv := range s {
 		assert.Equal(t, i+1, kv.In)
 		assertQueryEqual(t, []int{}, kv.Outs)
@@ -62,7 +62,7 @@ func TestSlideAll(t *testing.T) {
 func TestSlideFixed(t *testing.T) {
 	t.Parallel()
 
-	s := linq.SlideFixed(chanof(1, 2, 3, 4, 5), 2).ToSlice()
+	s := toSlice(linq.SlideFixed(chanof(1, 2, 3, 4, 5).Seq(), 2))
 	for i, kv := range s {
 		t.Log(i, kv.In, kv.Outs.ToSlice())
 	}

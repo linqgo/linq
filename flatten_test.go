@@ -15,6 +15,7 @@
 package linq_test
 
 import (
+	"iter"
 	"testing"
 
 	"github.com/linqgo/linq/v2"
@@ -23,27 +24,42 @@ import (
 func TestFlatten(t *testing.T) {
 	t.Parallel()
 
-	q := linq.Flatten(linq.From(linq.From(1, 2), linq.From(3, 4)))
+	// Test free function (iter.Seq version)
+	seqs := func(yield func(iter.Seq[int]) bool) {
+		if !yield(linq.From(1, 2).Seq()) {
+			return
+		}
+		yield(linq.From(3, 4).Seq())
+	}
+	assertSeqEqual(t, []int{1, 2, 3, 4}, linq.Flatten(seqs))
+
+	// Test Query version
+	q := linq.FlattenQuery(linq.From(linq.From(1, 2), linq.From(3, 4)))
 	assertQueryEqual(t, []int{1, 2, 3, 4}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))))
+	assertOneShot(t, true, linq.FlattenQuery(linq.FromChannel(make(chan linq.Query[int]))))
 
-	assertSome(t, 0, linq.Flatten(linq.None[linq.Query[int]]()).FastCount)
+	assertSome(t, 0, linq.FlattenQuery(linq.None[linq.Query[int]]()).FastCount)
 	assertNo(t, q.FastCount)
-	assertNo(t, linq.Flatten(linq.FromChannel(make(chan linq.Query[int]))).FastCount)
+	assertNo(t, linq.FlattenQuery(linq.FromChannel(make(chan linq.Query[int]))).FastCount)
 }
 
 func TestFlattenSlices(t *testing.T) {
 	t.Parallel()
 
-	q := linq.FlattenSlices(linq.From([]int{1, 2}, []int{3, 4}))
+	// Test free function (iter.Seq version)
+	assertSeqEqual(t, []int{1, 2, 3, 4},
+		linq.FlattenSlices(linq.From([]int{1, 2}, []int{3, 4}).Seq()))
+
+	// Test Query version
+	q := linq.FlattenSlicesQuery(linq.From([]int{1, 2}, []int{3, 4}))
 	assertQueryEqual(t, []int{1, 2, 3, 4}, q)
 
 	assertOneShot(t, false, q)
-	assertOneShot(t, true, linq.FlattenSlices(linq.FromChannel(make(chan []int))))
+	assertOneShot(t, true, linq.FlattenSlicesQuery(linq.FromChannel(make(chan []int))))
 
-	assertSome(t, 0, linq.FlattenSlices(linq.None[[]int]()).FastCount)
+	assertSome(t, 0, linq.FlattenSlicesQuery(linq.None[[]int]()).FastCount)
 	assertNo(t, q.FastCount)
-	assertNo(t, linq.FlattenSlices(linq.FromChannel(make(chan []int))).FastCount)
+	assertNo(t, linq.FlattenSlicesQuery(linq.FromChannel(make(chan []int))).FastCount)
 }

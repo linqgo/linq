@@ -14,20 +14,22 @@
 
 package linq
 
+import "iter"
+
 // Prepend returns a query with the elements of t followed by the elements of q.
 //
 // Be careful! Prepend puts the tail arguments, t, in front of q. To avoid
 // confusion and bugs, consider using the corresponding global Prepend function.
 func (q Query[T]) Prepend(t ...T) Query[T] {
-	return Prepend(t...)(q)
+	return From(t...).ConcatAll(q)
 }
 
-// Prepend returns a query with the elements of t followed by the elements of q.
+// Prepend returns a function that prepends t to a seq.
 //
-// So that t... args appear before q, Prepend takes just t and returns a func
-// that takes q.
-func Prepend[T any](t ...T) func(q Query[T]) Query[T] {
-	return func(q Query[T]) Query[T] {
-		return From(t...).Concat(q)
+// So that t... args appear before seq, Prepend takes just t and returns a func
+// that takes seq.
+func Prepend[T any](t ...T) func(seq iter.Seq[T]) iter.Seq[T] {
+	return func(seq iter.Seq[T]) iter.Seq[T] {
+		return Concat(seqSlice(t), seq)
 	}
 }

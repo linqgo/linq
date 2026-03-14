@@ -25,8 +25,23 @@ import (
 func TestPowerSet(t *testing.T) {
 	t.Parallel()
 
+	// Test free function (iter.Seq version)
+	var result [][]int
+	for s := range linq.PowerSet(linq.From(1, 4).Seq()) {
+		result = append(result, toSlice(s))
+	}
+	assert.ElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, result)
+}
+
+func TestPowerSetQuery(t *testing.T) {
+	t.Parallel()
+
 	powerset := func(q linq.Query[int]) linq.Query[[]int] {
-		return linq.Select(linq.PowerSet(q), linq.ToSlice[int])
+		pq := linq.PowerSetQuery(q)
+		fc, _ := pq.FastCount()
+		return linq.Pipe(pq, linq.Select(pq.Seq(), func(q linq.Query[int]) []int {
+			return q.ToSlice()
+		}), linq.FastCountOption[[]int](fc))
 	}
 
 	assertQueryElementsMatch(t, [][]int{nil}, powerset(linq.None[int]()))
@@ -37,7 +52,7 @@ func TestPowerSet(t *testing.T) {
 	assertQueryElementsMatch(t, [][]int{nil, {1}, {4}, {1, 4}}, q.Take(4))
 
 	ee := make([]int, 0, 4)
-	for s := range linq.PowerSet(linq.From(1, 2, 3, 4, 5)).Seq() {
+	for s := range linq.PowerSetQuery(linq.From(1, 2, 3, 4, 5)).Seq() {
 		n := 0
 		ee = ee[:0]
 		for i, e := range s.ISeq() {

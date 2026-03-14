@@ -14,15 +14,24 @@
 
 package linq
 
-// ToSlice returns a slice containing the elements of q.
-func (q Query[T]) ToSlice() []T {
-	return ToSlice(q)
-}
+import "iter"
 
 // ToSlice returns a slice containing the elements of q.
-func ToSlice[T any](q Query[T]) []T {
+func (q Query[T]) ToSlice() []T {
 	var ret []T
+	if c, ok := q.FastCount(); ok && c > 0 {
+		ret = make([]T, 0, c)
+	}
 	for t := range q.Seq() {
+		ret = append(ret, t)
+	}
+	return ret
+}
+
+// ToSlice returns a slice containing the elements of seq.
+func ToSlice[T any](seq iter.Seq[T]) []T {
+	var ret []T
+	for t := range seq {
 		ret = append(ret, t)
 	}
 	return ret

@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/linqgo/linq/v2"
 )
 
@@ -31,30 +33,36 @@ func TestJoin(t *testing.T) {
 	a := []XY{{1, 20}, {1, 30}, {2, 30}, {2, 40}}
 	b := []YZ{{30, 200}, {30, 250}, {20, 100}}
 
-	assertQueryElementsMatch(t,
+	result1 := toSlice(linq.Join(
+		linq.From(a...).Seq(),
+		linq.From(b...).Seq(),
+		func(e XY) int { return e.y },
+		func(e YZ) int { return e.y },
+		func(a XY, b YZ) XYZ { return XYZ{a.x, a.y, b.z} },
+	))
+	assert.ElementsMatch(t,
 		[]XYZ{{1, 20, 100}, {1, 30, 200}, {1, 30, 250}, {2, 30, 200}, {2, 30, 250}},
-		linq.Join(
-			linq.From(a...),
-			linq.From(b...),
-			func(e XY) int { return e.y },
-			func(e YZ) int { return e.y },
-			func(a XY, b YZ) XYZ { return XYZ{a.x, a.y, b.z} },
-		),
+		result1,
 	)
 
-	assertQueryElementsMatch(t,
+	result2 := toSlice(linq.Join(
+		linq.From(b...).Seq(),
+		linq.From(a...).Seq(),
+		func(e YZ) int { return e.y },
+		func(e XY) int { return e.y },
+		func(b YZ, a XY) XYZ { return XYZ{a.x, a.y, b.z} },
+	))
+	assert.ElementsMatch(t,
 		[]XYZ{{1, 20, 100}, {1, 30, 200}, {1, 30, 250}, {2, 30, 200}, {2, 30, 250}},
-		linq.Join(
-			linq.From(b...),
-			linq.From(a...),
-			func(e YZ) int { return e.y },
-			func(e XY) int { return e.y },
-			func(b YZ, a XY) XYZ { return XYZ{a.x, a.y, b.z} },
-		),
+		result2,
 	)
+}
+
+func TestJoinQuery(t *testing.T) {
+	t.Parallel()
 
 	join := func(a, b linq.Query[int]) linq.Query[string] {
-		return linq.Join(
+		return linq.JoinQuery(
 			a,
 			b,
 			func(i int) int { return i % 2 },

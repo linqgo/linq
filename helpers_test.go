@@ -15,6 +15,7 @@
 package linq_test
 
 import (
+	"iter"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -104,4 +105,21 @@ func chanof[T any](t ...T) linq.Query[T] {
 func assertOneShot[T any](t *testing.T, oneshot bool, q linq.Query[T]) bool {
 	t.Helper()
 	return assert.Equal(t, oneshot, q.OneShot())
+}
+
+func toSlice[T any](seq iter.Seq[T]) []T {
+	var s []T
+	for t := range seq {
+		s = append(s, t)
+	}
+	return s
+}
+
+func assertSeqEqual[T any](t *testing.T, expected []T, seq iter.Seq[T]) bool {
+	t.Helper()
+	s := toSlice(seq)
+	if len(s) == 0 && len(expected) == 0 {
+		return true
+	}
+	return assert.Equal(t, expected, s)
 }

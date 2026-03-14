@@ -37,9 +37,9 @@ func TestShorter(t *testing.T) {
 				return assert.Equal(t, sr, qr,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr)
 			},
-				qa.Shorter(qb), linq.Shorter(qa, qb),
-				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...), qb),
+				qa.Shorter(qb), linq.Shorter(qa.Seq(), qb.Seq()),
+				qa.Shorter(chanof([]rune(b)...)), linq.Shorter(qa.Seq(), chanof([]rune(b)...).Seq()),
+				chanof([]rune(a)...).Shorter(qb), linq.Shorter(chanof([]rune(a)...).Seq(), qb.Seq()),
 				must(qa.FastShorter(qb)), must(linq.FastShorter(qa, qb)),
 			)
 
@@ -76,9 +76,9 @@ func TestLonger(t *testing.T) {
 				return assert.Equal(t, sr, qr,
 					"len(%q) < len(%q) expected %v, got %v", a, b, sr, qr)
 			},
-				qa.Longer(qb), linq.Longer(qa, qb),
-				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa, chanof([]rune(b)...)),
-				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...), qb),
+				qa.Longer(qb), linq.Longer(qa.Seq(), qb.Seq()),
+				qa.Longer(chanof([]rune(b)...)), linq.Longer(qa.Seq(), chanof([]rune(b)...).Seq()),
+				chanof([]rune(a)...).Longer(qb), linq.Longer(chanof([]rune(a)...).Seq(), qb.Seq()),
 				must(qa.FastLonger(qb)), must(linq.FastLonger(qa, qb)),
 			)
 

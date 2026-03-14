@@ -14,48 +14,23 @@
 
 package linq
 
+import "iter"
+
 // ElementAt returns the element at position i or !ok if there is no element i.
 func (q Query[T]) ElementAt(i int) (T, bool) {
-	return ElementAt(q, i)
+	if i < 0 {
+		var zero T
+		return zero, false
+	}
+	if t, ok := q.FastElementAt(i); ok {
+		return t, ok
+	}
+	return ElementAt(q.Seq(), i)
 }
 
 // FastElementAt returns the element at position i or !ok if there is no element
 // i or the element cannot be accessed in O(1) time.
 func (q Query[T]) FastElementAt(i int) (T, bool) {
-	return FastElementAt(q, i)
-}
-
-// First returns the first element or !ok if q is empty.
-func (q Query[T]) First() (T, bool) {
-	return First(q)
-}
-
-// Last returns the last element or !ok if q is empty.
-func (q Query[T]) Last() (T, bool) {
-	return Last(q)
-}
-
-// ElementAt returns the element at position i or !ok if there is no element i.
-func ElementAt[T any](q Query[T], at int) (T, bool) {
-	if at < 0 {
-		var zero T
-		return zero, false
-	}
-	if t, ok := FastElementAt(q, at); ok {
-		return t, ok
-	}
-	for i, t := range q.ISeq() {
-		if i == at {
-			return t, true
-		}
-	}
-	var zero T
-	return zero, false
-}
-
-// FastElementAt returns the element at position i or !ok if there is no element
-// i or element i cannot be accessed in O(1) time.
-func FastElementAt[T any](q Query[T], i int) (T, bool) {
 	if i < 0 {
 		var zero T
 		return zero, false
@@ -68,33 +43,60 @@ func FastElementAt[T any](q Query[T], i int) (T, bool) {
 	return no[T]()
 }
 
+// First returns the first element or !ok if q is empty.
+func (q Query[T]) First() (T, bool) {
+	return First(q.Seq())
+}
+
+// Last returns the last element or !ok if q is empty.
+func (q Query[T]) Last() (T, bool) {
+	if t, ok := FastLast(q); ok {
+		return t, ok
+	}
+	return Last(q.Seq())
+}
+
+// ElementAt returns the element at position i or !ok if there is no element i.
+func ElementAt[T any](seq iter.Seq[T], at int) (T, bool) {
+	if at < 0 {
+		var zero T
+		return zero, false
+	}
+	i := 0
+	for t := range seq {
+		if i == at {
+			return t, true
+		}
+		i++
+	}
+	var zero T
+	return zero, false
+}
+
 // FastLast returns the last element or !ok if q is empty or the last element
 // cannot be accessed in O(1) time.
 func FastLast[T any](q Query[T]) (T, bool) {
-	if q.count > 0 {
+	if c, ok := q.FastCount(); ok && c > 0 {
 		if get := q.getter(); get != nil {
-			return get(q.count - 1)
+			return get(c - 1)
 		}
 	}
 	return no[T]()
 }
 
-// First returns the first element or !ok if q is empty.
-func First[T any](q Query[T]) (T, bool) {
-	for t := range q.Seq() {
+// First returns the first element or !ok if seq is empty.
+func First[T any](seq iter.Seq[T]) (T, bool) {
+	for t := range seq {
 		return t, true
 	}
 	return no[T]()
 }
 
-// Last returns the last element or !ok if q is empty.
-func Last[T any](q Query[T]) (T, bool) {
-	if t, ok := FastLast(q); ok {
-		return t, ok
-	}
+// Last returns the last element or !ok if seq is empty.
+func Last[T any](seq iter.Seq[T]) (T, bool) {
 	var t T
 	ok := false
-	for t = range q.Seq() {
+	for t = range seq {
 		ok = true
 	}
 	return t, ok

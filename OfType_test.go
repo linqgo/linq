@@ -26,14 +26,14 @@ func TestOfType(t *testing.T) {
 
 	data := linq.From[any](1, "hello", 2, 3, "goodbye")
 
-	assertQueryEqual(t, []int{1, 2, 3}, linq.OfType[int](data))
-	assertQueryEqual(t, []int{1, 2}, linq.OfType[int](data).Take(2))
-	assertQueryEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data))
+	assertSeqEqual(t, []int{1, 2, 3}, linq.OfType[int](data.Seq()))
+	assertQueryEqual(t, []int{1, 2}, linq.OfTypeQuery[int](data).Take(2))
+	assertSeqEqual(t, []string{"hello", "goodbye"}, linq.OfType[string](data.Seq()))
 
-	assertOneShot(t, false, linq.OfType[int](data))
-	assertOneShot(t, true, linq.OfType[int](oneshot()))
+	assertOneShot(t, false, linq.OfTypeQuery[int](data))
+	assertOneShot(t, true, linq.OfTypeQuery[int](oneshot()))
 
-	assertSome(t, 0, linq.OfType[int](linq.None[any]()).FastCount)
-	assertNo(t, linq.OfType[int](data).FastCount)
-	assertNo(t, linq.OfType[int](oneshot()).FastCount)
+	assertSome(t, 0, linq.OfTypeQuery[int](linq.None[any]()).FastCount)
+	assertNo(t, linq.OfTypeQuery[int](data).FastCount)
+	assertNo(t, linq.OfTypeQuery[int](oneshot()).FastCount)
 }

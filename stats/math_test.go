@@ -24,14 +24,14 @@ import (
 )
 
 var (
-	testNums  = linq.Select(linq.Iota2(1, 11), func(i int) float64 { return float64(i) })
+	testNums  = linq.FromSeq(linq.Select(linq.Iota2(1, 11).Seq(), func(i int) float64 { return float64(i) }))
 	emptyNums = linq.None[float64]()
 )
 
 func TestAverage(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []linq.Query[float64]{testNums, testNums.Reverse()} {
 		assertSome(t, 5.5, maybe(stats.Mean(data)))
 		assertNo(t, maybe(stats.Mean(emptyNums)))
 	}
@@ -40,7 +40,7 @@ func TestAverage(t *testing.T) {
 func TestGeometricMean(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []linq.Query[float64]{testNums, testNums.Reverse()} {
 		assertSomeInEpsilon(t, 4.529, maybe(stats.GeometricMean(data)), 1.001)
 		assertNo(t, maybe(stats.GeometricMean(emptyNums)))
 	}
@@ -49,7 +49,7 @@ func TestGeometricMean(t *testing.T) {
 func TestHarmonicMean(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []linq.Query[float64]{testNums, testNums.Reverse()} {
 		assertSomeInEpsilon(t, 3.414, maybe(stats.HarmonicMean(data)), 1.001)
 		assertNo(t, maybe(stats.HarmonicMean(emptyNums)))
 	}
@@ -58,7 +58,7 @@ func TestHarmonicMean(t *testing.T) {
 func TestProduct(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []linq.Query[float64]{testNums, testNums.Reverse()} {
 		assert.EqualValues(t, 3628800, stats.Product(data))
 	}
 }
@@ -66,7 +66,7 @@ func TestProduct(t *testing.T) {
 func TestSum(t *testing.T) {
 	t.Parallel()
 
-	for _, data := range []linq.Query[float64]{testNums, linq.Reverse(testNums)} {
+	for _, data := range []linq.Query[float64]{testNums, testNums.Reverse()} {
 		assert.EqualValues(t, 55, stats.Sum(data))
 	}
 }
