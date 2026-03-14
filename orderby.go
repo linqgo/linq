@@ -56,8 +56,6 @@ func ThenByDesc[T any, K Ord](q Query[T], key func(T) K) Query[T] { return oq(q,
 func ThenCmp[T any](q Query[T], cmp CmpFn[T]) Query[T]            { return oq(q, then(q, cmp)) }
 func ThenCmpDesc[T any](q Query[T], cmp CmpFn[T]) Query[T]        { return oq(q, then(q, ba(cmp))) }
 
-var thenByNoOrderBy Error = "ThenBy not immediately preceded by OrderBy/ThenBy"
-
 // sortSeq sorts elements from a seq using the given comparator.
 func sortSeq[T any](seq iter.Seq[T], cmp CmpFn[T]) iter.Seq[T] {
 	return func(yield func(t T) bool) {

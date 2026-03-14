@@ -47,15 +47,6 @@ func TestCountLimit(t *testing.T) {
 	assert.Equal(t, 5, chanof(1, 2, 3, 4, 5).CountLimit(10))
 }
 
-type countTrue[T any] struct {
-	t      T
-	isTrue bool
-}
-
-func ct[T any](t T, isTrue bool) countTrue[T] {
-	return countTrue[T]{t: t, isTrue: isTrue}
-}
-
 func TestFastCount(t *testing.T) {
 	t.Parallel()
 
