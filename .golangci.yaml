@@ -14,10 +14,10 @@ linters:
     - gofumpt
     - goimports
 
-linters-settings:
-  gofumpt:
-    module-path: github.com/linqgo/linq
-    extra-rules: true
+  settings:
+    gofumpt:
+      module-path: github.com/linqgo/linq
+      extra-rules: true
 
-  goimports:
-    local-prefixes: github.com/linqgo/linq
+    goimports:
+      local-prefixes: github.com/linqgo/linq
