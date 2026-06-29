@@ -17,23 +17,26 @@ package linq
 import "iter"
 
 // Select returns a query with the elements of q transformed by sel.
-//
-// Caveat: The output must be of the same type. For transforms to different
-// types, use the corresponding free function.
-func (q Query[T]) Select(sel func(t T) T) Query[T] {
-	var get Getter[T]
+func (q Query[T]) Select[U any](sel func(t T) U) Query[U] {
+	var get Getter[U]
 	if qget := q.getter(); qget != nil {
-		get = func(i int) (T, bool) {
+		get = func(i int) (U, bool) {
 			if t, ok := qget(i); ok {
 				return sel(t), true
 			}
-			return no[T]()
+			return no[U]()
 		}
 	}
-	return Pipe(q, Select(q.Seq(), sel),
+	return q.Pipe(Select(q.Seq(), sel),
 		FastGetOption(get),
-		FastCountOption[T](q.fastCount()),
+		FastCountOption[U](q.fastCount()),
 	)
+}
+
+// SelectMany projects each element of q to a sub-sequence and flattens the
+// sub-sequences into a single query.
+func (q Query[T]) SelectMany[U any](project func(T) iter.Seq[U]) Query[U] {
+	return q.Pipe(SelectMany(q.Seq(), project))
 }
 
 // Select returns a seq with the elements of seq transformed by sel.

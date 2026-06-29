@@ -19,11 +19,19 @@ import "iter"
 // Pipe returns a Query that transforms an input query by transforming its
 // seq. If q is one-shot then the returned Query is assumed to be
 // one-shot.
-func Pipe[T, U any](
-	q Query[T],
+func (q Query[T]) Pipe[U any](
 	seq iter.Seq[U],
 	options ...QueryOption[U],
 ) Query[U] {
 	options = append([]QueryOption[U]{OneShotOption[U](q.OneShot())}, options...)
 	return FromSeq(seq, options...)
+}
+
+// Deprecated: Use q.Pipe instead.
+func Pipe[T, U any](
+	q Query[T],
+	seq iter.Seq[U],
+	options ...QueryOption[U],
+) Query[U] {
+	return q.Pipe(seq, options...)
 }

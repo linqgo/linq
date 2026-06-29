@@ -61,7 +61,23 @@ func Join[A, B, R any, K comparable](
 	}
 }
 
-// JoinQuery returns the join of a and b as a Query.
+// Join returns the join of q and b as a Query.
+func (q Query[A]) Join[B, R any, K comparable](
+	b Query[B],
+	selKeyA func(a A) K,
+	selKeyB func(b B) K,
+	selResult func(a A, b B) R,
+) Query[R] {
+	if q.fastCount() == 0 || b.fastCount() == 0 {
+		return None[R]()
+	}
+	return FromSeq(
+		Join(q.Seq(), b.Seq(), selKeyA, selKeyB, selResult),
+		OneShotOption[R](q.OneShot() || b.OneShot()),
+	)
+}
+
+// Deprecated: Use a.Join instead.
 func JoinQuery[A, B, R any, K comparable](
 	a Query[A],
 	b Query[B],
@@ -69,11 +85,5 @@ func JoinQuery[A, B, R any, K comparable](
 	selKeyB func(b B) K,
 	selResult func(a A, b B) R,
 ) Query[R] {
-	if a.fastCount() == 0 || b.fastCount() == 0 {
-		return None[R]()
-	}
-	return FromSeq(
-		Join(a.Seq(), b.Seq(), selKeyA, selKeyB, selResult),
-		OneShotOption[R](a.OneShot() || b.OneShot()),
-	)
+	return a.Join(b, selKeyA, selKeyB, selResult)
 }

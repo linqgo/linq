@@ -32,19 +32,18 @@ func GroupJoin[Outer, Inner, Result any, Key comparable](
 	}
 }
 
-// GroupJoinQuery returns the group join of outer and inner queries.
-func GroupJoinQuery[Outer, Inner, Result any, Key comparable](
-	outer Query[Outer],
+// GroupJoin returns the group join of q and inner queries.
+func (q Query[Outer]) GroupJoin[Inner, Result any, Key comparable](
 	inner Query[Inner],
 	outerKey func(Outer) Key,
 	innerKey func(Inner) Key,
 	result func(Outer, Query[Inner]) Result,
 ) Query[Result] {
-	if outer.fastCount() == 0 {
+	if q.fastCount() == 0 {
 		return None[Result]()
 	}
 	return FromSeq(
-		GroupJoin(outer.Seq(), inner.Seq(), outerKey, innerKey,
+		GroupJoin(q.Seq(), inner.Seq(), outerKey, innerKey,
 			func(o Outer, inners iter.Seq[Inner]) Result {
 				// Collect the inner seq into a slice so we can wrap as Query
 				var s []Inner
@@ -54,7 +53,18 @@ func GroupJoinQuery[Outer, Inner, Result any, Key comparable](
 				return result(o, From(s...))
 			},
 		),
-		OneShotOption[Result](outer.OneShot() || inner.OneShot()),
-		FastCountOption[Result](outer.fastCount()),
+		OneShotOption[Result](q.OneShot() || inner.OneShot()),
+		FastCountOption[Result](q.fastCount()),
 	)
+}
+
+// Deprecated: Use outer.GroupJoin instead.
+func GroupJoinQuery[Outer, Inner, Result any, Key comparable](
+	outer Query[Outer],
+	inner Query[Inner],
+	outerKey func(Outer) Key,
+	innerKey func(Inner) Key,
+	result func(Outer, Query[Inner]) Result,
+) Query[Result] {
+	return outer.GroupJoin(inner, outerKey, innerKey, result)
 }
