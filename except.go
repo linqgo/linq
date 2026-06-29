@@ -38,20 +38,25 @@ func ExceptQuery[T comparable](a, b Query[T]) Query[T] {
 	return ExceptByQuery(a, b, Identity[T])
 }
 
-// ExceptByQuery returns all elements of a except those whose key is found in b.
+// ExceptBy returns all elements of q except those whose key is found in b.
+func (q Query[T]) ExceptBy[K comparable](b Query[K], key func(t T) K) Query[T] {
+	if q.fastCount() == 0 {
+		return None[T]()
+	}
+	if b.fastCount() == 0 {
+		return q
+	}
+	return q.Pipe(
+		ExceptBy(q.Seq(), b.Seq(), key),
+		OneShotOption[T](q.OneShot() || b.OneShot()),
+	)
+}
+
+// Deprecated: Use q.ExceptBy instead.
 func ExceptByQuery[T any, K comparable](
 	a Query[T],
 	b Query[K],
 	key func(t T) K,
 ) Query[T] {
-	if a.fastCount() == 0 {
-		return None[T]()
-	}
-	if b.fastCount() == 0 {
-		return a
-	}
-	return Pipe(a,
-		ExceptBy(a.Seq(), b.Seq(), key),
-		OneShotOption[T](a.OneShot() || b.OneShot()),
-	)
+	return a.ExceptBy(b, key)
 }

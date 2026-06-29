@@ -25,7 +25,7 @@ func Max[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
 }
 
 // MaxBy returns the element(s) in q with the highest key.
-func MaxBy[T any, R cmp.Ordered](q Query[T], key func(T) R) Query[T] {
+func (q Query[T]) MaxBy[R cmp.Ordered](key func(T) R) Query[T] {
 	return bestBy(q.Seq(), key, greater[R])
 }
 
@@ -34,10 +34,19 @@ func Min[R cmp.Ordered](seq iter.Seq[R]) (R, bool) {
 	return Aggregate(seq, min[R])
 }
 
-// MinBy returns the element in q with the lowest key or ok = false if q is
-// empty.
-func MinBy[T any, K cmp.Ordered](q Query[T], key func(T) K) Query[T] {
+// MinBy returns the element in q with the lowest key.
+func (q Query[T]) MinBy[K cmp.Ordered](key func(T) K) Query[T] {
 	return bestBy(q.Seq(), key, less[K])
+}
+
+// Deprecated: Use q.MaxBy instead.
+func MaxBy[T any, R cmp.Ordered](q Query[T], key func(T) R) Query[T] {
+	return q.MaxBy(key)
+}
+
+// Deprecated: Use q.MinBy instead.
+func MinBy[T any, K cmp.Ordered](q Query[T], key func(T) K) Query[T] {
+	return q.MinBy(key)
 }
 
 func bestBy[T any, O cmp.Ordered](seq iter.Seq[T], key func(T) O, better func(a, b O) bool) Query[T] {

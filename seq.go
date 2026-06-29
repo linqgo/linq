@@ -34,7 +34,7 @@ func (q Query[T]) ISeq() iter.Seq2[int, T] {
 	}
 }
 
-func Seq2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
+func (q Query[T]) Seq2[K, V any](sel func(t T) (K, V)) iter.Seq2[K, V] {
 	return func(yield func(k K, v V) bool) {
 		for t := range q.Seq() {
 			if !yield(sel(t)) {
@@ -42,6 +42,11 @@ func Seq2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
 			}
 		}
 	}
+}
+
+// Deprecated: Use q.Seq2 instead.
+func Seq2[T, K, V any](q Query[T], sel func(t T) (K, V)) iter.Seq2[K, V] {
+	return q.Seq2(sel)
 }
 
 func SeqKV[K, V any](q Query[KV[K, V]]) iter.Seq2[K, V] {
