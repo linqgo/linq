@@ -24,10 +24,7 @@ func (q Query[T]) Aggregate(agg func(a, b T) T) (T, bool) {
 
 // AggregateSeed applies an aggregator function to the elements of q, using
 // seed as the initial value, and returns the aggregated result.
-//
-// Use the global AggregateSeed function if the seed and result are not of
-// type T (e.g., concatenate a Query[int] into a string).
-func (q Query[T]) AggregateSeed(seed T, agg func(a, b T) T) T {
+func (q Query[T]) AggregateSeed[A any](seed A, agg func(a A, t T) A) A {
 	return AggregateSeed(q.Seq(), seed, agg)
 }
 

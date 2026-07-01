@@ -27,11 +27,12 @@ func OfType[U, T any](seq iter.Seq[T]) iter.Seq[U] {
 	}
 }
 
-// OfTypeQuery returns a Query that contains all the elements of q that have type U.
+// OfType returns a Query that contains all the elements of q that have type U.
+func (q Query[T]) OfType[U any]() Query[U] {
+	return q.Pipe(OfType[U](q.Seq()), FastCountIfEmptyOption[U](q.fastCount()))
+}
+
+// Deprecated: Use q.OfType instead.
 func OfTypeQuery[U, T any](q Query[T]) Query[U] {
-	return FromSeq(
-		OfType[U](q.Seq()),
-		FastCountIfEmptyOption[U](q.fastCount()),
-		OneShotOption[U](q.OneShot()),
-	)
+	return q.OfType[U]()
 }

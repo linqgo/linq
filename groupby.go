@@ -49,32 +49,13 @@ func GroupBySelectSlices[T, U any, K comparable](
 	}
 }
 
-// GroupBy returns a Query[KV[K, Query[T]]] with elements from q grouped using
-// the specified key function.
-func GroupBy[T any, K comparable](
-	q Query[T],
-	key func(t T) K,
-) Query[KV[K, Query[T]]] {
-	return GroupBySelect(q, keyIdentity(key))
-}
-
-// GroupBySlicesQuery returns a Query[KV[K, []T]] with elements from q grouped
-// using the specified key function.
-func GroupBySlicesQuery[T any, K comparable](
-	q Query[T],
-	key func(t T) K,
-) Query[KV[K, []T]] {
-	return GroupBySelectSlicesQuery(q, keyIdentity(key))
-}
-
-// GroupBySelect returns a Query[KV[K, Query[T]]] with elements from q grouped
+// GroupBySelect returns a Query[KV[K, Query[U]]] with elements from q grouped
 // using the specified sel function.
-func GroupBySelect[T, U any, K comparable](
-	q Query[T],
+func (q Query[T]) GroupBySelect[U any, K comparable](
 	sel func(t T) KV[K, U],
 ) Query[KV[K, Query[U]]] {
-	inner := GroupBySelectSlicesQuery(q, sel)
-	return Pipe(inner, Select(
+	inner := q.GroupBySelectSlices(sel)
+	return inner.Pipe(Select(
 		inner.Seq(),
 		func(kv KV[K, []U]) KV[K, Query[U]] {
 			return NewKV(kv.Key, From(kv.Value...))
@@ -84,15 +65,48 @@ func GroupBySelect[T, U any, K comparable](
 	)
 }
 
-// GroupBySelectSlicesQuery returns a Query[KV[K, []T]] with elements from q
-// grouped using the specified sel function.
+// GroupBySelectSlices returns a Query[KV[K, []U]] with elements from q grouped
+// using the specified sel function.
+func (q Query[T]) GroupBySelectSlices[U any, K comparable](
+	sel func(t T) KV[K, U],
+) Query[KV[K, []U]] {
+	return q.Pipe(
+		GroupBySelectSlices(q.Seq(), sel),
+		FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
+}
+
+// GroupBy returns a Query[KV[K, Query[T]]] with elements from q grouped using
+// the specified key function.
+func GroupBy[T any, K comparable](
+	q Query[T],
+	key func(t T) K,
+) Query[KV[K, Query[T]]] {
+	return q.GroupBySelect(keyIdentity(key))
+}
+
+// GroupBySlicesQuery returns a Query[KV[K, []T]] with elements from q grouped
+// using the specified key function.
+func GroupBySlicesQuery[T any, K comparable](
+	q Query[T],
+	key func(t T) K,
+) Query[KV[K, []T]] {
+	return q.GroupBySelectSlices(keyIdentity(key))
+}
+
+// Deprecated: Use q.GroupBySelect instead.
+func GroupBySelect[T, U any, K comparable](
+	q Query[T],
+	sel func(t T) KV[K, U],
+) Query[KV[K, Query[U]]] {
+	return q.GroupBySelect(sel)
+}
+
+// Deprecated: Use q.GroupBySelectSlices instead.
 func GroupBySelectSlicesQuery[T, U any, K comparable](
 	q Query[T],
 	sel func(t T) KV[K, U],
 ) Query[KV[K, []U]] {
-	return Pipe(q,
-		GroupBySelectSlices(q.Seq(), sel),
-		FastCountIfEmptyOption[KV[K, []U]](q.fastCount()))
+	return q.GroupBySelectSlices(sel)
 }
 
 func keyIdentity[T any, K comparable](key func(t T) K) func(t T) KV[K, T] {
